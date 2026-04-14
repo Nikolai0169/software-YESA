@@ -165,3 +165,17 @@ code {
   border-radius: 0.5rem;
   font-weight: 500;
 }
+
+.btn-carrito {
+  background-color: #E91E63 !important;
+  border: none !important;
+}
+
+.btn-carrito:hover,
+.btn-carrito:focus,
+.btn-carrito:active,
+.btn-carrito:focus-visible,
+.btn-carrito:focus-within {
+  background-color: #c2185b !important;
+  border: none !important;
+}
