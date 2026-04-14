@@ -19,6 +19,7 @@ const NavigationBar = memo(() => {
     navigate('/login');
   }, [logout, navigate]);
 
+
   return (
     <Navbar bg='black' variant="dark" expand="lg" sticky="top" className="navbar shadow-sm">
       <Container fluid className="px-4">
@@ -33,7 +34,7 @@ const NavigationBar = memo(() => {
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto align-items-center">
             <Nav.Link as={Link} to="/" style={{ color: '#ffffff' }}>Inicio</Nav.Link>
-            <Nav.Link as={Link} to="/catalogo" style={{ color: '#ffffff' }}>Crea tu propio producto</Nav.Link>
+            <Nav.Link as={Link} to="/catalogo" style={{ color: '#ffffff' }}>Catalogo</Nav.Link>
 
             {/* Menú Admin / Auxiliar (sin cambios) */}
             {(isAdmin || isAuxiliar) && (
@@ -61,13 +62,16 @@ const NavigationBar = memo(() => {
           <Form className="d-flex align-items-center me-3">
             <div className="position-relative">
               <FormControl
-                type="search"
-                placeholder="Buscar productos..."
+                type="text"
+                name="buscar"
+                placeholder="Nombre del producto..."
+                value={filtros.buscar}
+                onChange={handleFiltroChange}
                 style={{
-                  backgroundColor: 'transparent',
+                  backgroundColor: 'white',
                   border: '2px solid #E91E63',
                   borderRadius: '20px',
-                  color: '#ffffff',
+                  color: '#000000',
                   paddingRight: '2.2rem',
                   width: '220px',
                 }}
