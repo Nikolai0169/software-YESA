@@ -15,21 +15,12 @@ const Footer = memo(() => {
       <Container>
         <Row>
           <Col md={4} className="mb-3">
-            <h5>
+            <h5 style={{ color: '#E91E63' }}>
               <i className="bi bi-shop me-2"></i>
               YESA
             </h5>
-            <p className="text-muted" style={{ fontSize: '0.95rem' }}>
+            <p className="" style={{ fontSize: '0.95rem' }}>
               YESA es un ecommerce de orfebrería y cerámica artesanal con productos hechos a mano y una experiencia de compra exclusiva.
-            </p>
-            <h6 className="mt-3">Contacto</h6>
-            <p className="text-muted mb-1">
-              <i className="bi bi-envelope me-2"></i>
-              <a href="mailto:contacto@yesa.com" className="text-muted text-decoration-none">contacto@yesa.com</a>
-            </p>
-            <p className="text-muted mb-1">
-              <i className="bi bi-telephone me-2"></i>
-              +57 300 123 4567
             </p>
           </Col>
 
@@ -54,7 +45,7 @@ const Footer = memo(() => {
             <h5 style={{ color: '#E91E63' }}>Atención al Cliente</h5>
             <ul className="list-unstyled">
               {[
-                { label: 'Contacto', to: '/contacto' },
+                { label: 'yesa@gmail.com'},
                 { label: 'Envíos', to: '/envios' },
                 { label: 'Devoluciones', to: '/devoluciones' },
               ].map(({ label, to }) => (
@@ -87,7 +78,7 @@ const Footer = memo(() => {
           </Col>
         </Row>
 
-        <hr style={{ borderColor: '#333' }} />
+        <hr style={{ borderColor: '#ffffff' }} />
 
         <Row>
           <Col className="text-center">

@@ -67,78 +67,19 @@ const HomePage = () => {
                 <span className="hero-pill">Venta segura</span>
               </div>
             </Col>
-            <Col md={6} className="text-center">
-              <div className="hero-illustration">
-                <div className="hero-icon">
-                  <i className="bi bi-shop"></i>
-                </div>
-              </div>
-            </Col>
           </Row>
         </Container>
       </div>
 
       <section className="yesa-section py-5">
         <Container>
-          <Row className="align-items-center gy-4">
-            <Col lg={6}>
-              <h2 className="section-title">Sobre YESA</h2>
-              <p className="section-note">
-                YESA es una marca especializada en orfebrería y cerámica artesanal, enfocada en productos personalizados con una experiencia de compra moderna y atractiva.
-              </p>
-              <p className="text-muted">
-                Nuestro ecommerce permite a los clientes elegir piezas únicas, con opciones de personalización y asesoría experta. Cada producto es creado para reflejar estilo, calidad y exclusividad.
-              </p>
-            </Col>
-            <Col lg={6}>
-              <Row className="g-4">
-                <Col sm={6}>
-                  <Card className="yesa-card text-white h-100 border-0">
-                    <Card.Body>
-                      <h5 className="mb-3">✨ Personalización Digital</h5>
-                      <p className="mb-0">Herramientas para modificar acabados, colores y detalles de tus piezas.</p>
-                    </Card.Body>
-                  </Card>
-                </Col>
-                <Col sm={6}>
-                  <Card className="yesa-card text-white h-100 border-0">
-                    <Card.Body>
-                      <h5 className="mb-3">📦 Catálogo Seleccionado</h5>
-                      <p className="mb-0">Productos organizados por categorías con filtros rápidos y navegación intuitiva.</p>
-                    </Card.Body>
-                  </Card>
-                </Col>
-                <Col sm={6}>
-                  <Card className="yesa-card text-white h-100 border-0">
-                    <Card.Body>
-                      <h5 className="mb-3">🛒 Carrito y Checkout</h5>
-                      <p className="mb-0">Proceso de compra claro, seguro y con seguimiento de pedidos en tiempo real.</p>
-                    </Card.Body>
-                  </Card>
-                </Col>
-                <Col sm={6}>
-                  <Card className="yesa-card text-white h-100 border-0">
-                    <Card.Body>
-                      <h5 className="mb-3">⚙️ Backend Robust</h5>
-                      <p className="mb-0">Sistema de gestión de inventario, usuarios y pedidos para administración eficiente.</p>
-                    </Card.Body>
-                  </Card>
-                </Col>
-              </Row>
-            </Col>
-          </Row>
-        </Container>
-      </section>
-
-      <section className="yesa-section py-5">
-        <Container>
           <div className="text-center mb-5">
             <h2 className="section-title">Nuestros Servicios</h2>
-            <p className="section-note">Una experiencia premium para clientes que buscan productos hechos a mano y únicos.</p>
+            <p>Una experiencia premium para clientes que buscan productos hechos a mano y únicos.</p>
           </div>
           <Row className="g-4">
             <Col md={4}>
-              <Card className="feature-card-yesa text-white h-100 border-0">
+              <Card className="yesa-hero text-white h-100 border-0">
                 <Card.Body>
                   <div className="feature-icon mb-3">
                     <i className="bi bi-brush"></i>
@@ -149,7 +90,7 @@ const HomePage = () => {
               </Card>
             </Col>
             <Col md={4}>
-              <Card className="feature-card-yesa text-white h-100 border-0">
+              <Card className="yesa-hero text-white h-100 border-0">
                 <Card.Body>
                   <div className="feature-icon mb-3">
                     <i className="bi bi-grid-1x2-fill"></i>
@@ -160,7 +101,7 @@ const HomePage = () => {
               </Card>
             </Col>
             <Col md={4}>
-              <Card className="feature-card-yesa text-white h-100 border-0">
+              <Card className="yesa-hero text-white h-100 border-0">
                 <Card.Body>
                   <div className="feature-icon mb-3">
                     <i className="bi bi-award"></i>
@@ -238,7 +179,7 @@ const HomePage = () => {
         {/* Productos Destacados */}
         <div className="mb-5">
           <div className="text-center mb-5">
-            <h2 className="display-5 fw-bold mb-3">Productos Destacados</h2>
+            <h2 className="section-title display-5 fw-bold mb-3">Productos Destacados</h2>
             <p className="text-muted lead">Los productos más populares de nuestra tienda</p>
           </div>
           {loading ? (
@@ -263,10 +204,10 @@ const HomePage = () => {
           
           <div className="text-center mt-5">
             <Link 
+              className='yesa-hero'
               to="/catalogo"
               style={{
                 display: 'inline-block',
-                background: 'linear-gradient(135deg, #4f46e5 0%, #4338ca 100%)',
                 color: 'white',
                 borderRadius: '0.75rem',
                 padding: '0.875rem 2.5rem',

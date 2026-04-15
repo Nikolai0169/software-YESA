@@ -6,7 +6,7 @@
  */
 
 import React, { memo, useCallback, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Navbar, Nav, Container, NavDropdown, Form, FormControl, Button } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
 
@@ -14,6 +14,16 @@ const NavigationBar = memo(() => {
   const { user, isAuthenticated, isAdmin, isAuxiliar, isCliente, logout } = useAuth();
   const navigate = useNavigate();
   const [filtros, setFiltros] = useState({ buscar: '' });
+
+  const location = useLocation();
+  const isCatalogo = location.pathname === '/catalogo';
+  const [buscar, setBuscar] = useState('');
+
+  const handleBuscar = useCallback((e) => {
+  const valor = e.target.value;
+  setBuscar(valor);
+  navigate(`/catalogo?buscar=${valor}`);
+}, [navigate]);
 
   const handleLogout = useCallback(() => {
     logout();
@@ -79,12 +89,14 @@ const NavigationBar = memo(() => {
           </Nav>
 
           {/* Buscador */}
+        {isCatalogo && (
+          <>
           <Form className="d-flex align-items-center me-3">
             <div className="position-relative">
               <FormControl
-                type="text"
+                type="search"
                 name="buscar"
-                placeholder="Nombre del producto..."
+                placeholder="Buscar..."
                 value={filtros.buscar}
                 onChange={handleFiltroChange}
                 style={{
@@ -118,6 +130,8 @@ const NavigationBar = memo(() => {
             <NavDropdown.Item as={Link} to="/">Alcancías</NavDropdown.Item>
             <NavDropdown.Item as={Link} to="/">Jarrones</NavDropdown.Item>
           </NavDropdown>
+        </>
+        )}
 
           {/* Botón cuadrado rosa (decorativo / carrito) */}
           <Nav.Link as={Link} to="/carrito" className="btn-carrito me-2">
