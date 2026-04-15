@@ -135,7 +135,7 @@ Después de iniciar el backend por primera vez (se crearán en la Fase 2):
 
 ```
 Email: admin@ecommerce.com
-Password: admin123
+Password: admin1234
 Rol: Administrador
 ```
 

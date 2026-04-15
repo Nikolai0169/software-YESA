@@ -178,7 +178,7 @@
 ## **Credenciales Admin por Defecto**
 Después de iniciar el proyecto por primera vez:
 - **Email:** admin@ecommerce.com
-- **Password:** admin123
+- **Password:** admin1234
 - **Rol:** Administrador
 
 ---

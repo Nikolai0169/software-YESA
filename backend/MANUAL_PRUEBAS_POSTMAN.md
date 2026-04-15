@@ -1,4 +1,4 @@
-# 📘 MANUAL DE PRUEBAS - API E-COMMERCE
+# 📘 MANUAL DE PRUEBAS - API YESA
 ## Guía Completa para Postman
 
 ---
@@ -41,21 +41,21 @@ Crear las siguientes variables:
 ## 🔑 CREDENCIALES DEL SISTEMA
 
 ### 👨‍💼 ADMINISTRADOR
-- **Email**: `admin@ecommerce.com`
+- **Email**: `admin@yesa.com`
 - **Password**: `admin1234`
 - **Permisos**: Acceso total a todas las funcionalidades
 
 ### 👤 AUXILIAR
-- **Email**: `auxiliar@ecommerce.com`
+- **Email**: `auxiliar@yesa.com`
 - **Password**: `aux123`
 - **Permisos**: Gestión de categorías, subcategorías y productos (sin eliminar)
 
 ### 🛍️ CLIENTES (5 disponibles)
-- **Cliente 1**: `cliente1@ecommerce.com` / `cliente1`
-- **Cliente 2**: `cliente2@ecommerce.com` / `cliente2`
-- **Cliente 3**: `cliente3@ecommerce.com` / `cliente3`
-- **Cliente 4**: `cliente4@ecommerce.com` / `cliente4`
-- **Cliente 5**: `cliente5@ecommerce.com` / `cliente5`
+- **Cliente 1**: `cliente1@yesa.com` / `cliente1`
+- **Cliente 2**: `cliente2@yesa.com` / `cliente2`
+- **Cliente 3**: `cliente3@yesa.com` / `cliente3`
+- **Cliente 4**: `cliente4@yesa.com` / `cliente4`
+- **Cliente 5**: `cliente5@yesa.com` / `cliente5`
 - **Permisos**: Catálogo, carrito y pedidos
 
 ---
@@ -116,7 +116,7 @@ Content-Type: application/json
 **Body - Admin**:
 ```json
 {
-  "email": "admin@ecommerce.com",
+  "email": "admin@yesa.com",
   "password": "admin1234"
 }
 ```
@@ -124,7 +124,7 @@ Content-Type: application/json
 **Body - Auxiliar**:
 ```json
 {
-  "email": "auxiliar@ecommerce.com",
+  "email": "auxiliar@yesa.com",
   "password": "aux123"
 }
 ```
@@ -132,7 +132,7 @@ Content-Type: application/json
 **Body - Cliente**:
 ```json
 {
-  "email": "cliente1@ecommerce.com",
+  "email": "cliente1@yesa.com",
   "password": "cliente1"
 }
 ```
@@ -147,7 +147,7 @@ Content-Type: application/json
       "id": 1,
       "nombre": "Admin",
       "apellido": "Principal",
-      "email": "admin@ecommerce.com",
+      "email": "admin@yesa.com",
       "rol": "administrador",
       "activo": true
     },
@@ -182,7 +182,7 @@ Authorization: Bearer {{admin_token}}
       "id": 1,
       "nombre": "Admin",
       "apellido": "Principal",
-      "email": "admin@ecommerce.com",
+      "email": "admin@yesa.com",
       "rol": "administrador",
       "telefono": "3001234567",
       "direccion": "Admin Address",
@@ -192,7 +192,6 @@ Authorization: Bearer {{admin_token}}
   }
 }
 ```
-
 ---
 
 ### 1.4 Actualizar Perfil
@@ -236,7 +235,7 @@ Content-Type: application/json
 
 ### 1.5 Cambiar Contraseña
 
-**PUT** `/api/auth/password`
+**PUT** `/api/auth/change-password`
 
 **Headers**: 
 ```
@@ -247,8 +246,8 @@ Content-Type: application/json
 **Body**:
 ```json
 {
-  "currentPassword": "admin1234",
-  "newPassword": "nuevoPassword123"
+  "passwordActual": "admin1234",
+  "passwordNueva": "nuevoPassword123"
 }
 ```
 
@@ -1039,7 +1038,7 @@ Content-Type: multipart/form-data
         "id": 3,
         "nombre": "Cliente",
         "apellido": "Uno",
-        "email": "cliente1@ecommerce.com",
+        "email": "cliente1@yesa.com",
         "rol": "cliente",
         "telefono": "3001111111",
         "direccion": "Calle Cliente 1",
@@ -1074,7 +1073,7 @@ Content-Type: multipart/form-data
       "id": 3,
       "nombre": "Cliente",
       "apellido": "Uno",
-      "email": "cliente1@ecommerce.com",
+      "email": "cliente1@yesa.com",
       "rol": "cliente",
       "telefono": "3001111111",
       "direccion": "Calle Cliente 1",
@@ -1098,7 +1097,7 @@ Content-Type: multipart/form-data
 {
   "nombre": "Nuevo",
   "apellido": "Auxiliar",
-  "email": "auxiliar2@ecommerce.com",
+  "email": "auxiliar2@yesa.com",
   "password": "aux12345",
   "rol": "auxiliar",
   "telefono": "3009998877",
@@ -1118,7 +1117,7 @@ Content-Type: multipart/form-data
       "id": 10,
       "nombre": "Nuevo",
       "apellido": "Auxiliar",
-      "email": "auxiliar2@ecommerce.com",
+      "email": "auxiliar2@yesa.com",
       "rol": "auxiliar",
       "telefono": "3009998877",
       "direccion": "Dirección Auxiliar 2",
@@ -1262,7 +1261,7 @@ Content-Type: multipart/form-data
           "id": 3,
           "nombre": "Cliente",
           "apellido": "Uno",
-          "email": "cliente1@ecommerce.com"
+          "email": "cliente1@yesa.com"
         },
         "DetallesPedido": [
           {
@@ -1312,7 +1311,7 @@ Content-Type: multipart/form-data
         "id": 3,
         "nombre": "Cliente",
         "apellido": "Uno",
-        "email": "cliente1@ecommerce.com"
+        "email": "cliente1@yesa.com"
       },
       "DetallesPedido": [
         {
@@ -1929,7 +1928,7 @@ Headers: Authorization: Bearer {{cliente_token}}
 ### Estructura de Carpetas
 
 ```
-📁 E-Commerce API
+📁 YESA API
 ├── 📁 1. Autenticación
 │   ├── POST Register
 │   ├── POST Login Admin
@@ -2107,9 +2106,9 @@ Para dudas o problemas:
 
 **Fecha**: 4 de febrero de 2026  
 **Versión API**: 1.0.0  
-**Base de datos**: MySQL - ecommerce_db  
+**Base de datos**: MySQL - yesa_db  
 **Puerto**: 5000
 
 ---
 
-**🎉 ¡Todo listo para probar la API E-Commerce!**
+**🎉 ¡Todo listo para probar la API YESA!**

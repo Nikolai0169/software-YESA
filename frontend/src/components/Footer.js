@@ -17,10 +17,10 @@ const Footer = memo(() => {
           <Col md={4} className="mb-3">
             <h5>
               <i className="bi bi-shop me-2"></i>
-              E-Commerce
+              YESA
             </h5>
             <p className="text-muted">
-              Tu tienda en línea de confianza. Encuentra los mejores productos al mejor precio.
+              YESA es un ecommerce de orfebrería y cerámica artesanal con productos hechos a mano y una experiencia de compra exclusiva.
             </p>
           </Col>
           
@@ -54,20 +54,20 @@ const Footer = memo(() => {
             <h6>Contacto</h6>
             <p className="text-muted mb-1">
               <i className="bi bi-envelope me-2"></i>
-              info@ecommerce.com
+              <a href="mailto:contacto@yesa.com" className="text-muted text-decoration-none">contacto@yesa.com</a>
             </p>
             <p className="text-muted mb-1">
               <i className="bi bi-telephone me-2"></i>
               +57 300 123 4567
             </p>
             <div className="mt-3">
-              <a href="#" className="text-light me-3">
+              <a href="https://facebook.com/yesa" target="_blank" rel="noreferrer" className="text-light me-3">
                 <i className="bi bi-facebook fs-5"></i>
               </a>
-              <a href="#" className="text-light me-3">
+              <a href="https://instagram.com/yesa" target="_blank" rel="noreferrer" className="text-light me-3">
                 <i className="bi bi-instagram fs-5"></i>
               </a>
-              <a href="#" className="text-light">
+              <a href="https://twitter.com/yesa" target="_blank" rel="noreferrer" className="text-light">
                 <i className="bi bi-twitter fs-5"></i>
               </a>
             </div>
@@ -79,7 +79,7 @@ const Footer = memo(() => {
         <Row>
           <Col className="text-center text-muted">
             <small>
-              © {new Date().getFullYear()} E-Commerce SENA. Todos los derechos reservados.
+              © {new Date().getFullYear()} YESA. Todos los derechos reservados.
             </small>
           </Col>
         </Row>

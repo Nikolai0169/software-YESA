@@ -220,6 +220,175 @@ img {
   transition: none !important;
 }
 
+/* YESA theme */
+:root {
+  --yesa-purple: #7d2181;
+  --yesa-magenta: #ff0080;
+  --yesa-gold: #ffd700;
+  --yesa-surface: rgba(255, 255, 255, 0.12);
+  --yesa-surface-soft: rgba(255, 255, 255, 0.08);
+  --yesa-text: #1f2937;
+  --yesa-bg: #f8f2ff;
+}
+
+body {
+  background: radial-gradient(circle at top left, rgba(255, 223, 85, 0.12), transparent 25%),
+    #f8f2ff;
+}
+
+.yesa-hero {
+  background: linear-gradient(135deg, var(--yesa-purple) 0%, var(--yesa-magenta) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.yesa-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.15), transparent 30%);
+  pointer-events: none;
+}
+
+.yesa-hero .eyebrow {
+  display: inline-block;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--yesa-gold);
+}
+
+.yesa-hero .hero-description {
+  color: rgba(255, 255, 255, 0.92);
+  max-width: 520px;
+}
+
+.btn-yesa-primary {
+  background: linear-gradient(135deg, var(--yesa-purple) 0%, var(--yesa-magenta) 100%);
+  color: white;
+  border: 1px solid transparent;
+}
+
+.btn-yesa-primary:hover,
+.btn-yesa-primary:focus {
+  background: linear-gradient(135deg, var(--yesa-magenta) 0%, var(--yesa-purple) 100%);
+  transform: translateY(-2px);
+}
+
+.btn-yesa-outline {
+  background: transparent;
+  color: white;
+  border: 1.5px solid rgba(255, 255, 255, 0.9);
+}
+
+.btn-yesa-outline:hover,
+.btn-yesa-outline:focus {
+  background: rgba(255, 255, 255, 0.16);
+  color: white;
+}
+
+.hero-pill-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.hero-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 1rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: white;
+  font-weight: 500;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+}
+
+.hero-illustration {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 380px;
+}
+
+.hero-icon {
+  width: 250px;
+  height: 250px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+}
+
+.hero-icon i {
+  font-size: 5rem;
+  color: white;
+}
+
+.yesa-section {
+  background: white;
+  border-radius: 1.5rem;
+  padding: 3rem 1.5rem;
+  box-shadow: 0 25px 70px rgba(124, 31, 129, 0.08);
+}
+
+.section-title {
+  font-size: 2.75rem;
+  font-weight: 700;
+  color: var(--yesa-purple);
+}
+
+.section-note {
+  color: #6b7280;
+  max-width: 640px;
+  margin-bottom: 1.5rem;
+}
+
+.yesa-card {
+  background: var(--yesa-surface);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow: 0 20px 50px rgba(125, 33, 129, 0.12);
+  backdrop-filter: blur(10px);
+}
+
+.feature-card-yesa {
+  background: rgba(125, 33, 129, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 20px 50px rgba(125, 33, 129, 0.12);
+}
+
+.feature-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.18);
+  color: white;
+  font-size: 1.75rem;
+  margin-bottom: 1rem;
+}
+
+.text-gold {
+  color: var(--yesa-gold) !important;
+}
+
+@media (max-width: 768px) {
+  .hero-illustration {
+    min-height: 300px;
+  }
+
+  .yesa-section {
+    padding: 2rem 1rem;
+  }
+}
+
 /* Optimizar rendering de filas */
 .table tbody tr {
   contain: layout style;

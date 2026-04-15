@@ -1062,7 +1062,7 @@ Crea el usuario administrador por defecto:
 
 ```javascript
 Email: admin@ecommerce.com
-Password: admin123
+Password: admin1234
 Rol: administrador
 ```
 
@@ -1182,7 +1182,7 @@ Executing: CREATE TABLE IF NOT EXISTS detalle_pedidos...
 🌱 Verificando usuario administrador...
 🎉 Usuario administrador creado exitosamente
 📧 Email: admin@ecommerce.com
-🔑 Password: admin123
+🔑 Password: admin1234
 
 📦 Creando datos de ejemplo...
 ✅ Datos de ejemplo creados:
@@ -2110,7 +2110,7 @@ curl -X POST http://localhost:5000/api/auth/register \
 ```bash
 curl -X POST http://localhost:5000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d "{\"email\":\"admin@ecommerce.com\",\"password\":\"admin123\"}"
+  -d "{\"email\":\"admin@ecommerce.com\",\"password\":\"admin1234\"}"
 ```
 
 **Resultado esperado:**
@@ -2203,7 +2203,7 @@ curl -X PUT http://localhost:5000/api/auth/me \
 curl -X PUT http://localhost:5000/api/auth/change-password \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {TOKEN}" \
-  -d "{\"passwordActual\":\"admin123\",\"passwordNueva\":\"nuevoAdmin456\"}"
+  -d "{\"passwordActual\":\"admin1234\",\"passwordNueva\":\"nuevoAdmin456\"}"
 ```
 
 **Resultado esperado:**
@@ -2395,14 +2395,14 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9    ← Header
 
 ```javascript
 // ❌ NUNCA HACER ESTO
-password: "admin123"  // Si hackean la BD, tienen todas las contraseñas
+password: "admin1234"  // Si hackean la BD, tienen todas las contraseñas
 ```
 
 **¿Cómo funciona bcrypt?**
 
 ```javascript
 // Password en texto plano
-const password = "admin123";
+const password = "admin1234";
 
 // Generar salt (semilla aleatoria)
 const salt = await bcrypt.genSalt(10); // Factor de costo 10 (2^10 iteraciones)
@@ -2412,7 +2412,7 @@ const hash = await bcrypt.hash(password, salt);
 // Resultado: "$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy"
 
 // Comparar password ingresado con hash guardado
-const coincide = await bcrypt.compare("admin123", hash); // true
+const coincide = await bcrypt.compare("admin1234", hash); // true
 const noCoincide = await bcrypt.compare("wrong", hash);   // false
 ```
 
@@ -4595,7 +4595,7 @@ Agregada creación automática del usuario auxiliar:
 const auxiliar = await Usuario.create({
   nombre: 'Auxiliar',
   email: 'auxiliar@ecommerce.com',
-  password: 'auxiliar123',
+  password: 'aux123',
   rol: 'auxiliar',
   telefono: '3009876543',
   direccion: 'SENA - Oficina Auxiliar',
@@ -4607,7 +4607,7 @@ const auxiliar = await Usuario.create({
 
 ```
 Email: auxiliar@ecommerce.com
-Password: auxiliar123
+Password: aux123
 Rol: auxiliar
 ```
 
@@ -4656,7 +4656,7 @@ Content-Type: application/json
 
 {
   "email": "auxiliar@ecommerce.com",
-  "password": "auxiliar123"
+  "password": "aux123"
 }
 ```
 
@@ -5140,7 +5140,7 @@ Un manual completo de **70+ páginas** con:
    - POST `/api/auth/login` - Inicio de sesión
    - GET `/api/auth/me` - Obtener perfil
    - PUT `/api/auth/me` - Actualizar perfil
-   - PUT `/api/auth/password` - Cambiar contraseña
+   - PUT `/api/auth/change-password` - Cambiar contraseña
 
 4. **Rutas Públicas (Sin Token)**
    - GET `/api/catalogo/productos` - Ver catálogo

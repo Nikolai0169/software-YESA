@@ -65,6 +65,11 @@ const { runSeeders } = require('./seeders/adminSeeder');
 // 'app' es el objeto principal del servidor: se le agregan middlewares, rutas y se pone a escuchar
 const app = express();
 
+// Promesa que indica cuándo el servidor backend está listo para procesar peticiones.
+// Esperamos a esta promesa en un middleware global para evitar que tests y peticiones
+// lleguen antes de que la base de datos se sincronice y los seeders terminen.
+let serverReadyPromise = Promise.resolve();
+
 // Lee el puerto desde la variable de entorno PORT (.env) o usa 5000 como valor por defecto
 // process.env.PORT viene del archivo .env: PORT=5000
 // El operador || (OR) usa 5000 si PORT no está definido
@@ -117,6 +122,18 @@ app.use(express.urlencoded({ extended: true }));
 // Ejemplo: Un archivo en uploads/producto-123.jpg es accesible en http://localhost:5000/uploads/producto-123.jpg
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Middleware global para esperar al inicio del servidor y la sincronización de la base de datos.
+// En pruebas con supertest, esto evita que las peticiones se procesen antes de que los modelos
+// y tablas estén listos.
+app.use(async (req, res, next) => {
+  try {
+    await serverReadyPromise;
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Middleware de logging → Muestra en consola cada petición HTTP que llega al servidor
 // Solo se activa en modo desarrollo (NODE_ENV=development en .env)
 // Útil para depuración: ver qué rutas se están llamando y con qué método
@@ -143,7 +160,7 @@ app.get('/', (req, res) => {
   // res.json() envía una respuesta en formato JSON al cliente
   res.json({
     success: true,                                // Indica que la petición fue exitosa
-    message: '✅ Servidor E-commerce Backend corriendo correctamente',
+    message: '✅ Servidor YESA Backend corriendo correctamente',
     version: '1.0.0',                             // Versión del backend
     timestamp: new Date().toISOString()            // Fecha/hora actual en formato ISO 8601
   });
@@ -248,7 +265,7 @@ app.use((err, req, res, next) => {
 const startServer = async () => {
   try {
     // Mensaje inicial en consola
-    console.log('🚀 Iniciando servidor E-commerce Backend...\n');
+    console.log('🚀 Iniciando servidor YESA Backend...\n');
     
     // PASO 1: Probar la conexión a MySQL
     // testConnection() intenta conectarse a MySQL con las credenciales del .env
@@ -270,15 +287,17 @@ const startServer = async () => {
     // Esto se debe hacer ANTES de syncDatabase para que las FK se creen correctamente
     initAssociations();
     
-    // Determinar si se deben alterar las tablas existentes
-    // En desarrollo (NODE_ENV=development): alter=true → modifica columnas si cambiaron los modelos
-    // En producción: alter=false → NO toca la estructura de las tablas (protege los datos)
-    const alterTables = process.env.NODE_ENV === 'development';
+    // Determinar si se deben alterar o recrear las tablas existentes
+    // En desarrollo y pruebas (NODE_ENV=development|test): alter=true → sincroniza cambios en los modelos
+    // En pruebas unitarias: force=true → recrea las tablas para asegurar un esquema limpio
+    // En producción: force=false y alter=false → no modifica la estructura automáticamente
+    const alterTables = process.env.NODE_ENV !== 'production';
+    const forceSync = process.env.NODE_ENV === 'test';
     
     // syncDatabase(force, alter):
-    //   force=false → NO borra las tablas existentes (true las borraría y recrearía, perdiendo datos)
-    //   alter=true/false → si true, modifica las tablas para que coincidan con los modelos
-    const dbSynced = await syncDatabase(false, alterTables);
+    //   force=true  → DROP TABLE + CREATE TABLE (pierde datos existentes)
+    //   alter=true  → ALTER TABLE para ajustar columnas sin perder datos
+    const dbSynced = await syncDatabase(forceSync, alterTables);
     
     // Si la sincronización falla, no se puede iniciar el servidor
     if (!dbSynced) {
@@ -294,16 +313,19 @@ const startServer = async () => {
     // PASO 4: Iniciar el servidor HTTP con Express
     // app.listen(puerto, callback) → pone el servidor a escuchar en el puerto especificado
     // El callback se ejecuta cuando el servidor está listo para recibir peticiones
-    app.listen(PORT, () => {
-      // Muestra un banner informativo en la consola del servidor
-      console.log('\n╔════════════════════════════════════════════════╗');
-      console.log(`║  ✅ Servidor corriendo en puerto ${PORT}          ║`);
-      console.log(`║  🌐 URL: http://localhost:${PORT}                ║`);
-      console.log(`║  📚 Documentación API: http://localhost:${PORT}  ║`);
-      console.log(`║  🗄️  Base de datos: ${process.env.DB_NAME}        ║`);
-      console.log(`║  🔧 Modo: ${process.env.NODE_ENV}                     ║`);
-      console.log('╚════════════════════════════════════════════════╝\n');
-      console.log('📝 Servidor listo para recibir peticiones...\n');
+    await new Promise((resolve) => {
+      app.listen(PORT, () => {
+        // Muestra un banner informativo en la consola del servidor
+        console.log('\n╔════════════════════════════════════════════════╗');
+        console.log(`║  ✅ Servidor corriendo en puerto ${PORT}          ║`);
+        console.log(`║  🌐 URL: http://localhost:${PORT}                ║`);
+        console.log(`║  📚 Documentación API: http://localhost:${PORT}  ║`);
+        console.log(`║  🗄️  Base de datos: ${process.env.DB_NAME}        ║`);
+        console.log(`║  🔧 Modo: ${process.env.NODE_ENV}                     ║`);
+        console.log('╚════════════════════════════════════════════════╝\n');
+        console.log('📝 Servidor listo para recibir peticiones...\n');
+        resolve();
+      });
     });
     
   } catch (error) {
@@ -336,8 +358,9 @@ process.on('unhandledRejection', (err) => {
 // INICIAR EL SERVIDOR
 // ==========================================
 // Llama a la función startServer() para comenzar todo el proceso de arranque
-// Esta es la línea que realmente "enciende" el servidor al ejecutar: node server.js
-startServer();
+// Esta promesa se usa también en el middleware global para que las pruebas esperen
+// hasta que la base de datos esté lista.
+serverReadyPromise = startServer();
 
 // Exporta la app de Express para poder usarla en los tests (jest + supertest)
 // En los tests se hace: const request = require('supertest')(app) sin necesidad de app.listen()

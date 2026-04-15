@@ -90,8 +90,8 @@ Content-Type: application/json
 **Body (JSON) - Login como Admin:**
 ```json
 {
-  "email": "admin@ecommerce.com",
-  "password": "admin123"
+  "email": "admin@yesa.com",
+  "password": "admin1234"
 }
 ```
 
@@ -113,7 +113,7 @@ Content-Type: application/json
       "id": 1,
       "nombre": "Administrador",
       "apellido": "Principal",
-      "email": "admin@ecommerce.com",
+      "email": "admin@yesa.com",
       "rol": "administrador",
       "telefono": null,
       "direccion": null,
@@ -137,8 +137,8 @@ Content-Type: application/json
 curl -X POST http://localhost:5000/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
-    "email": "admin@ecommerce.com",
-    "password": "admin123"
+    "email": "admin@yesa.com",
+    "password": "admin1234"
   }'
 ```
 
@@ -169,7 +169,7 @@ Authorization: Bearer {TOKEN}
       "id": 1,
       "nombre": "Administrador",
       "apellido": "Principal",
-      "email": "admin@ecommerce.com",
+      "email": "admin@yesa.com",
       "rol": "administrador",
       "telefono": null,
       "direccion": null,
@@ -337,8 +337,8 @@ curl -X PUT http://localhost:5000/api/auth/change-password \
 1. **Login como admin** → `POST /api/auth/login`
    ```json
    {
-     "email": "admin@ecommerce.com",
-     "password": "admin123"
+     "email": "admin@yesa.com",
+     "password": "admin1234"
    }
    ```
    - Guardar el token
@@ -385,7 +385,7 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBlY29tbWVyY2U
 
 ### Crear una Collection
 
-1. Crear nueva Collection llamada "E-commerce API"
+1. Crear nueva Collection llamada "YESA API"
 2. Agregar una variable de entorno `{{url}}` = `http://localhost:5000`
 3. Agregar una variable `{{token}}` (se actualizará automáticamente)
 

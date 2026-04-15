@@ -58,7 +58,7 @@ const LoginPage = () => {
                   <i className="bi bi-box-arrow-in-right me-2"></i>
                   Iniciar Sesión
                 </h2>
-                <p className="text-muted">Accede a tu cuenta</p>
+<p className="text-muted">Accede a tu cuenta YESA</p>
               </div>
 
               {error && <Alert variant="danger">{error}</Alert>}
@@ -131,11 +131,11 @@ const LoginPage = () => {
 
               <div className="mt-4">
                 <Alert variant="info" className="mb-0">
-                  <strong>Cuentas de prueba:</strong>
+                  <strong>Cuentas de prueba YESA:</strong>
                   <br />
-                  <small>Admin: admin@ecommerce.com / admin1234</small>
+                  <small>Admin: admin@yesa.com / admin1234</small>
                   <br />
-                  <small>Cliente: cliente1@ecommerce.com / cliente1</small>
+                  <small>Cliente: cliente1@yesa.com / cliente1</small>
                 </Alert>
               </div>
             </Card.Body>

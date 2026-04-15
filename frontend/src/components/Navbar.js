@@ -24,15 +24,15 @@ const NavigationBar = memo(() => {
       <Container>
         <Navbar.Brand as={Link} to="/" style={{ fontWeight: '700', fontSize: '1.25rem' }}>
           <i className="bi bi-shop me-2" style={{
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            background: 'linear-gradient(135deg, #7d2181 0%, #ff0080 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent'
           }}></i>
           <span style={{
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            background: 'linear-gradient(135deg, #7d2181 0%, #ff0080 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent'
-          }}>E-Commerce</span>
+          }}>YESA</span>
         </Navbar.Brand>
         
         <Navbar.Toggle aria-controls="basic-navbar-nav" />

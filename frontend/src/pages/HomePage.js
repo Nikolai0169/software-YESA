@@ -38,89 +38,142 @@ const HomePage = () => {
   return (
     <>
       {/* Hero Section */}
-      <div className="hero-section text-white py-5" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+      <div className="hero-section yesa-hero text-white py-5">
         <Container>
-          <Row className="align-items-center py-4">
+          <Row className="align-items-center py-5">
             <Col md={6} className="fade-in">
-              <h1 className="display-3 fw-bold mb-4" style={{ lineHeight: '1.2' }}>
-                Bienvenido a E-Commerce
+              <span className="eyebrow text-gold">YESA</span>
+              <h1 className="display-3 fw-bold mb-4" style={{ lineHeight: '1.05' }}>
+                Ecommerce de Orfebrería <br />y Cerámica Artesanal
               </h1>
-              <p className="lead mb-4" style={{ fontSize: '1.25rem', opacity: '0.95' }}>
-                Encuentra los mejores productos al mejor precio. Compra de forma segura y recibe en tu hogar.
+              <p className="lead mb-4 hero-description">
+                Descubre piezas únicas y personalizables que unen tradición e innovación. Compra, personaliza y recibe obras hechas a medida por expertos artesanales.
               </p>
-              <div className="d-flex gap-3 mb-3">
-                <Link 
-                  to="/catalogo"
-                  style={{ 
-                    display: 'inline-block',
-                    backgroundColor: 'white',
-                    color: '#1f2937',
-                    borderRadius: '0.75rem',
-                    padding: '0.875rem 2rem',
-                    fontWeight: '600',
-                    boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
-                    textDecoration: 'none',
-                    fontSize: '1.125rem',
-                    transition: 'all 0.3s ease',
-                    cursor: 'pointer'
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)';
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
-                  }}
-                >
+              <div className="d-flex flex-wrap gap-3 mb-3">
+                <Link to="/catalogo" className="btn btn-yesa-primary btn-lg">
                   <i className="bi bi-grid me-2"></i>
                   Ver Catálogo
                 </Link>
                 {!isAuthenticated && (
-                  <Link 
-                    to="/register"
-                    style={{ 
-                      display: 'inline-block',
-                      backgroundColor: 'transparent',
-                      color: 'white',
-                      border: '2px solid white',
-                      borderRadius: '0.75rem',
-                      padding: '0.875rem 2rem',
-                      fontWeight: '600',
-                      textDecoration: 'none',
-                      fontSize: '1.125rem',
-                      transition: 'all 0.3s ease',
-                      cursor: 'pointer'
-                    }}
-                    onMouseOver={(e) => {
-                      e.currentTarget.style.backgroundColor = 'white';
-                      e.currentTarget.style.color = '#667eea';
-                    }}
-                    onMouseOut={(e) => {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                      e.currentTarget.style.color = 'white';
-                    }}
-                  >
+                  <Link to="/register" className="btn btn-yesa-outline btn-lg">
                     <i className="bi bi-person-plus me-2"></i>
                     Registrarse
                   </Link>
                 )}
               </div>
+              <div className="hero-pill-list d-flex flex-wrap gap-2 mt-4">
+                <span className="hero-pill">Personalización digital</span>
+                <span className="hero-pill">Diseño exclusivo</span>
+                <span className="hero-pill">Venta segura</span>
+              </div>
             </Col>
             <Col md={6} className="text-center">
-              <div style={{ 
-                fontSize: '12rem', 
-                opacity: '0.15',
-                animation: 'float 3s ease-in-out infinite'
-              }}>
-                <i className="bi bi-shop"></i>
+              <div className="hero-illustration">
+                <div className="hero-icon">
+                  <i className="bi bi-shop"></i>
+                </div>
               </div>
             </Col>
           </Row>
         </Container>
       </div>
 
-      {/* Features Section */}
+      <section className="yesa-section py-5">
+        <Container>
+          <Row className="align-items-center gy-4">
+            <Col lg={6}>
+              <h2 className="section-title">Sobre YESA</h2>
+              <p className="section-note">
+                YESA es una marca especializada en orfebrería y cerámica artesanal, enfocada en productos personalizados con una experiencia de compra moderna y atractiva.
+              </p>
+              <p className="text-muted">
+                Nuestro ecommerce permite a los clientes elegir piezas únicas, con opciones de personalización y asesoría experta. Cada producto es creado para reflejar estilo, calidad y exclusividad.
+              </p>
+            </Col>
+            <Col lg={6}>
+              <Row className="g-4">
+                <Col sm={6}>
+                  <Card className="yesa-card text-white h-100 border-0">
+                    <Card.Body>
+                      <h5 className="mb-3">✨ Personalización Digital</h5>
+                      <p className="mb-0">Herramientas para modificar acabados, colores y detalles de tus piezas.</p>
+                    </Card.Body>
+                  </Card>
+                </Col>
+                <Col sm={6}>
+                  <Card className="yesa-card text-white h-100 border-0">
+                    <Card.Body>
+                      <h5 className="mb-3">📦 Catálogo Seleccionado</h5>
+                      <p className="mb-0">Productos organizados por categorías con filtros rápidos y navegación intuitiva.</p>
+                    </Card.Body>
+                  </Card>
+                </Col>
+                <Col sm={6}>
+                  <Card className="yesa-card text-white h-100 border-0">
+                    <Card.Body>
+                      <h5 className="mb-3">🛒 Carrito y Checkout</h5>
+                      <p className="mb-0">Proceso de compra claro, seguro y con seguimiento de pedidos en tiempo real.</p>
+                    </Card.Body>
+                  </Card>
+                </Col>
+                <Col sm={6}>
+                  <Card className="yesa-card text-white h-100 border-0">
+                    <Card.Body>
+                      <h5 className="mb-3">⚙️ Backend Robust</h5>
+                      <p className="mb-0">Sistema de gestión de inventario, usuarios y pedidos para administración eficiente.</p>
+                    </Card.Body>
+                  </Card>
+                </Col>
+              </Row>
+            </Col>
+          </Row>
+        </Container>
+      </section>
+
+      <section className="yesa-section py-5">
+        <Container>
+          <div className="text-center mb-5">
+            <h2 className="section-title">Nuestros Servicios</h2>
+            <p className="section-note">Una experiencia premium para clientes que buscan productos hechos a mano y únicos.</p>
+          </div>
+          <Row className="g-4">
+            <Col md={4}>
+              <Card className="feature-card-yesa text-white h-100 border-0">
+                <Card.Body>
+                  <div className="feature-icon mb-3">
+                    <i className="bi bi-brush"></i>
+                  </div>
+                  <h5 className="mb-3">Personalización en línea</h5>
+                  <p>Modifica materiales, acabados y estilos con una vista previa elegante.</p>
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col md={4}>
+              <Card className="feature-card-yesa text-white h-100 border-0">
+                <Card.Body>
+                  <div className="feature-icon mb-3">
+                    <i className="bi bi-grid-1x2-fill"></i>
+                  </div>
+                  <h5 className="mb-3">Catálogo estructurado</h5>
+                  <p>Categorías claras y filtros que ayudan a encontrar las piezas perfectas rápidamente.</p>
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col md={4}>
+              <Card className="feature-card-yesa text-white h-100 border-0">
+                <Card.Body>
+                  <div className="feature-icon mb-3">
+                    <i className="bi bi-award"></i>
+                  </div>
+                  <h5 className="mb-3">Asesoría especializada</h5>
+                  <p>Atención personalizada para guiar tu compra y asegurar que el producto final sea único.</p>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+        </Container>
+      </section>
+
       <Container className="py-5">
         <Row className="g-4 mb-5">
           <Col md={4}>
@@ -128,16 +181,16 @@ const HomePage = () => {
               <Card.Body className="p-4">
                 <div style={{ 
                   fontSize: '4rem',
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  background: 'linear-gradient(135deg, #7d2181 0%, #ff0080 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   marginBottom: '1rem'
                 }}>
                   <i className="bi bi-truck"></i>
                 </div>
-                <h5 style={{ fontWeight: '600', marginBottom: '1rem' }}>Envío Rápido</h5>
+                <h5 style={{ fontWeight: '600', marginBottom: '1rem' }}>Envíos en Colombia</h5>
                 <p className="text-muted">
-                  Recibe tus productos en la puerta de tu casa en tiempo récord
+                  Logística confiable para que tu producto llegue en perfectas condiciones.
                 </p>
               </Card.Body>
             </Card>
@@ -147,16 +200,16 @@ const HomePage = () => {
               <Card.Body className="p-4">
                 <div style={{ 
                   fontSize: '4rem',
-                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  background: 'linear-gradient(135deg, #ffd700 0%, #ff8c00 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   marginBottom: '1rem'
                 }}>
-                  <i className="bi bi-shield-check"></i>
+                  <i className="bi bi-patch-check-fill"></i>
                 </div>
-                <h5 style={{ fontWeight: '600', marginBottom: '1rem' }}>Compra Segura</h5>
+                <h5 style={{ fontWeight: '600', marginBottom: '1rem' }}>Compra Garantizada</h5>
                 <p className="text-muted">
-                  Tus datos están protegidos con la mejor tecnología
+                  Tu satisfacción es lo primero, con políticas claras y soporte atento.
                 </p>
               </Card.Body>
             </Card>
@@ -171,11 +224,11 @@ const HomePage = () => {
                   WebkitTextFillColor: 'transparent',
                   marginBottom: '1rem'
                 }}>
-                  <i className="bi bi-headset"></i>
+                  <i className="bi bi-people-fill"></i>
                 </div>
-                <h5 style={{ fontWeight: '600', marginBottom: '1rem' }}>Atención 24/7</h5>
+                <h5 style={{ fontWeight: '600', marginBottom: '1rem' }}>Soporte Premium</h5>
                 <p className="text-muted">
-                  Estamos disponibles para ayudarte en todo momento
+                  Asesoría y atención para cada cliente, antes y después de la compra.
                 </p>
               </Card.Body>
             </Card>

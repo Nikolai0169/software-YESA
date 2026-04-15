@@ -1,6 +1,6 @@
-# 🎨 E-commerce Frontend
+# 🎨 YESA Ecommerce Frontend
 
-Frontend para sistema de E-commerce construido con React, Bootstrap y Axios.
+Frontend para ecommerce de YESA construido con React, Bootstrap y Axios.
 
 ## 🚀 Tecnologías
 
@@ -70,7 +70,7 @@ frontend/
 
 ```env
 REACT_APP_API_URL=http://localhost:5000/api
-REACT_APP_NAME=E-commerce SENA
+REACT_APP_NAME=YESA Ecommerce
 REACT_APP_VERSION=1.0.0
 ```
 

@@ -1,7 +1,7 @@
 {
-  "name": "ecommerce-backend",
+  "name": "yesa-backend",
   "version": "1.0.0",
-  "description": "Backend para sistema de E-commerce con Node.js, Express y Sequelize",
+  "description": "Backend para sistema YESA con Node.js, Express y Sequelize",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -14,6 +14,7 @@
     "test:coverage": "jest --coverage"
   },
   "keywords": [
+    "yesa",
     "ecommerce",
     "nodejs",
     "express",
@@ -21,7 +22,7 @@
     "jwt",
     "mysql"
   ],
-  "author": "Instructor Sena",
+  "author": "Equipo YESA",
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^2.4.3",

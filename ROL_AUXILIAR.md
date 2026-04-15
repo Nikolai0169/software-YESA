@@ -67,7 +67,7 @@ El sistema crea automáticamente un usuario auxiliar al iniciar:
 
 ```
 Email: auxiliar@ecommerce.com
-Password: auxiliar123
+Password: aux123
 Rol: auxiliar
 ```
 
@@ -85,7 +85,7 @@ Content-Type: application/json
 
 {
   "email": "auxiliar@ecommerce.com",
-  "password": "auxiliar123"
+  "password": "aux123"
 }
 ```
 

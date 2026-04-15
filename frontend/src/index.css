@@ -9,10 +9,10 @@
  */
 
 :root {
-  --primary-color: #4f46e5;
-  --primary-dark: #4338ca;
-  --primary-light: #6366f1;
-  --secondary-color: #ec4899;
+  --primary-color: #7d2181;
+  --primary-dark: #ff0080;
+  --primary-light: #c72f9f;
+  --secondary-color: #ffd700;
   --success-color: #10b981;
   --warning-color: #f59e0b;
   --danger-color: #ef4444;
@@ -42,7 +42,7 @@ body {
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--light-color);
+  background-color: #f8f2ff;
   color: var(--dark-color);
   line-height: 1.6;
 }

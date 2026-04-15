@@ -18,7 +18,7 @@ let productoId = 0;
 let usuarioId = 0;
 let pedidoId = 0;
 
-describe('🧪 TESTS DE API E-COMMERCE', () => {
+describe('🧪 TESTS DE API YESA', () => {
 
   // Limpiar usuario de prueba antes de empezar
   beforeAll(async () => {
@@ -53,7 +53,7 @@ describe('🧪 TESTS DE API E-COMMERCE', () => {
       const response = await request(app)
         .post('/api/auth/login')
         .send({
-          email: 'admin@ecommerce.com',
+          email: 'admin@yesa.com',
           password: 'admin1234'
         });
       
@@ -69,7 +69,7 @@ describe('🧪 TESTS DE API E-COMMERCE', () => {
       const response = await request(app)
         .post('/api/auth/login')
         .send({
-          email: 'auxiliar@ecommerce.com',
+          email: 'auxiliar@yesa.com',
           password: 'aux123'
         });
       
@@ -85,7 +85,7 @@ describe('🧪 TESTS DE API E-COMMERCE', () => {
       const response = await request(app)
         .post('/api/auth/login')
         .send({
-          email: 'cliente1@ecommerce.com',
+          email: 'cliente1@yesa.com',
           password: 'cliente1'
         });
       

@@ -121,17 +121,16 @@ const AdminDashboardPage = () => {
       <div className="mb-5">
         <h1 className="display-5 fw-bold mb-3">
           <i className="bi bi-speedometer2 me-3" style={{
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent'
-          }}></i>
-          Panel de Administración
+              background: 'linear-gradient(135deg, #7d2181 0%, #ff0080 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent'
+            }}></i>
+            Panel de Administración
         </h1>
         <p className="text-muted lead">
-          Bienvenido al sistema de gestión del e-commerce
+          Bienvenido al panel de gestión de YESA, donde administras productos, pedidos y usuarios.
         </p>
       </div>
-
       <Row className="g-4">
         {dashboardCards.filter(card => card.show).map((card, index) => (
           <Col key={index} lg={4} md={6}>

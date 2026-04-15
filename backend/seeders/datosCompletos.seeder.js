@@ -35,40 +35,40 @@ const seedDatosCompletos = async () => {
     console.log('👥 1. CREANDO USUARIOS...\n');
 
     // ADMINISTRADOR
-    const adminExistente = await Usuario.findOne({ where: { email: 'admin@ecommerce.com' } });
+    const adminExistente = await Usuario.findOne({ where: { email: 'admin@yesa.com' } });
     if (!adminExistente) {
       await Usuario.create({
         nombre: 'Administrador',
         apellido: 'Sistema',
-        email: 'admin@ecommerce.com',
+        email: 'admin@yesa.com',
         password: 'admin1234',
         rol: 'administrador',
         telefono: '3001234567',
-        direccion: 'SENA - Oficina Principal',
+        direccion: 'YESA - Oficina Principal',
         activo: true
       });
       console.log('✅ Administrador creado');
-      console.log('   📧 Usuario: admin@ecommerce.com');
+      console.log('   📧 Usuario: admin@yesa.com');
       console.log('   🔑 Password: admin1234\n');
     } else {
       console.log('✅ Administrador ya existe\n');
     }
 
     // AUXILIAR
-    const auxiliarExistente = await Usuario.findOne({ where: { email: 'auxiliar@ecommerce.com' } });
+    const auxiliarExistente = await Usuario.findOne({ where: { email: 'auxiliar@yesa.com' } });
     if (!auxiliarExistente) {
       await Usuario.create({
         nombre: 'Auxiliar',
         apellido: 'Soporte',
-        email: 'auxiliar@ecommerce.com',
+        email: 'auxiliar@yesa.com',
         password: 'aux123',
         rol: 'auxiliar',
         telefono: '3009876543',
-        direccion: 'SENA - Oficina Auxiliar',
+        direccion: 'YESA - Oficina Auxiliar',
         activo: true
       });
       console.log('✅ Auxiliar creado');
-      console.log('   📧 Usuario: auxiliar@ecommerce.com');
+      console.log('   📧 Usuario: auxiliar@yesa.com');
       console.log('   🔑 Password: aux123\n');
     } else {
       console.log('✅ Auxiliar ya existe\n');
@@ -77,19 +77,19 @@ const seedDatosCompletos = async () => {
     // CLIENTES (5)
     console.log('👤 Creando 5 clientes...');
     for (let i = 1; i <= 5; i++) {
-      const clienteExistente = await Usuario.findOne({ where: { email: `cliente${i}@ecommerce.com` } });
+      const clienteExistente = await Usuario.findOne({ where: { email: `cliente${i}@yesa.com` } });
       if (!clienteExistente) {
         await Usuario.create({
           nombre: `Cliente ${i}`,
           apellido: `Apellido ${i}`,
-          email: `cliente${i}@ecommerce.com`,
+          email: `cliente${i}@yesa.com`,
           password: `cliente${i}`,
           rol: 'cliente',
           telefono: `300${1000000 + i}`,
           direccion: `Dirección del Cliente ${i}, Bogotá`,
           activo: true
         });
-        console.log(`   ✅ Cliente ${i} - Email: cliente${i}@ecommerce.com - Pass: cliente${i}`);
+        console.log(`   ✅ Cliente ${i} - Email: cliente${i}@yesa.com - Pass: cliente${i}`);
       }
     }
     
@@ -366,17 +366,17 @@ const seedDatosCompletos = async () => {
 
     console.log('🔑 CREDENCIALES DE ACCESO:\n');
     console.log('   👨‍💼 ADMINISTRADOR');
-    console.log('      Email: admin@ecommerce.com');
+    console.log('      Email: admin@yesa.com');
     console.log('      Password: admin1234\n');
-    console.log('   👤 AUXILIAR');
-    console.log('      Email: auxiliar@ecommerce.com');
+    console.log('   👤 AUXILIARES');
+    console.log('      Email: auxiliar@yesa.com');
     console.log('      Password: aux123\n');
     console.log('   🛍️  CLIENTES (5)');
-    console.log('      Email: cliente1@ecommerce.com - Password: cliente1');
-    console.log('      Email: cliente2@ecommerce.com - Password: cliente2');
-    console.log('      Email: cliente3@ecommerce.com - Password: cliente3');
-    console.log('      Email: cliente4@ecommerce.com - Password: cliente4');
-    console.log('      Email: cliente5@ecommerce.com - Password: cliente5\n');
+    console.log('      Email: cliente1@yesa.com - Password: cliente1');
+    console.log('      Email: cliente2@yesa.com - Password: cliente2');
+    console.log('      Email: cliente3@yesa.com - Password: cliente3');
+    console.log('      Email: cliente4@yesa.com - Password: cliente4');
+    console.log('      Email: cliente5@yesa.com - Password: cliente5\n');
 
     console.log('========================================\n');
 

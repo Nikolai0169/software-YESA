@@ -17,7 +17,7 @@ Este script poblará la base de datos con:
 # 1. Detén el servidor si está corriendo (Ctrl+C)
 
 # 2. Elimina la base de datos actual
-DROP DATABASE ecommerce_db;
+DROP DATABASE yesa_db;
 
 # 3. Crea la base de datos desde cero
 cd backend
@@ -118,8 +118,8 @@ Content-Type: application/json
 ### El seeder dice "Ya existen datos"
 Elimina la base de datos y créala de nuevo:
 ```sql
-DROP DATABASE ecommerce_db;
-CREATE DATABASE ecommerce_db;
+DROP DATABASE yesa_db;
+CREATE DATABASE yesa_db;
 ```
 
 ### Error de autenticación

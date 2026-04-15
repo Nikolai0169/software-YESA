@@ -78,8 +78,8 @@ router.post('/register', register);
 // El frontend envía las credenciales del formulario de login en req.body
 // Body esperado (JSON):
 //   {
-//     "email": "admin@ecommerce.com",  → Email registrado
-//     "password": "admin123"            → Contraseña en texto plano
+//     "email": "admin@yesa.com",  → Email registrado
+//     "password": "admin1234"            → Contraseña en texto plano
 //   }
 // Proceso interno (en auth.controller.js):
 //   1. Busca usuario por email usando scope 'withPassword' (para obtener el hash)

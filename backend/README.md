@@ -1,6 +1,6 @@
-# 📦 E-commerce Backend
+# 📦 YESA Backend
 
-Backend para sistema de E-commerce construido con Node.js, Express, Sequelize y MySQL.
+Backend para sistema YESA construido con Node.js, Express, Sequelize y MySQL.
 
 ## 🚀 Tecnologías
 
@@ -36,7 +36,7 @@ El archivo `.env` ya está configurado con valores por defecto para XAMPP:
 PORT=5000
 DB_HOST=localhost
 DB_PORT=3306
-DB_NAME=ecommerce_db
+DB_NAME=yesa_db
 DB_USER=root
 DB_PASSWORD=
 JWT_SECRET=mi_clave_secreta_super_segura_2026
@@ -96,8 +96,8 @@ backend/
 
 Después de iniciar el servidor por primera vez (se crearán en la siguiente fase):
 
-- **Email:** admin@ecommerce.com
-- **Password:** admin123
+- **Email:** admin@yesa.com
+- **Password:** admin1234
 - **Rol:** Administrador
 
 ## 🌐 Endpoints Disponibles
@@ -160,5 +160,5 @@ Para dudas o problemas, contacta al instructor.
 
 ---
 
-**Desarrollado para:** SENA - Articulación 3206404  
+**Desarrollado para:** YESA  
 **Fecha:** Febrero 2026
