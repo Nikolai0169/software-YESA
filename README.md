@@ -308,9 +308,9 @@ http://localhost:5000/uploads/nombre-imagen.jpg
 ## 👨‍🏫 Proyecto Académico
 
 **Institución:** SENA  
-**Programa:** Articulación 3206404  
-**Trimestre:** 1 - 2026  
-**Instructor:** Sena  
+**Programa:** Articulación ADSO 3206404  
+**Trimestre:** 4 - 2026  
+**Instructor:** Mauricio Lara  
 
 ## 📧 Soporte
 
