@@ -90,13 +90,8 @@ const Footer = memo(() => {
         <hr style={{ borderColor: '#333' }} />
 
         <Row>
-<<<<<<< HEAD
-          <Col className="text-center text-muted">
-            <small>
-=======
           <Col className="text-center">
             <small style={{ color: '#888' }}>
->>>>>>> 75b7b76be33637db5173df9ebfc4442ed22fe7bd
               © {new Date().getFullYear()} YESA. Todos los derechos reservados.
             </small>
           </Col>
