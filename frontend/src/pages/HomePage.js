@@ -40,11 +40,10 @@ const HomePage = () => {
       {/* Hero Section */}
       <div className="hero-section yesa-hero text-white py-5">
         <Container>
-          <Row className="align-items-center py-5">
-            <Col md={6} className="fade-in">
+          <Row className="align-items-center py-0">
               <span className="eyebrow text-gold">YESA</span>
               <h1 className="display-3 fw-bold mb-4" style={{ lineHeight: '1.05' }}>
-                Ecommerce de Orfebrería <br />y Cerámica Artesanal
+                La mejor tienda de Orfebrería <br />y Cerámica Artesanal
               </h1>
               <p className="lead mb-4 hero-description">
                 Descubre piezas únicas y personalizables que unen tradición e innovación. Compra, personaliza y recibe obras hechas a medida por expertos artesanales.
@@ -66,7 +65,6 @@ const HomePage = () => {
                 <span className="hero-pill">Diseño exclusivo</span>
                 <span className="hero-pill">Venta segura</span>
               </div>
-            </Col>
           </Row>
         </Container>
       </div>
