@@ -108,25 +108,29 @@ const seedDatosCompletos = async () => {
     } else {
       const categoriasData = [
         {
-          nombre: 'Electrónica',
-          descripcion: 'Productos electrónicos y tecnología de última generación'
+          nombre: 'Alcancias',
+          descripcion: 'Hermosas alcancías artesanales'
         },
         {
-          nombre: 'Ropa',
-          descripcion: 'Moda y vestimenta para toda la familia'
+          nombre: 'Pocillos',
+          descripcion: 'Pocillos unicos hechos a mano'
         },
         {
-          nombre: 'Hogar',
-          descripcion: 'Artículos para el hogar y decoración'
+          nombre: 'Floreros',
+          descripcion: 'Floreros decorativos únicos'
         },
         {
-          nombre: 'Deportes',
-          descripcion: 'Equipamiento deportivo y fitness'
+          nombre: 'Platos Llanos',
+          descripcion: 'Platos llanos elegantes'
         },
         {
-          nombre: 'Libros',
-          descripcion: 'Libros, revistas y material de lectura'
-        }
+          nombre: 'Platos Hondos',
+          descripcion: 'Platos hondos para sopas'
+        },
+        {
+          nombre: 'Vasijas',
+          descripcion: 'Vasijas tradicionales artesanales'
+        },
       ];
 
       const categorias = [];
@@ -135,7 +139,7 @@ const seedDatosCompletos = async () => {
         categorias.push(categoria);
         console.log(`   ✅ ${categoria.nombre}`);
       }
-      console.log('\n✅ Total: 5 categorías creadas\n');
+      console.log('\n✅ Total: 6 categorías creadas\n');
 
       // ==========================================
       // 3. CREAR SUBCATEGORÍAS (3 por categoría)
@@ -143,37 +147,45 @@ const seedDatosCompletos = async () => {
       console.log('📂 3. CREANDO SUBCATEGORÍAS...\n');
 
       const subcategoriasData = {
-        'Electrónica': [
-          { nombre: 'Computadoras', descripcion: 'Laptops, PCs y accesorios' },
-          { nombre: 'Celulares', descripcion: 'Smartphones y tablets' },
-          { nombre: 'Audio', descripcion: 'Audífonos, parlantes y equipos de sonido' }
+        'Alcancias': [
+          { nombre: 'Cerámica', descripcion: 'Alcancias de larga duración hechas con cerámica' },
+          { nombre: 'Yeso', descripcion: 'Alcancias de yeso' },
+          { nombre: 'Metal', descripcion: 'Alcancias de metal mas resistentes' }
         ],
-        'Ropa': [
-          { nombre: 'Hombre', descripcion: 'Ropa para caballero' },
-          { nombre: 'Mujer', descripcion: 'Ropa para dama' },
-          { nombre: 'Niños', descripcion: 'Ropa infantil' }
+        'Pocillos': [
+          { nombre: 'Cerámica', descripcion: 'Pocillos de larga duración hechos con cerámica' },
+          { nombre: 'Porcelana', descripcion: 'Una variante mas fina, ligera y elegante' },
+          { nombre: 'Vidrio', descripcion: 'Pocillos de vidrio, permite ver el contenido y jugar con estilos unicos' }
         ],
-        'Hogar': [
-          { nombre: 'Cocina', descripcion: 'Utensilios y electrodomésticos de cocina' },
-          { nombre: 'Decoración', descripcion: 'Artículos decorativos' },
-          { nombre: 'Muebles', descripcion: 'Muebles para el hogar' }
+        'Floreros': [
+          { nombre: 'Vidrio', descripcion: 'Floreros de vidrio, versatil y funcional para ver la calidad del agua' },
+          { nombre: 'Cerámica', descripcion: 'Floreros de cerámica, resistentes con estetica calida' },
+          { nombre: 'Cristal', descripcion: 'Floreros de cristal para aportar un toque de lujo y elegancia' }
         ],
-        'Deportes': [
-          { nombre: 'Fitness', descripcion: 'Equipos de gimnasio y ejercicio' },
-          { nombre: 'Fútbol', descripcion: 'Artículos de fútbol' },
-          { nombre: 'Ciclismo', descripcion: 'Bicicletas y accesorios' }
+        'Vasijas': [
+          { nombre: 'Cerámica', descripcion: 'Vasijas de larga duración hechas con cerámica' },
+          { nombre: 'Arcilla', descripcion: 'Vasijas de arcilla' },
+          { nombre: 'Metal', descripcion: 'Vasijas de metal mas resistentes' }
         ],
-        'Libros': [
-          { nombre: 'Ficción', descripcion: 'Novelas y cuentos' },
-          { nombre: 'Educación', descripcion: 'Libros educativos y académicos' },
-          { nombre: 'Infantil', descripcion: 'Libros para niños' }
-        ]
+        'Platos Llanos': [
+          { nombre: 'Cerámica', descripcion: 'Platos llanos de cerámica' },
+          { nombre: 'Porcelana', descripcion: 'Platos llanos de porcelana' },
+          { nombre: 'Vidrio', descripcion: 'Platos llanos de vidrio' }
+        ],
+        'Platos Hondos': [
+          { nombre: 'Cerámica', descripcion: 'Platos hondos de cerámica' },
+          { nombre: 'Porcelana', descripcion: 'Platos hondos de porcelana' },
+          { nombre: 'Vidrio', descripcion: 'Platos hondos de vidrio' }
+        ],
       };
 
       const subcategorias = [];
       for (const categoria of categorias) {
         console.log(`📁 ${categoria.nombre}:`);
         const subsData = subcategoriasData[categoria.nombre];
+        if (!Array.isArray(subsData)) {
+          throw new Error(`No hay subcategorías definidas para la categoría '${categoria.nombre}'. Revisa subcategoriasData.`);
+        }
         
         for (const subData of subsData) {
           const subcategoria = await Subcategoria.create({
@@ -190,157 +202,125 @@ const seedDatosCompletos = async () => {
       console.log('✅ Total: 15 subcategorías creadas\n');
 
       // ==========================================
-      // 4. CREAR PRODUCTOS (5 por subcategoría)
+      // 4. CREAR PRODUCTOS (2 por subcategoría)
       // ==========================================
       console.log('📦 4. CREANDO PRODUCTOS...\n');
 
       const productosData = {
-        // ELECTRÓNICA - Computadoras
-        'Computadoras': [
-          { nombre: 'Laptop HP Pavilion', descripcion: 'Intel i5, 8GB RAM, 256GB SSD', precio: 1200000, stock: 15 },
-          { nombre: 'Laptop Dell Inspiron', descripcion: 'AMD Ryzen 5, 16GB RAM, 512GB SSD', precio: 1500000, stock: 10 },
-          { nombre: 'PC Gaming Asus', descripcion: 'Intel i7, 16GB RAM, RTX 3060', precio: 2500000, stock: 8 },
-          { nombre: 'MacBook Air M1', descripcion: 'Chip M1, 8GB RAM, 256GB SSD', precio: 3500000, stock: 5 },
-          { nombre: 'Laptop Lenovo ThinkPad', descripcion: 'Intel i7, 16GB RAM, 512GB SSD', precio: 1800000, stock: 12 }
-        ],
-        // ELECTRÓNICA - Celulares
-        'Celulares': [
-          { nombre: 'iPhone 13', descripcion: '128GB, Pantalla 6.1"', precio: 2800000, stock: 20 },
-          { nombre: 'Samsung Galaxy S21', descripcion: '256GB, Pantalla 6.2"', precio: 2200000, stock: 25 },
-          { nombre: 'Xiaomi Redmi Note 11', descripcion: '128GB, Pantalla 6.43"', precio: 800000, stock: 30 },
-          { nombre: 'Motorola Edge 30', descripcion: '256GB, Pantalla 6.5"', precio: 1500000, stock: 18 },
-          { nombre: 'Google Pixel 6', descripcion: '128GB, Pantalla 6.4"', precio: 2000000, stock: 15 }
-        ],
-        // ELECTRÓNICA - Audio
-        'Audio': [
-          { nombre: 'Audífonos Sony WH-1000XM4', descripcion: 'Bluetooth, Cancelación de ruido', precio: 800000, stock: 25 },
-          { nombre: 'Parlante JBL Flip 5', descripcion: 'Bluetooth portátil, resistente al agua', precio: 300000, stock: 35 },
-          { nombre: 'Audífonos AirPods Pro', descripcion: 'Bluetooth, cancelación activa de ruido', precio: 900000, stock: 20 },
-          { nombre: 'Barra de sonido Samsung', descripcion: '2.1 canales, 200W', precio: 600000, stock: 12 },
-          { nombre: 'Audífonos Gamer Razer', descripcion: 'RGB, sonido 7.1, micrófono', precio: 400000, stock: 18 }
-        ],
-        // ROPA - Hombre
-        'Hombre': [
-          { nombre: 'Camisa Formal Blanca', descripcion: 'Algodón, talla M', precio: 80000, stock: 50 },
-          { nombre: 'Jean Levi\'s 501', descripcion: 'Denim azul, talla 32', precio: 150000, stock: 40 },
-          { nombre: 'Chaqueta de Cuero', descripcion: 'Cuero genuino, talla L', precio: 350000, stock: 15 },
-          { nombre: 'Zapatos Deportivos Nike', descripcion: 'Air Max, talla 42', precio: 280000, stock: 30 },
-          { nombre: 'Camiseta Polo', descripcion: 'Algodón, varios colores, talla M', precio: 60000, stock: 60 }
-        ],
-        // ROPA - Mujer
-        'Mujer': [
-          { nombre: 'Vestido Floral', descripcion: 'Algodón, talla M, varios colores', precio: 120000, stock: 35 },
-          { nombre: 'Blusa de Seda', descripcion: 'Seda natural, talla S', precio: 150000, stock: 25 },
-          { nombre: 'Pantalón de Yoga', descripcion: 'Lycra, talla M', precio: 80000, stock: 45 },
-          { nombre: 'Chaqueta Acolchada', descripcion: 'Impermeable, talla L', precio: 200000, stock: 20 },
-          { nombre: 'Zapatos de Tacón', descripcion: 'Cuero, talla 37', precio: 180000, stock: 28 }
-        ],
-        // ROPA - Niños
-        'Niños': [
-          { nombre: 'Conjunto Deportivo', descripcion: 'Sudadera y pantalón, 8 años', precio: 70000, stock: 40 },
-          { nombre: 'Vestido de Niña', descripcion: 'Algodón, 6 años, varios colores', precio: 65000, stock: 35 },
-          { nombre: 'Jeans Infantil', descripcion: 'Denim elástico, 10 años', precio: 55000, stock: 50 },
-          { nombre: 'Chaqueta Escolar', descripcion: 'Poliéster, 12 años', precio: 85000, stock: 30 },
-          { nombre: 'Zapatos Escolares', descripcion: 'Cuero, talla 32', precio: 90000, stock: 45 }
-        ],
-        // HOGAR - Cocina
-        'Cocina': [
-          { nombre: 'Juego de Ollas', descripcion: '10 piezas, acero inoxidable', precio: 250000, stock: 20 },
-          { nombre: 'Licuadora Oster', descripcion: '600W, 3 velocidades', precio: 180000, stock: 25 },
-          { nombre: 'Cafetera Express', descripcion: 'Espresso 15 bares', precio: 350000, stock: 15 },
-          { nombre: 'Microondas Samsung', descripcion: '23L, 800W', precio: 300000, stock: 18 },
-          { nombre: 'Set de Cuchillos', descripcion: '6 piezas, acero alemán', precio: 120000, stock: 30 }
-        ],
-        // HOGAR - Decoración
-        'Decoración': [
-          { nombre: 'Lámpara de Mesa', descripcion: 'LED, diseño moderno', precio: 80000, stock: 35 },
-          { nombre: 'Espejo Decorativo', descripcion: '60x80cm, marco dorado', precio: 150000, stock: 20 },
-          { nombre: 'Cuadro Canvas', descripcion: '70x50cm, arte abstracto', precio: 100000, stock: 25 },
-          { nombre: 'Florero de Cerámica', descripcion: '30cm altura, varios colores', precio: 45000, stock: 40 },
-          { nombre: 'Reloj de Pared', descripcion: 'Silencioso, 40cm diámetro', precio: 70000, stock: 30 }
-        ],
-        // HOGAR - Muebles
-        'Muebles': [
-          { nombre: 'Sofá Moderno 3 Puestos', descripcion: 'Tela gris, 200x85x90cm', precio: 1200000, stock: 8 },
-          { nombre: 'Mesa de Centro', descripcion: 'Madera y vidrio, 100x60cm', precio: 350000, stock: 12 },
-          { nombre: 'Silla de Comedor', descripcion: 'Madera y tapizado, set x4', precio: 600000, stock: 15 },
-          { nombre: 'Estantería Modular', descripcion: '5 niveles, 180x80cm', precio: 450000, stock: 10 },
-          { nombre: 'Cama Queen Size', descripcion: 'Base y cabecero, 160x190cm', precio: 900000, stock: 6 }
-        ],
-        // DEPORTES - Fitness
-        'Fitness': [
-          { nombre: 'Pesas Ajustables', descripcion: 'Set 2.5kg a 25kg', precio: 450000, stock: 15 },
-          { nombre: 'Bicicleta Estática', descripcion: 'Resistencia ajustable', precio: 800000, stock: 8 },
-          { nombre: 'Colchoneta de Yoga', descripcion: '6mm espesor, antideslizante', precio: 80000, stock: 40 },
-          { nombre: 'Caminadora Eléctrica', descripcion: 'Motor 2.5HP, plegable', precio: 1500000, stock: 5 },
-          { nombre: 'Banda Elástica Set', descripcion: '5 resistencias diferentes', precio: 60000, stock: 50 }
-        ],
-        // DEPORTES - Fútbol
-        'Fútbol': [
-          { nombre: 'Balón Nike Profesional', descripcion: 'Talla 5, certificado FIFA', precio: 150000, stock: 30 },
-          { nombre: 'Guayos Adidas Predator', descripcion: 'Talla 42, suela FG', precio: 320000, stock: 25 },
-          { nombre: 'Canilleras Nike', descripcion: 'Talla M, con tobilleras', precio: 45000, stock: 40 },
-          { nombre: 'Camiseta de Fútbol', descripcion: 'Réplica oficial, talla M', precio: 80000, stock: 35 },
-          { nombre: 'Red de Arco', descripcion: '7.32x2.44m, nylon resistente', precio: 200000, stock: 10 }
-        ],
-        // DEPORTES - Ciclismo
-        'Ciclismo': [
-          { nombre: 'Bicicleta de Ruta', descripcion: '21 velocidades, aluminio', precio: 1800000, stock: 10 },
-          { nombre: 'Casco de Ciclismo', descripcion: 'Ventilado, ajustable', precio: 120000, stock: 25 },
-          { nombre: 'Kit de Herramientas', descripcion: '15 piezas, multiusos', precio: 80000, stock: 30 },
-          { nombre: 'Luces LED Bicicleta', descripcion: 'Delantera y trasera, recargables', precio: 60000, stock: 35 },
-          { nombre: 'Bomba de Aire Portátil', descripcion: 'Con manómetro, 120 PSI', precio: 45000, stock: 40 }
-        ],
-        // LIBROS - Ficción
-        'Ficción': [
-          { nombre: 'Cien Años de Soledad', descripcion: 'Gabriel García Márquez', precio: 45000, stock: 50 },
-          { nombre: 'El Código Da Vinci', descripcion: 'Dan Brown', precio: 40000, stock: 45 },
-          { nombre: 'Harry Potter Colección', descripcion: '7 libros, tapa dura', precio: 350000, stock: 15 },
-          { nombre: '1984', descripcion: 'George Orwell', precio: 35000, stock: 60 },
-          { nombre: 'El Hobbit', descripcion: 'J.R.R. Tolkien', precio: 42000, stock: 55 }
-        ],
-        // LIBROS - Educación
-        'Educación': [
-          { nombre: 'Cálculo: Una Variable', descripcion: 'James Stewart, 8va edición', precio: 120000, stock: 30 },
-          { nombre: 'Química General', descripcion: 'Raymond Chang, 11va edición', precio: 110000, stock: 25 },
-          { nombre: 'Fundamentos de Programación', descripcion: 'Luis Joyanes Aguilar', precio: 85000, stock: 35 },
-          { nombre: 'Atlas de Anatomía Humana', descripcion: 'Frank H. Netter', precio: 180000, stock: 20 },
-          { nombre: 'Historia Universal', descripcion: 'Enciclopedia completa', precio: 200000, stock: 15 }
-        ],
-        // LIBROS - Infantil
-        'Infantil': [
-          { nombre: 'El Principito', descripcion: 'Antoine de Saint-Exupéry, ilustrado', precio: 35000, stock: 70 },
-          { nombre: 'Cuentos de Buenas Noches', descripcion: 'Colección 20 cuentos', precio: 50000, stock: 60 },
-          { nombre: 'Aprende a Leer Jugando', descripcion: 'Libro interactivo 5-7 años', precio: 45000, stock: 55 },
-          { nombre: 'Enciclopedia Visual Niños', descripcion: 'Tapa dura, ilustraciones', precio: 90000, stock: 30 },
-          { nombre: 'La Oruga Muy Hambrienta', descripcion: 'Eric Carle, pop-up', precio: 40000, stock: 65 }
-        ]
+        Alcancias: {
+          'Cerámica': [
+            { nombre: 'Alcancía de Cerámica básica', descripcion: 'Recipiente tradicional y sencillo para ahorrar, con acabado cerámico liso.', precio: 28000, stock: 14 },
+            { nombre: 'Alcancía de Ceramica en forma de Cerdito', descripcion: 'El clásico diseño de cerdito elaborado en cerámica resistente.', precio: 30000, stock: 10 },
+          ],
+          Yeso: [
+            { nombre: 'Alcancía de Yeso básica', descripcion: 'Opción económica y ligera de forma estándar, fabricada en yeso.', precio: 38000, stock: 5 },
+            { nombre: 'Alcancía de Yeso con forma de animal', descripcion: 'Figura animal decorativa de yeso, ideal para personalizar o pintar.', precio: 42000, stock: 2 },
+          ],
+          Metal: [
+            { nombre: 'Alcancía de Metal básica', descripcion: 'Caja metálica duradera y segura con un diseño funcional', precio: 17000, stock: 8 },
+            { nombre: 'Alcancía de Metal con diseño de superhéroe', descripcion: 'Contenedor metálico decorado con motivos de superhéroes, ideal para niños.', precio: 22000, stock: 4 },
+          ]
+        },
+        Pocillos: {
+          'Cerámica': [
+            { nombre: 'Pocillo Artesanal Violeta', descripcion: 'Único e irrepetible. Hecho a mano con un esmalte vibrante', precio: 17000, stock: 8 },
+            { nombre: 'Pocillo Café Especial', descripcion: 'Pocillo de tonalidad Café perfecto para bebidas frias o calientes', precio: 19000, stock: 10 },
+          ],
+          Porcelana: [
+            { nombre: 'Set de Pocillos', descripcion: 'Elegancia y ligereza en tu mesa. Piezas de alta resistencia con acabado minimalista.', precio: 48000, stock: 4 },
+            { nombre: 'Pocillo Tintero', descripcion: 'El tamaño perfecto para tu espresso. Conserva el calor con un diseño clásico y fino.', precio: 19000, stock: 15 },
+          ],
+          Vidrio: [
+            { nombre: 'Pocillo de Calavera', descripcion: 'Diseño de calavera para darle un aire distintivo a tu mesa', precio: 23000, stock: 7 },
+            { nombre: 'Pocillo Tintero de Vidrio', descripcion: 'Perfecto para los amantes del café, con un vidrio resistente', precio: 19000, stock: 10 },
+          ]
+        },
+        Floreros: {
+          Vidrio: [
+            { nombre: 'Florero de Vidrio Moderno', descripcion: 'Estilo minimalista y versátil. Su transparencia pura resalta la belleza natural de cualquier ramo.', precio: 40000, stock: 5 },
+            { nombre: 'Florero de Vidrio Acanalado', descripcion: 'Textura clásica con un toque contemporáneo. Crea juegos de luz elegantes que realzan tus espacios.', precio: 45000, stock: 10 },
+          ],
+          'Cerámica': [
+            { nombre: 'Florero Vintage con orejas', descripcion: 'Encanto artesanal con historia. Un diseño tradicional que aporta calidez y carácter a tu hogar.', precio: 36000, stock: 11 },
+            { nombre: 'Florero en cerámica con lineas blancas', descripcion: 'Modernidad y contraste. El equilibrio perfecto entre la textura del barro y un diseño geométrico limpio.', precio: 40000, stock: 8 },
+          ],
+          Cristal: [
+            { nombre: 'Florero alto de cristal', descripcion: 'Máximo brillo y sofisticación. Su altura y claridad lo hacen la pieza central ideal para eventos y cenas.', precio: 42000, stock: 8 },
+            { nombre: 'Florero Venecia', descripcion: 'Fusión de materiales naturales. La calidez de la madera unida a la elegancia del cristal para un estilo orgánico.', precio: 48000, stock: 12 },
+          ]
+        },
+        Vasijas: {
+          'Cerámica': [
+            { nombre: 'Jarra artesanal esmaltada', descripcion: 'Estilo y color para tu mesa. Ideal para servir o decorar con un toque brillante.', precio: 65000, stock: 10 },
+            { nombre: 'Bowl decorativo mate', descripcion: 'Textura suave y diseño moderno. La pieza perfecta para centros de mesa con carácter.', precio: 55000, stock: 8 },
+          ],
+          Arcilla: [
+            { nombre: 'Olla de barro curado', descripcion: 'Tradición en tu cocina. Conserva el calor y el sabor auténtico de tus preparaciones.', precio: 50000, stock: 5 },
+            { nombre: 'Cazuela pequeña', descripcion: 'El encanto de lo rústico. Ideal para porciones individuales o salsas artesanales.', precio: 30000, stock: 15 },
+          ],
+          Metal: [
+            { nombre: 'Copetín de metal martillado', descripcion: 'Elegancia artesanal. Su textura única resalta en cualquier celebración.', precio: 47000, stock: 10 },
+            { nombre: 'Mini-balde de latón soldado', descripcion: 'Versátil y duradero. Un toque industrial-chic para organizar tus espacios.', precio: 40000, stock: 7 },
+          ]
+        },
+        'Platos Llanos': {
+          'Cerámica': [
+            { nombre: 'Plato de gres con esmalte reactivo', descripcion: 'Arte puro en cada comida. Acabados únicos con colores que cobran vida.', precio: 45000, stock: 16 },
+            { nombre: 'Plato irregular', descripcion: 'Belleza artesanal sin moldes. Diseño orgánico que celebra la imperfección hecha a mano.', precio: 40000, stock: 7 },
+          ],
+          Porcelana: [
+            { nombre: 'Plato de porcelana con borde organico', descripcion: 'Delicadeza y estilo natural. La resistencia de la porcelana con un diseño único.', precio: 47000, stock: 8 },
+            { nombre: 'Plato de porcelana con calcomania azul', descripcion: 'Clásico renovado. Un detalle de color artesanal para una mesa sofisticada.', precio: 30000, stock: 10 },
+          ],
+          Vidrio: [
+            { nombre: 'Plato de vidrio templado', descripcion: 'Transparencia y máxima resistencia. Un básico duradero y elegante para el diario.', precio: 17000, stock: 6 },
+            { nombre: 'Plato de Vidrio Craquelado', descripcion: 'Captura la luz en tu mesa. Efectos visuales increíbles para presentaciones especiales.', precio: 28000, stock: 13 },
+          ]
+        },
+        'Platos Hondos': {
+          'Cerámica': [
+            { nombre: 'Bowl con acabado crudo', descripcion: 'Conexión con la tierra. Interior brillante para higiene y exterior rústico al tacto.', precio: 45000, stock: 5 },
+            { nombre: 'Cuenco con base de pedestal', descripcion: 'Elevación y estilo. Una pieza escultural que resalta tus mejores recetas.', precio: 52000, stock: 12 },
+          ],
+          Porcelana: [
+            { nombre: 'Cuenco de Tipo Pasta', descripcion: 'Diseño funcional y amplio. El aliado perfecto para pastas, cremas y ensaladas.', precio: 37000, stock: 10 },
+            { nombre: 'Cuenco para Té', descripcion: 'Inspiración zen para tu mesa. Compacto y acogedor, ideal para sopas o desayunos.', precio: 30000, stock: 11 },
+          ],
+          Vidrio: [
+            { nombre: 'Bol de vidrio soplado', descripcion: 'Esencia artesanal. Variaciones naturales que hacen de cada pieza algo irrepetible.', precio: 35000, stock: 9 },
+            { nombre: 'Plato hondo de vidrio opaco', descripcion: 'Sofisticación minimalista. Su acabado suave aporta un toque de lujo moderno.', precio: 26000, stock: 4 },
+          ]
+        }
       };
 
       let totalProductos = 0;
       
       for (const subcategoria of subcategorias) {
-        const productos = productosData[subcategoria.nombre];
-        
-        if (productos) {
-          console.log(`📦 ${subcategoria.nombre} (${subcategoria.categoria?.nombre || 'Sin categoría'}):`);
-          
-          for (const prodData of productos) {
-            await Producto.create({
-              nombre: prodData.nombre,
-              descripcion: prodData.descripcion,
-              precio: prodData.precio,
-              stock: prodData.stock,
-              categoriaId: subcategoria.categoriaId,
-              subcategoriaId: subcategoria.id,
-              imagen: 'producto-default.jpg', // Imagen por defecto
-              activo: true
-            });
-            console.log(`   ✅ ${prodData.nombre} - $${prodData.precio.toLocaleString()}`);
-            totalProductos++;
-          }
-          console.log('');
+        const categoria = categorias.find((cat) => cat.id === subcategoria.categoriaId);
+        const productos = categoria ? productosData[categoria.nombre]?.[subcategoria.nombre] : undefined;
+
+        if (!productos) {
+          console.warn(`⚠️ No se encontraron productos para ${categoria?.nombre || 'Categoría desconocida'} / ${subcategoria.nombre}`);
+          continue;
         }
+
+        console.log(`📦 ${subcategoria.nombre} (${categoria.nombre}):`);
+        
+        for (const prodData of productos) {
+          await Producto.create({
+            nombre: prodData.nombre,
+            descripcion: prodData.descripcion,
+            precio: prodData.precio,
+            stock: prodData.stock,
+            categoriaId: subcategoria.categoriaId,
+            subcategoriaId: subcategoria.id,
+            imagen: 'producto-default.jpg', // Imagen por defecto
+            activo: true
+          });
+          console.log(`   ✅ ${prodData.nombre} - $${prodData.precio.toLocaleString()}`);
+          totalProductos++;
+        }
+        console.log('');
       }
       
       console.log(`✅ Total: ${totalProductos} productos creados\n`);
