@@ -41,26 +41,26 @@ const HomePage = () => {
       <div className="hero-section yesa-hero text-white py-5">
         <Container>
           <Row className="align-items-center py-0">
-              <span className="eyebrow text-gold">YESA</span>
-              <h1 className="display-3 fw-bold mb-4" style={{ lineHeight: '1.05' }}>
+              <span className="eyebrow" style={{ textAlign: 'center' }}>YESA</span>
+              <h1 className="display-3 fw-bold mb-4" style={{ lineHeight: '1.05', textAlign: 'center' }}>
                 La mejor tienda de Orfebrería <br />y Cerámica Artesanal
               </h1>
-              <p className="lead mb-4 hero-description">
+              <p className=" mb-4" style={{ textAlign: 'center', fontSize: '20px' }}>
                 Descubre piezas únicas y personalizables que unen tradición e innovación. Compra, personaliza y recibe obras hechas a medida por expertos artesanales.
               </p>
-              <div className="d-flex flex-wrap gap-3 mb-3">
-                <Link to="/catalogo" className="btn btn-yesa-primary btn-lg">
+              <div className="d-flex flex-wrap gap-3 mb-3 justify-content-center">
+                <Link to="/catalogo" className="btn btn-yesa-secondary btn-lg">
                   <i className="bi bi-grid me-2"></i>
                   Ver Catálogo
                 </Link>
                 {!isAuthenticated && (
-                  <Link to="/register" className="btn btn-yesa-outline btn-lg">
+                  <Link to="/register" className="btn btn-yesa-secondary btn-lg">
                     <i className="bi bi-person-plus me-2"></i>
                     Registrarse
                   </Link>
                 )}
               </div>
-              <div className="hero-pill-list d-flex flex-wrap gap-2 mt-4">
+              <div className="hero-pill-list d-flex flex-wrap gap-2 mt-4 justify-content-center">
                 <span className="hero-pill">Personalización digital</span>
                 <span className="hero-pill">Diseño exclusivo</span>
                 <span className="hero-pill">Venta segura</span>
@@ -77,7 +77,7 @@ const HomePage = () => {
           </div>
           <Row className="g-4">
             <Col md={4}>
-              <Card className="yesa-hero text-white h-100 border-0">
+              <Card className="btn-yesa-primary text-white h-100 border-0">
                 <Card.Body>
                   <div className="feature-icon mb-3">
                     <i className="bi bi-brush"></i>
@@ -88,7 +88,7 @@ const HomePage = () => {
               </Card>
             </Col>
             <Col md={4}>
-              <Card className="yesa-hero text-white h-100 border-0">
+              <Card className="btn-yesa-primary text-white h-100 border-0">
                 <Card.Body>
                   <div className="feature-icon mb-3">
                     <i className="bi bi-grid-1x2-fill"></i>
@@ -99,7 +99,7 @@ const HomePage = () => {
               </Card>
             </Col>
             <Col md={4}>
-              <Card className="yesa-hero text-white h-100 border-0">
+              <Card className="btn-yesa-primary text-white h-100 border-0">
                 <Card.Body>
                   <div className="feature-icon mb-3">
                     <i className="bi bi-award"></i>
@@ -114,66 +114,6 @@ const HomePage = () => {
       </section>
 
       <Container className="py-5">
-        <Row className="g-4 mb-5">
-          <Col md={4}>
-            <Card className="feature-card text-center h-100 border-0 shadow">
-              <Card.Body className="p-4">
-                <div style={{ 
-                  fontSize: '4rem',
-                  background: 'linear-gradient(135deg, #7d2181 0%, #ff0080 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  marginBottom: '1rem'
-                }}>
-                  <i className="bi bi-truck"></i>
-                </div>
-                <h5 style={{ fontWeight: '600', marginBottom: '1rem' }}>Envíos en Colombia</h5>
-                <p className="text-muted">
-                  Logística confiable para que tu producto llegue en perfectas condiciones.
-                </p>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={4}>
-            <Card className="feature-card text-center h-100 border-0 shadow">
-              <Card.Body className="p-4">
-                <div style={{ 
-                  fontSize: '4rem',
-                  background: 'linear-gradient(135deg, #ffd700 0%, #ff8c00 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  marginBottom: '1rem'
-                }}>
-                  <i className="bi bi-patch-check-fill"></i>
-                </div>
-                <h5 style={{ fontWeight: '600', marginBottom: '1rem' }}>Compra Garantizada</h5>
-                <p className="text-muted">
-                  Tu satisfacción es lo primero, con políticas claras y soporte atento.
-                </p>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={4}>
-            <Card className="feature-card text-center h-100 border-0 shadow">
-              <Card.Body className="p-4">
-                <div style={{ 
-                  fontSize: '4rem',
-                  background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  marginBottom: '1rem'
-                }}>
-                  <i className="bi bi-people-fill"></i>
-                </div>
-                <h5 style={{ fontWeight: '600', marginBottom: '1rem' }}>Soporte Premium</h5>
-                <p className="text-muted">
-                  Asesoría y atención para cada cliente, antes y después de la compra.
-                </p>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-
         {/* Productos Destacados */}
         <div className="mb-5">
           <div className="text-center mb-5">
@@ -202,7 +142,7 @@ const HomePage = () => {
           
           <div className="text-center mt-5">
             <Link 
-              className='yesa-hero'
+              className='btn-yesa-primary'
               to="/catalogo"
               style={{
                 display: 'inline-block',
@@ -252,10 +192,10 @@ const HomePage = () => {
                 Crea tu cuenta gratis y empieza a comprar hoy mismo
               </p>
               <Link 
+                className='btn-yesa-primary'
                 to="/register"
                 style={{
                   display: 'inline-block',
-                  background: 'linear-gradient(135deg, #4f46e5 0%, #4338ca 100%)',
                   color: 'white',
                   borderRadius: '0.75rem',
                   padding: '0.875rem 2.5rem',

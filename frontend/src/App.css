@@ -241,6 +241,7 @@ img {
   --yesa-surface-soft: rgba(255, 255, 255, 0.08);
   --yesa-text: #1f2937;
   --yesa-bg: #f8f2ff;
+  --yesa-gray: #6b7280;
 }
 
 body {
@@ -288,6 +289,18 @@ body {
   transform: translateY(-2px);
 }
 
+.btn-yesa-secondary {
+  background: linear-gradient(135deg, var(--yesa-text) 0%, var(--yesa-gray) 120%);
+  color: white;
+  border: 2px solid transparent;
+}
+
+.btn-yesa-secondary:hover,
+.btn-yesa-secondary:focus {
+  background: linear-gradient(135deg, var(--yesa-gray) 0%, var(--yesa-text) 30%);
+  transform: translateY(-2px);
+}
+
 .btn-yesa-outline {
   background: transparent;
   color: white;
@@ -312,7 +325,7 @@ body {
   justify-content: center;
   padding: 0.65rem 1rem;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(4, 4, 4, 0.65);
   color: white;
   font-weight: 500;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);

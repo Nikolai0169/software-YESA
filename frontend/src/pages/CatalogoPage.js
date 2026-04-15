@@ -6,8 +6,8 @@
  */
 
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { Container, Row, Col, Form, Button, Alert } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
+import { Container, Row, Col, Alert, Button } from 'react-bootstrap';
+import { useLocation, useNavigate } from 'react-router-dom';
 import catalogoService from '../services/catalogoService';
 import carritoService from '../services/carritoService';
 import ProductCard from '../components/ProductCard';
@@ -22,20 +22,36 @@ const CatalogoPage = () => {
   const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
   const [paginacion, setPaginacion] = useState({ total: 0, pagina: 1, totalPaginas: 1 });
   const timeoutRef = useRef(null);
-  const debounceRef = useRef(null);
   const isInitialMount = useRef(true);
   
-  const [filtros, setFiltros] = useState({
-    categoriaId: '',
-    subcategoriaId: '',
-    buscar: '',
-    pagina: 1,
-  });
-
-  const { isAuthenticated, isCliente } = useAuth();
+  const location = useLocation();
   const navigate = useNavigate();
+  const { isAuthenticated, isCliente } = useAuth();
 
-  // Función para cargar productos (no depende de state)
+  // Leer filtros desde URL (reemplaza el state 'filtros')
+  const getFiltrosDesdeURL = useCallback(() => {
+    const params = new URLSearchParams(location.search);
+    return {
+      categoriaId: params.get('categoriaId') || '',
+      subcategoriaId: params.get('subcategoriaId') || '',
+      buscar: params.get('buscar') || '',
+      pagina: parseInt(params.get('pagina')) || 1,
+    };
+  }, [location.search]);
+
+  // Función para actualizar URL (reemplaza setFiltros)
+  const actualizarFiltros = useCallback((nuevosFiltros) => {
+    const params = new URLSearchParams(location.search);
+    Object.entries(nuevosFiltros).forEach(([key, value]) => {
+      if (value && value !== '') {
+        params.set(key, value);
+      } else {
+        params.delete(key);
+      }
+    });
+    navigate(`/catalogo?${params.toString()}`);
+  }, [location.search, navigate]);
+
   const fetchProductos = useCallback(async (filtrosActuales) => {
     setLoading(true);
     try {
@@ -61,6 +77,10 @@ const CatalogoPage = () => {
   }, []);
 
   const loadSubcategorias = useCallback(async (categoriaId) => {
+    if (!categoriaId) {
+      setSubcategorias([]);
+      return;
+    }
     try {
       const response = await catalogoService.getSubcategoriasPorCategoria(categoriaId);
       setSubcategorias(response.data.subcategorias);
@@ -74,73 +94,27 @@ const CatalogoPage = () => {
     loadCategorias();
   }, [loadCategorias]);
 
-  // Aplicar filtros automáticamente cuando cambien (incluye carga inicial)
+  // Cargar subcategorías cuando cambia categoriaId en URL
   useEffect(() => {
-    // Limpiar timeout anterior
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
-
-    // Aplicar debounce solo a búsqueda de texto (y solo después del primer render)
-    const delay = filtros.buscar && !isInitialMount.current ? 500 : 0;
-    
-    debounceRef.current = setTimeout(() => {
-      fetchProductos(filtros);
-      isInitialMount.current = false;
-    }, delay);
-
-    return () => {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-      }
-    };
-  }, [filtros, fetchProductos]);
-
-  // Cargar subcategorías cuando cambie la categoría
-  useEffect(() => {
+    const filtros = getFiltrosDesdeURL();
     if (filtros.categoriaId) {
       loadSubcategorias(filtros.categoriaId);
     } else {
       setSubcategorias([]);
-      setFiltros(prevFiltros => ({ ...prevFiltros, subcategoriaId: '', pagina: 1 }));
     }
-  }, [filtros.categoriaId, loadSubcategorias]);
+  }, [getFiltrosDesdeURL, loadSubcategorias]);
 
-  const handleFiltroChange = useCallback((e) => {
-    setFiltros(prevFiltros => ({
-      ...prevFiltros,
-      [e.target.name]: e.target.value,
-      pagina: 1, // Resetear a página 1 cuando cambian los filtros
-    }));
-  }, []);
-
-  const handleLimpiarFiltros = useCallback(() => {
-    setFiltros({
-      categoriaId: '',
-      subcategoriaId: '',
-      buscar: '',
-      pagina: 1,
-    });
-  }, []);
-
-  const handlePageChange = useCallback((nuevaPagina) => {
-    setFiltros(prevFiltros => ({
-      ...prevFiltros,
-      pagina: nuevaPagina
-    }));
-  }, []);
+  // Cargar productos cuando cambian los filtros (via URL)
+  useEffect(() => {
+    const filtros = getFiltrosDesdeURL();
+    fetchProductos(filtros);
+  }, [getFiltrosDesdeURL, fetchProductos]);
 
   const handleAddToCart = useCallback(async (producto) => {
     try {
       await carritoService.agregarAlCarrito(producto.id, 1, producto);
       setMensaje({ tipo: 'success', texto: `${producto.nombre} agregado al carrito` });
-      
-      // Limpiar timeout anterior si existe
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      
-      // Establecer nuevo timeout
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
       timeoutRef.current = setTimeout(() => {
         setMensaje({ tipo: '', texto: '' });
       }, 3000);
@@ -149,14 +123,13 @@ const CatalogoPage = () => {
     }
   }, []);
 
-  // Limpiar timeout al desmontar
   useEffect(() => {
     return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
   }, []);
+
+  const filtrosActuales = getFiltrosDesdeURL();
 
   return (
     <Container className="py-4">
@@ -171,75 +144,9 @@ const CatalogoPage = () => {
         </Alert>
       )}
 
+      {/* SOLO EL GRID DE PRODUCTOS - SIN SIDEBAR */}
       <Row>
-        {/* Filtros laterales */}
-        <Col md={3} className="mb-4">
-          <div className="bg-light p-3 rounded">
-            <h5 className="mb-3">
-              <i className="bi bi-funnel me-2"></i>
-              Filtros
-            </h5>
-
-            <Form>
-              <Form.Group className="mb-3">
-                <Form.Label>Buscar</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="buscar"
-                  placeholder="Nombre del producto..."
-                  value={filtros.buscar}
-                  onChange={handleFiltroChange}
-                />
-              </Form.Group>
-
-              <Form.Group className="mb-3">
-                <Form.Label>Categoría</Form.Label>
-                <Form.Select
-                  name="categoriaId"
-                  value={filtros.categoriaId}
-                  onChange={handleFiltroChange}
-                >
-                  <option value="">Todas las categorías</option>
-                  {categorias.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.nombre}
-                    </option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
-
-              {subcategorias.length > 0 && (
-                <Form.Group className="mb-3">
-                  <Form.Label>Subcategoría</Form.Label>
-                  <Form.Select
-                    name="subcategoriaId"
-                    value={filtros.subcategoriaId}
-                    onChange={handleFiltroChange}
-                  >
-                    <option value="">Todas las subcategorías</option>
-                    {subcategorias.map((sub) => (
-                      <option key={sub.id} value={sub.id}>
-                        {sub.nombre}
-                      </option>
-                    ))}
-                  </Form.Select>
-                </Form.Group>
-              )}
-
-              <Button
-                variant="outline-secondary"
-                className="w-100"
-                onClick={handleLimpiarFiltros}
-              >
-                <i className="bi bi-x-circle me-2"></i>
-                Limpiar Filtros
-              </Button>
-            </Form>
-          </div>
-        </Col>
-
-        {/* Grid de productos */}
-        <Col md={9}>
+        <Col md={12}>
           {loading ? (
             <LoadingSpinner message="Cargando productos..." />
           ) : productos.length > 0 ? (
@@ -255,21 +162,18 @@ const CatalogoPage = () => {
               <Row className="g-4">
                 {productos.map((producto) => (
                   <Col key={producto.id} sm={6} lg={4}>
-                    <ProductCard
-                      producto={producto}
-                      onAddToCart={handleAddToCart}
-                    />
+                    <ProductCard producto={producto} onAddToCart={handleAddToCart} />
                   </Col>
                 ))}
               </Row>
 
-              {/* Paginación */}
+              {/* Paginación - CONSERVADA EXACTAMENTE IGUAL, solo cambia cómo navega */}
               {paginacion.totalPaginas > 1 && (
                 <div className="d-flex justify-content-center mt-4">
                   <Button
                     variant="outline-primary"
                     disabled={paginacion.pagina === 1}
-                    onClick={() => handlePageChange(paginacion.pagina - 1)}
+                    onClick={() => actualizarFiltros({ ...filtrosActuales, pagina: paginacion.pagina - 1 })}
                     className="me-2"
                   >
                     <i className="bi bi-chevron-left"></i> Anterior
@@ -287,12 +191,11 @@ const CatalogoPage = () => {
                       } else {
                         pageNum = paginacion.pagina - 2 + i;
                       }
-                      
                       return (
                         <Button
                           key={pageNum}
                           variant={paginacion.pagina === pageNum ? 'primary' : 'outline-primary'}
-                          onClick={() => handlePageChange(pageNum)}
+                          onClick={() => actualizarFiltros({ ...filtrosActuales, pagina: pageNum })}
                           className="me-2"
                         >
                           {pageNum}
@@ -304,7 +207,7 @@ const CatalogoPage = () => {
                   <Button
                     variant="outline-primary"
                     disabled={paginacion.pagina === paginacion.totalPaginas}
-                    onClick={() => handlePageChange(paginacion.pagina + 1)}
+                    onClick={() => actualizarFiltros({ ...filtrosActuales, pagina: paginacion.pagina + 1 })}
                   >
                     Siguiente <i className="bi bi-chevron-right"></i>
                   </Button>
@@ -315,9 +218,7 @@ const CatalogoPage = () => {
             <div className="text-center py-5">
               <i className="bi bi-inbox display-1 text-muted"></i>
               <h4 className="mt-3">No se encontraron productos</h4>
-              <p className="text-muted">
-                Intenta cambiar los filtros de búsqueda
-              </p>
+              <p className="text-muted">Intenta cambiar los filtros de búsqueda</p>
             </div>
           )}
         </Col>
