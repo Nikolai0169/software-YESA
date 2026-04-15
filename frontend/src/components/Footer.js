@@ -44,8 +44,8 @@ const Footer = memo(() => {
           <Col md={3} className="mb-3">
             <h5 style={{ color: '#E91E63' }}>Atención al Cliente</h5>
             <ul className="list-unstyled">
+              yesa@gmail.com
               {[
-                { label: 'yesa@gmail.com'},
                 { label: 'Envíos', to: '/envios' },
                 { label: 'Devoluciones', to: '/devoluciones' },
               ].map(({ label, to }) => (
@@ -68,7 +68,7 @@ const Footer = memo(() => {
               <a href="https://facebook.com/yesa" target="_blank" rel="noreferrer" className="text-light">
                 <i className="bi bi-facebook fs-5"></i>
               </a>
-              <a href="https://instagram.com/yesa" target="_blank" rel="noreferrer" className="text-light">
+              <a href="https://www.instagram.com/yesa_ai/" target="_blank" rel="noreferrer" className="text-light">
                 <i className="bi bi-instagram fs-5"></i>
               </a>
               <a href="https://twitter.com/yesa" target="_blank" rel="noreferrer" className="text-light">
