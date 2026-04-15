@@ -46,6 +46,16 @@ const { esAdministrador, esAdminOAuxiliar, soloAdministrador } = require('../mid
 // Se usa como middleware en las rutas POST/PUT de productos para recibir archivos
 const { upload } = require('../config/multer');
 
+// Middleware condicional: si la petición es multipart/form-data, aplica multer.
+// Si viene JSON, pasa directo al controlador.
+const uploadIfMultipart = (req, res, next) => {
+  const contentType = req.headers['content-type'] || '';
+  if (contentType.includes('multipart/form-data')) {
+    return upload.single('imagen')(req, res, next);
+  }
+  next();
+};
+
 // ==========================================
 // IMPORTACIÓN DE CONTROLADORES
 // ==========================================
@@ -173,17 +183,13 @@ router.get('/productos', productoController.getProductos);
 router.get('/productos/:id', productoController.getProductoById);
 
 // POST /api/admin/productos → Crea un nuevo producto con imagen opcional
-// upload.single('imagen') → middleware de multer que procesa UN archivo del campo 'imagen'
-// El archivo se guarda en uploads/ y req.file contiene la info del archivo
-// Content-Type debe ser multipart/form-data (no JSON) cuando se envía imagen
-// Body: { nombre, descripcion, precio, stock, categoriaId, subcategoriaId, imagen(file) }
-// Controlador: crearProducto → crea el producto y guarda la ruta de la imagen
-router.post('/productos', upload.single('imagen'), productoController.crearProducto);
+// Si la petición es multipart/form-data, multer procesa un archivo en el campo 'imagen'
+// Si no, el backend acepta JSON normal con los campos en req.body
+router.post('/productos', uploadIfMultipart, productoController.crearProducto);
 
 // PUT /api/admin/productos/:id → Actualiza un producto existente (con imagen opcional)
-// upload.single('imagen') → si se envía nueva imagen, reemplaza la anterior
-// Controlador: actualizarProducto → actualiza campos y opcionalmente la imagen
-router.put('/productos/:id', upload.single('imagen'), productoController.actualizarProducto);
+// Si la petición es multipart/form-data, multer procesa un archivo en el campo 'imagen'
+router.put('/productos/:id', uploadIfMultipart, productoController.actualizarProducto);
 
 // PATCH /api/admin/productos/:id/toggle → Activa o desactiva un producto
 // Controlador: toggleProducto → invierte el campo 'activo' (true↔false)
