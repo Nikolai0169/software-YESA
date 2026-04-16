@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import usuarioService from '../services/usuarioService';
 import { exportarUsuariosAPDF, exportarUsuariosAExcel } from '../utils/exportUtils';
+import { useAuth } from '../context/AuthContext'; // Ajusta la ruta según tu proyecto
 
 function AdminUsuariosPage() {
+  const { user: usuarioActualAutenticado } = useAuth(); // Obtén el usuario logueado
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -24,11 +26,11 @@ function AdminUsuariosPage() {
   });
   
   const [orden, setOrden] = useState({ campo: 'nombre', direccion: 'asc' });
-
   const [paginaActual, setPaginaActual] = useState(1);
   const registrosPorPagina = 25;
 
   const cargarUsuarios = useCallback(async () => {
+    setLoading(true);
     try {
       const data = await usuarioService.obtenerUsuarios('?limite=1000');
       setUsuarios(Array.isArray(data) ? data : []);
@@ -89,20 +91,37 @@ function AdminUsuariosPage() {
   };
 
   const handleToggleActivo = async (usuario) => {
+    // Evitar que el administrador se desactive a sí mismo
+    if (usuarioActualAutenticado && usuario.id === usuarioActualAutenticado.id) {
+      alert('No puedes desactivarte a ti mismo');
+      return;
+    }
+
     const nuevoEstado = !usuario.activo;
+    const accion = nuevoEstado ? 'activar' : 'desactivar';
+    if (!window.confirm(`¿Estás seguro de ${accion} al usuario "${usuario.nombre}"?`)) return;
+
     try {
-      await usuarioService.actualizarUsuario(usuario.id, {
+      // Enviar solo los campos necesarios para actualizar el estado
+      const datosActualizar = {
         nombre: usuario.nombre,
         email: usuario.email,
-        telefono: usuario.telefono,
-        direccion: usuario.direccion,
+        telefono: usuario.telefono || '',
+        direccion: usuario.direccion || '',
         rol: usuario.rol,
         activo: nuevoEstado
-      });
-      cargarUsuarios();
+      };
+      
+      console.log(`🔄 ${accion} usuario ID ${usuario.id}...`);
+      await usuarioService.actualizarUsuario(usuario.id, datosActualizar);
+      alert(`Usuario ${accion} exitosamente`);
+      
+      // Recargar la lista para reflejar el cambio
+      await cargarUsuarios();
     } catch (error) {
-      console.error('❌ Error al cambiar estado:', error);
-      alert('Error al cambiar estado del usuario');
+      console.error(`❌ Error al ${accion} usuario:`, error);
+      const mensajeError = error.response?.data?.mensaje || error.response?.data?.message || error.message || `Error al ${accion} usuario`;
+      alert(mensajeError);
     }
   };
 
@@ -174,23 +193,8 @@ function AdminUsuariosPage() {
     );
   }
 
-  // Estilos para scroll vertical y encabezado fijo
-  const tablaScrollStyles = {
-    maxHeight: '500px',
-    overflowY: 'auto',
-    position: 'relative'
-  };
-
-  const theadStickyStyles = {
-    position: 'sticky',
-    top: 0,
-    backgroundColor: '#f8f9fa',
-    zIndex: 1
-  };
-
   return (
     <div className="container mt-4">
-      {/* Estilos embebidos para mejorar la apariencia del scroll */}
       <style>
         {`
           .tabla-con-scroll thead th {
@@ -204,7 +208,6 @@ function AdminUsuariosPage() {
             overflow-y: auto;
             max-height: 500px;
           }
-          /* Asegurar que la tabla ocupe todo el ancho */
           .tabla-con-scroll table {
             width: 100%;
             margin-bottom: 0;
@@ -347,7 +350,12 @@ function AdminUsuariosPage() {
                       <td>
                         <div className="btn-group btn-group-sm">
                           <button className="btn btn-outline-primary" onClick={() => handleEditar(usuario)}>Editar</button>
-                          <button className={`btn ${usuario.activo ? 'btn-outline-warning' : 'btn-outline-success'}`} onClick={() => handleToggleActivo(usuario)}>
+                          <button 
+                            className={`btn ${usuario.activo ? 'btn-outline-warning' : 'btn-outline-success'}`} 
+                            onClick={() => handleToggleActivo(usuario)}
+                            disabled={usuarioActualAutenticado && usuario.id === usuarioActualAutenticado.id}
+                            title={usuarioActualAutenticado && usuario.id === usuarioActualAutenticado.id ? "No puedes desactivarte a ti mismo" : ""}
+                          >
                             {usuario.activo ? 'Desactivar' : 'Activar'}
                           </button>
                           <button className="btn btn-outline-danger" onClick={() => handleEliminar(usuario.id)}>Eliminar</button>
@@ -391,6 +399,7 @@ function AdminUsuariosPage() {
               </div>
               <form onSubmit={handleSubmit}>
                 <div className="modal-body">
+                  {/* ... contenido del modal sin cambios ... */}
                   <div className="row">
                     <div className="col-md-6 mb-3">
                       <label className="form-label">Nombre *</label>
