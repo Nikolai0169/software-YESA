@@ -58,15 +58,9 @@ const ProductDetailPage = () => {
   };
 
   const handleAgregarAFavoritos = async () => {
-    if (!isAuthenticated) {
-      setMensaje({ tipo: 'warning', texto: 'Debes iniciar sesión para agregar a favoritos' });
-      setTimeout(() => navigate('/login'), 2000);
-      return;
-    }
-    
-    setMensaje({ tipo: 'success', texto: `${producto.nombre} agregado a favoritos` });
-    setTimeout(() => setMensaje({ tipo: '', texto: '' }), 2000);
-  };
+  setMensaje({ tipo: 'info', texto: 'Función de agregar a favoritos proximamente' });
+  setTimeout(() => setMensaje({ tipo: '', texto: '' }), 2000);
+};
 
   const formatearPrecio = (precio) => {
     return new Intl.NumberFormat('es-CO', {
