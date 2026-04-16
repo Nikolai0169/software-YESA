@@ -260,7 +260,7 @@ const AdminProductosPage = () => {
       </Card>
 
       {/* Tabla con scroll */}
-      <Card className="shadow-sm">
+      <Card className="baner-yesa-secondary">
         <Card.Body className="p-0">
           <div className="tabla-productos-scroll">
             <Table responsive className="mb-0">
@@ -283,7 +283,7 @@ const AdminProductosPage = () => {
             </Table>
           </div>
         </Card.Body>
-        <Card.Footer className="text-muted"><small><i className="bi bi-file-text me-1"></i> Mostrando <strong>{productosFiltradosYOrdenados.length}</strong> producto(s)</small></Card.Footer>
+        <Card.Footer className="text-light"><small><i className="bi bi-file-text me-1"></i> Mostrando <strong>{productosFiltradosYOrdenados.length}</strong> producto(s)</small></Card.Footer>
       </Card>
 
       {/* Modal */}

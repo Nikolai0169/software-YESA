@@ -289,6 +289,17 @@ body {
   transform: translateY(-2px);
 }
 
+.baner-yesa-primary {
+  background: linear-gradient(135deg, var(--yesa-purple) 0%, var(--yesa-magenta) 100%);
+  color: white;
+  border: 1px solid transparent;
+}
+
+.baner-yesa-primary:hover,
+.baner-yesa-primary:focus {
+  background: linear-gradient(135deg, var(--yesa-magenta) 0%, var(--yesa-purple) 100%);
+}
+
 .btn-yesa-secondary {
   background: linear-gradient(135deg, var(--yesa-text) 0%, var(--yesa-gray) 120%);
   color: white;
@@ -299,6 +310,17 @@ body {
 .btn-yesa-secondary:focus {
   background: linear-gradient(135deg, var(--yesa-gray) 0%, var(--yesa-text) 30%);
   transform: translateY(-2px);
+}
+
+.baner-yesa-secondary {
+  background: linear-gradient(135deg, var(--yesa-text) 0%, var(--yesa-gray) 120%);
+  color: white;
+  border: 2px solid transparent;
+}
+
+.baner-yesa-secondary:hover,
+.baner-yesa-secondary:focus {
+  background: linear-gradient(135deg, var(--yesa-gray) 0%, var(--yesa-text) 30%);
 }
 
 .btn-yesa-outline {

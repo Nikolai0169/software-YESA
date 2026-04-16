@@ -303,7 +303,7 @@ function AdminPedidosPage() {
       </div>
 
       {/* Tabla con scroll vertical */}
-      <div className="card shadow-sm">
+      <div className="card baner-yesa-secondary">
         <div className="card-body p-0">
           <div className="tabla-pedidos-scroll">
             <table className="table table-hover mb-0">
@@ -366,7 +366,7 @@ function AdminPedidosPage() {
             </table>
           </div>
         </div>
-        <div className="card-footer text-muted">
+        <div className="card-footer text-light">
           <small><i className="bi bi-file-text me-1"></i> Mostrando <strong>{pedidosFiltradosYOrdenados.length}</strong> pedido(s)</small>
         </div>
       </div>

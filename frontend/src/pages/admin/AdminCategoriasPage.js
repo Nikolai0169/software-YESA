@@ -333,7 +333,7 @@ const AdminCategoriasPage = () => {
       </Card>
 
       {/* Tabla con scroll */}
-      <Card className="shadow-sm">
+      <Card className="baner-yesa-secondary">
         <Card.Body className="p-0">
           <div className="tabla-categorias-scroll">
             <Table responsive hover className="mb-0">
@@ -364,7 +364,7 @@ const AdminCategoriasPage = () => {
             </Table>
           </div>
         </Card.Body>
-        <Card.Footer className="text-muted"><small><i className="bi bi-file-text me-1"></i> Mostrando <strong>{categoriasFiltradasYOrdenadas.length}</strong> categoría(s)</small></Card.Footer>
+        <Card.Footer className="text-light"><small><i className="bi bi-file-text me-1"></i> Mostrando <strong>{categoriasFiltradasYOrdenadas.length}</strong> categoría(s)</small></Card.Footer>
       </Card>
 
       {/* Modal (sin cambios) */}
