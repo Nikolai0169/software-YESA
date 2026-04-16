@@ -106,3 +106,4 @@ const ProductCard = memo(({ producto, onAddToCart, showActions = true }) => {
 ProductCard.displayName = 'ProductCard';
 
 export default ProductCard;
+
