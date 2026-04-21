@@ -39,6 +39,9 @@ const AdminProductosPage = () => {
   const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
   const [tipoExportacion, setTipoExportacion] = useState('pdf');
   const [accionMasivaLoading, setAccionMasivaLoading] = useState(false);
+  const fileInputRef = useRef(null);
+  const [imagenFile, setImagenFile] = useState(null);
+  const [imagenPreview, setImagenPreview] = useState('');
   
   // Estados para filtros
   const [busqueda, setBusqueda] = useState('');
@@ -49,7 +52,7 @@ const AdminProductosPage = () => {
   const [ordenNombre, setOrdenNombre] = useState('asc');
   
   const [formData, setFormData] = useState({
-    nombre: '', descripcion: '', precio: '', stock: '', categoriaId: '', subcategoriaId: '', imagen: '', activo: true
+    nombre: '', descripcion: '', precio: '', stock: '', categoriaId: '', subcategoriaId: '', activo: true
   });
   
   // Productos filtrados y ordenados
@@ -99,12 +102,25 @@ const AdminProductosPage = () => {
     if (producto) {
       setEditando(producto);
       setFormData({
-        nombre: producto.nombre, descripcion: producto.descripcion || '', precio: producto.precio, stock: producto.stock,
-        categoriaId: producto.categoriaId, subcategoriaId: producto.subcategoriaId || '', imagen: producto.imagen || '', activo: producto.activo
+        nombre: producto.nombre, 
+        descripcion: producto.descripcion || '', 
+        precio: producto.precio, 
+        stock: producto.stock,
+        categoriaId: producto.categoriaId, 
+        subcategoriaId: producto.subcategoriaId || '', 
+        activo: producto.activo
       });
+      setImagenPreview(producto.imagen || '');
+      setImagenFile(null);
     } else {
       setEditando(null);
-      setFormData({ nombre: '', descripcion: '', precio: '', stock: '', categoriaId: '', subcategoriaId: '', imagen: '', activo: true });
+      setFormData({ 
+        nombre: '', descripcion: '', precio: '', stock: '', 
+        categoriaId: '', subcategoriaId: '', 
+        activo: true 
+      });
+      setImagenPreview('');
+      setImagenFile(null);
     }
     setShowModal(true);
   };
@@ -112,7 +128,9 @@ const AdminProductosPage = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setEditando(null);
-    setFormData({ nombre: '', descripcion: '', precio: '', stock: '', categoriaId: '', subcategoriaId: '', imagen: '', activo: true });
+    setFormData({ nombre: '', descripcion: '', precio: '', stock: '', categoriaId: '', subcategoriaId: '', activo: true });
+    setImagenFile(null);
+    setImagenPreview('');
   };
 
   const handleChange = (e) => {
@@ -120,12 +138,44 @@ const AdminProductosPage = () => {
     setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value, ...(name === 'categoriaId' ? { subcategoriaId: '' } : {}) });
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImagenFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagenPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const dataToSend = { ...formData, precio: parseFloat(formData.precio), stock: parseInt(formData.stock), subcategoriaId: formData.subcategoriaId || null };
-      if (editando) await api.put(`/admin/productos/${editando.id}`, dataToSend);
-      else await api.post('/admin/productos', dataToSend);
+      const formDataToSend = new FormData();
+      formDataToSend.append('nombre', formData.nombre);
+      formDataToSend.append('descripcion', formData.descripcion);
+      formDataToSend.append('precio', parseFloat(formData.precio));
+      formDataToSend.append('stock', parseInt(formData.stock));
+      formDataToSend.append('categoriaId', formData.categoriaId);
+      formDataToSend.append('subcategoriaId', formData.subcategoriaId || null);
+      formDataToSend.append('activo', formData.activo);
+      
+      if (imagenFile) {
+        formDataToSend.append('imagen', imagenFile);
+      }
+      
+      if (editando) {
+        await api.put(`/admin/productos/${editando.id}`, formDataToSend, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+      } else {
+        await api.post('/admin/productos', formDataToSend, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+      }
+      
       setMensaje({ tipo: 'success', texto: editando ? 'Producto actualizado' : 'Producto creado' });
       handleCloseModal();
       loadData();
@@ -147,9 +197,21 @@ const AdminProductosPage = () => {
 
   const handleToggleActivo = async (producto) => {
     try {
-      await api.put(`/admin/productos/${producto.id}`, {
-        nombre: producto.nombre, descripcion: producto.descripcion, precio: parseFloat(producto.precio), stock: parseInt(producto.stock),
-        categoriaId: producto.categoriaId, subcategoriaId: producto.subcategoriaId || null, imagen: producto.imagen, activo: !producto.activo
+      const formDataToSend = new FormData();
+      formDataToSend.append('nombre', producto.nombre);
+      formDataToSend.append('descripcion', producto.descripcion);
+      formDataToSend.append('precio', parseFloat(producto.precio));
+      formDataToSend.append('stock', parseInt(producto.stock));
+      formDataToSend.append('categoriaId', producto.categoriaId);
+      formDataToSend.append('subcategoriaId', producto.subcategoriaId || null);
+      formDataToSend.append('activo', !producto.activo);
+      
+      if (producto.imagen) {
+        formDataToSend.append('imagen', producto.imagen);
+      }
+      
+      await api.put(`/admin/productos/${producto.id}`, formDataToSend, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
       setProductos(prev => prev.map(p => p.id === producto.id ? { ...p, activo: !p.activo } : p));
       setMensaje({ tipo: 'success', texto: `Producto ${!producto.activo ? 'activado' : 'desactivado'}` });
@@ -158,7 +220,6 @@ const AdminProductosPage = () => {
     }
   };
 
-  // ACCIÓN MASIVA
   const handleActivarDesactivarTodas = async (nuevoEstado) => {
     const productosAfectados = productosFiltradosYOrdenados;
     if (productosAfectados.length === 0) {
@@ -170,12 +231,24 @@ const AdminProductosPage = () => {
 
     setAccionMasivaLoading(true);
     try {
-      const peticiones = productosAfectados.map(prod =>
-        api.put(`/admin/productos/${prod.id}`, {
-          nombre: prod.nombre, descripcion: prod.descripcion, precio: parseFloat(prod.precio), stock: parseInt(prod.stock),
-          categoriaId: prod.categoriaId, subcategoriaId: prod.subcategoriaId || null, imagen: prod.imagen, activo: nuevoEstado
-        })
-      );
+      const peticiones = productosAfectados.map(prod => {
+        const formDataToSend = new FormData();
+        formDataToSend.append('nombre', prod.nombre);
+        formDataToSend.append('descripcion', prod.descripcion);
+        formDataToSend.append('precio', parseFloat(prod.precio));
+        formDataToSend.append('stock', parseInt(prod.stock));
+        formDataToSend.append('categoriaId', prod.categoriaId);
+        formDataToSend.append('subcategoriaId', prod.subcategoriaId || null);
+        formDataToSend.append('activo', nuevoEstado);
+        
+        if (prod.imagen) {
+          formDataToSend.append('imagen', prod.imagen);
+        }
+        
+        return api.put(`/admin/productos/${prod.id}`, formDataToSend, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+      });
       await Promise.all(peticiones);
       setMensaje({ tipo: 'success', texto: `Se han ${estadoTexto} ${productosAfectados.length} productos` });
       await loadData();
@@ -293,7 +366,38 @@ const AdminProductosPage = () => {
           <Modal.Body>
             <Row><Col md={6}><Form.Group className="mb-3"><Form.Label>Nombre *</Form.Label><Form.Control type="text" name="nombre" value={formData.nombre} onChange={handleChange} required /></Form.Group></Col><Col md={6}><Form.Group className="mb-3"><Form.Label>Precio *</Form.Label><Form.Control type="number" name="precio" value={formData.precio} onChange={handleChange} required min="0" step="0.01" /></Form.Group></Col></Row>
             <Row><Col md={6}><Form.Group className="mb-3"><Form.Label>Categoría *</Form.Label><Form.Select name="categoriaId" value={formData.categoriaId} onChange={handleChange} required><option value="">Seleccionar...</option>{categorias.filter(c => c.activo).map(cat => <option key={cat.id} value={cat.id}>{cat.nombre}</option>)}</Form.Select></Form.Group></Col><Col md={6}><Form.Group className="mb-3"><Form.Label>Subcategoría</Form.Label><Form.Select name="subcategoriaId" value={formData.subcategoriaId} onChange={handleChange} disabled={!formData.categoriaId}><option value="">Seleccionar...</option>{subcategoriasFiltradas.filter(s => s.activo).map(sub => <option key={sub.id} value={sub.id}>{sub.nombre}</option>)}</Form.Select></Form.Group></Col></Row>
-            <Row><Col md={6}><Form.Group className="mb-3"><Form.Label>Stock *</Form.Label><Form.Control type="number" name="stock" value={formData.stock} onChange={handleChange} required min="0" /></Form.Group></Col><Col md={6}><Form.Group className="mb-3"><Form.Label>URL Imagen</Form.Label><Form.Control type="text" name="imagen" value={formData.imagen} onChange={handleChange} placeholder="https://..." /></Form.Group></Col></Row>
+            <Row><Col md={6}><Form.Group className="mb-3"><Form.Label>Stock *</Form.Label><Form.Control type="number" name="stock" value={formData.stock} onChange={handleChange} required min="0" /></Form.Group></Col></Row>
+            
+            {/* ✅ Nueva sección para subir imagen */}
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Imagen del Producto</Form.Label>
+                  <Form.Control 
+                    type="file" 
+                    ref={fileInputRef}
+                    accept="image/*"
+                    onChange={handleImageChange}
+                  />
+                  <Form.Text className="text-muted">
+                    JPG, PNG, GIF (máx. 5MB)
+                  </Form.Text>
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Vista Previa</Form.Label>
+                  <div style={{ width: '100%', height: '150px', border: '2px dashed #ccc', borderRadius: '5px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f9f9f9' }}>
+                    {imagenPreview ? (
+                      <img src={imagenPreview} alt="preview" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                    ) : (
+                      <span className="text-muted">Sin imagen</span>
+                    )}
+                  </div>
+                </Form.Group>
+              </Col>
+            </Row>
+            
             <Form.Group className="mb-3"><Form.Label>Descripción</Form.Label><Form.Control as="textarea" rows={3} name="descripcion" value={formData.descripcion} onChange={handleChange} /></Form.Group>
             <Form.Group><Form.Check type="checkbox" name="activo" label="Producto activo" checked={formData.activo} onChange={handleChange} /></Form.Group>
           </Modal.Body>

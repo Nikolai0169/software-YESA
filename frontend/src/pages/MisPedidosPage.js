@@ -29,21 +29,33 @@ const MisPedidosPage = () => {
 
   const loadPedidos = async () => {
     setLoading(true);
-    try {
-      const response = await pedidoService.getMisPedidos();
-      if (response.success) {
-        // El backend devuelve { success: true, data: { pedidos: [...], paginacion: {...} } }
-        setPedidos(response.data.pedidos || response.data || []);
-      } else {
-        setMensaje({ tipo: 'danger', texto: response.message || 'Error al cargar pedidos' });
+      try {
+        const response = await pedidoService.getMisPedidos();
+        console.log('📥 Respuesta de pedidos:', response);
+    
+        // Si la respuesta es un array, es directamente la lista de pedidos
+        if (Array.isArray(response)) {
+          setPedidos(response);
+        }
+        // Si es un objeto, verificar si tiene la estructura de éxito
+        else if (response && response.success) {
+          setPedidos(response.data?.pedidos || response.data || []);
+        }
+        // Si es un objeto con error
+        else if (response && response.message) {
+          setMensaje({ tipo: 'danger', texto: response.message });
+        }
+        // Fallback
+        else {
+          setMensaje({ tipo: 'danger', texto: 'Error al cargar pedidos' });
+        }
+      } catch (error) {
+        console.error('Error al cargar pedidos:', error);
+        setMensaje({ tipo: 'danger', texto: error.message || 'Error al cargar los pedidos' });
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error al cargar pedidos:', error);
-      setMensaje({ tipo: 'danger', texto: 'Error al cargar los pedidos' });
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
   const formatearPrecio = (precio) => {
     return new Intl.NumberFormat('es-CO', {

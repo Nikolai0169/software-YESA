@@ -35,32 +35,44 @@ function AdminPedidosPage() {
   }, [cargarPedidos]);
 
   const handleCambiarEstado = async (pedidoId, nuevoEstado) => {
-    console.log('🔄 Cambiando estado del pedido:', pedidoId, 'a', nuevoEstado);
-    try {
-      await pedidoService.actualizarEstadoPedido(pedidoId, nuevoEstado);
-      alert('Estado del pedido actualizado');
+  console.log('🔄 Cambiando estado del pedido:', pedidoId, 'a', nuevoEstado);
+  try {
+    const response = await pedidoService.actualizarEstadoPedido(pedidoId, nuevoEstado);
+    
+    // ✅ Verificar si fue exitoso
+    if (response && response.success) {
+      alert('Estado del pedido actualizado correctamente');
       cargarPedidos();
       if (showDetalleModal && pedidoSeleccionado?.id === pedidoId) {
         const pedidoActualizado = await pedidoService.obtenerPedidoPorId(pedidoId);
         setPedidoSeleccionado(pedidoActualizado);
       }
-    } catch (error) {
-      console.error('❌ Error al cambiar estado:', error);
-      alert('Error al cambiar estado del pedido');
+    } else {
+      alert(response?.message || 'Error al cambiar el estado del pedido');
     }
-  };
+  } catch (error) {
+    console.error('❌ Error al cambiar estado:', error);
+    alert(error?.message || 'Error al cambiar estado del pedido');
+  }
+};
 
   const handleVerDetalle = async (pedidoId) => {
-    console.log('👁️ Viendo detalle del pedido:', pedidoId);
-    try {
-      const pedido = await pedidoService.obtenerPedidoPorId(pedidoId);
+  console.log('👁️ Viendo detalle del pedido:', pedidoId);
+  try {
+    const pedido = await pedidoService.obtenerPedidoPorId(pedidoId);
+    
+    // ✅ Verificar que sea un objeto válido con id
+    if (pedido && pedido.id) {
       setPedidoSeleccionado(pedido);
       setShowDetalleModal(true);
-    } catch (error) {
-      console.error('❌ Error al cargar detalle:', error);
-      alert('Error al cargar detalle del pedido');
+    } else {
+      alert('Error: pedido no encontrado o datos inválidos');
     }
-  };
+  } catch (error) {
+    console.error('❌ Error al cargar detalle:', error);
+    alert(error?.message || 'Error al cargar detalle del pedido');
+  }
+};
 
   const formatearPrecio = (precio) => {
     return new Intl.NumberFormat('es-CO', {
@@ -84,7 +96,7 @@ function AdminPedidosPage() {
   const obtenerBadgeEstado = (estado) => {
     const badges = {
       pendiente: 'bg-warning',
-      pagado: 'bg-info',
+      en_proceso: 'bg-info',
       enviado: 'bg-primary',
       entregado: 'bg-success',
       cancelado: 'bg-danger'
@@ -135,7 +147,7 @@ function AdminPedidosPage() {
   // Estadísticas
   const totalPedidos = pedidos.length;
   const pedidosPendiente = pedidos.filter(p => p.estado === 'pendiente').length;
-  const pedidosPagado = pedidos.filter(p => p.estado === 'pagado').length;
+  const pedidosEnProceso = pedidos.filter(p => p.estado === 'en_proceso').length;
   const pedidosEnviado = pedidos.filter(p => p.estado === 'enviado').length;
   const pedidosEntregado = pedidos.filter(p => p.estado === 'entregado').length;
   const pedidosCancelado = pedidos.filter(p => p.estado === 'cancelado').length;
@@ -209,8 +221,8 @@ function AdminPedidosPage() {
         <div className="col-md-2">
           <div className="card text-white bg-info shadow-sm">
             <div className="card-body">
-              <h6 className="card-title">Pagados</h6>
-              <p className="display-6">{pedidosPagado}</p>
+              <h6 className="card-title">En Proceso</h6>
+              <p className="display-6">{pedidosEnProceso}</p>
             </div>
           </div>
         </div>
@@ -267,7 +279,7 @@ function AdminPedidosPage() {
               >
                 <option value="todos">Todos</option>
                 <option value="pendiente">Pendiente</option>
-                <option value="pagado">Pagado</option>
+                <option value="en_proceso">En Proceso</option>
                 <option value="enviado">Enviado</option>
                 <option value="entregado">Entregado</option>
                 <option value="cancelado">Cancelado</option>
@@ -341,11 +353,11 @@ function AdminPedidosPage() {
                           
                           {pedido.estado === 'pendiente' && (
                             <>
-                              <button className="btn btn-outline-info btn-sm" onClick={() => handleCambiarEstado(pedido.id, 'pagado')}>Pagar</button>
+                              <button className="btn btn-outline-info btn-sm" onClick={() => handleCambiarEstado(pedido.id, 'en_proceso')}>En Proceso</button>
                               <button className="btn btn-outline-danger btn-sm" onClick={() => handleCambiarEstado(pedido.id, 'cancelado')}>Cancelar</button>
                             </>
                           )}
-                          {pedido.estado === 'pagado' && (
+                          {pedido.estado === 'en_proceso' && (
                             <button className="btn btn-outline-primary btn-sm" onClick={() => handleCambiarEstado(pedido.id, 'enviado')}>Enviar</button>
                           )}
                           {pedido.estado === 'enviado' && (
@@ -422,7 +434,7 @@ function AdminPedidosPage() {
                   <h6>Cambiar Estado del Pedido</h6>
                   <div className="btn-group flex-wrap">
                     <button className={`btn ${pedidoSeleccionado.estado === 'pendiente' ? 'btn-warning' : 'btn-outline-warning'}`} onClick={() => handleCambiarEstado(pedidoSeleccionado.id, 'pendiente')} disabled={pedidoSeleccionado.estado === 'pendiente'}>Pendiente</button>
-                    <button className={`btn ${pedidoSeleccionado.estado === 'pagado' ? 'btn-info' : 'btn-outline-info'}`} onClick={() => handleCambiarEstado(pedidoSeleccionado.id, 'pagado')} disabled={pedidoSeleccionado.estado === 'pagado'}>Pagado</button>
+                    <button className={`btn ${pedidoSeleccionado.estado === 'en_proceso' ? 'btn-info' : 'btn-outline-info'}`} onClick={() => handleCambiarEstado(pedidoSeleccionado.id, 'en_proceso')} disabled={pedidoSeleccionado.estado === 'en_proceso'}>En Proceso</button>
                     <button className={`btn ${pedidoSeleccionado.estado === 'enviado' ? 'btn-primary' : 'btn-outline-primary'}`} onClick={() => handleCambiarEstado(pedidoSeleccionado.id, 'enviado')} disabled={pedidoSeleccionado.estado === 'enviado'}>Enviado</button>
                     <button className={`btn ${pedidoSeleccionado.estado === 'entregado' ? 'btn-success' : 'btn-outline-success'}`} onClick={() => handleCambiarEstado(pedidoSeleccionado.id, 'entregado')} disabled={pedidoSeleccionado.estado === 'entregado'}>Entregado</button>
                     <button className={`btn ${pedidoSeleccionado.estado === 'cancelado' ? 'btn-danger' : 'btn-outline-danger'}`} onClick={() => handleCambiarEstado(pedidoSeleccionado.id, 'cancelado')} disabled={pedidoSeleccionado.estado === 'cancelado'}>Cancelado</button>

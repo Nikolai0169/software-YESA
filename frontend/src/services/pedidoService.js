@@ -88,7 +88,7 @@ const pedidoService = {
    */
   actualizarEstadoPedido: async (id, estado) => {
     try {
-      const response = await api.put(`/admin/pedidos/${id}`, { estado });
+      const response = await api.put(`/admin/pedidos/${id}/estado`, { estado });
       return response.data;
     } catch (error) {
       throw error.response?.data || { success: false, message: 'Error de conexión' };
