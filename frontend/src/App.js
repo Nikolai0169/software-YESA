@@ -30,6 +30,7 @@ import AdminSubcategoriasPage from './pages/admin/AdminSubcategoriasPage';
 import AdminProductosPage from './pages/admin/AdminProductosPage';
 import AdminUsuariosPage from './pages/AdminUsuariosPage';
 import AdminPedidosPage from './pages/AdminPedidosPage';
+import ProfilePage from './pages/ProfilePage';
 
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -53,6 +54,11 @@ function App() {
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/pedido-confirmado/:id" element={<PedidoConfirmadoPage />} />
               <Route path="/mis-pedidos" element={<MisPedidosPage />} />
+              <Route path="/perfil" element={
+                <ProtectedRoute>
+                  <ProfilePage />
+                </ProtectedRoute>
+              } />
               
               {/* Rutas de administración - PROTEGIDAS */}
               <Route path="/admin" element={

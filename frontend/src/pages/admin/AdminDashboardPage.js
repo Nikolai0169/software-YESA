@@ -306,7 +306,7 @@ const AdminDashboardPage = () => {
                           <strong className="text-dark">Pedido #{pedido.id}</strong>
                         </div>
                         <small className="text-muted">
-                          {pedido.Usuario?.nombre || 'Cliente'} • {formatearFecha(pedido.createdAt)}
+                          {pedido.usuario?.nombre || 'Cliente'} • {formatearFecha(pedido.createdAt)}
                         </small>
                       </div>
                       <div className="text-end">

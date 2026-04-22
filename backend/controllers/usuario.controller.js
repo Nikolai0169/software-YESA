@@ -208,7 +208,9 @@ const crearUsuario = async (req, res) => {
 const actualizarUsuario = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre, apellido, telefono, direccion, rol } = req.body;
+    const { nombre, apellido, telefono, direccion, rol, email } = req.body;
+    console.log(`[actualizarUsuario] solicitante: ${req.usuario?.id || 'desconocido'} rol:${req.usuario?.rol || 'desconocido'}`);
+    console.log('[actualizarUsuario] body recibido:', { nombre, apellido, telefono, direccion, rol, email });
     
     // Busca el usuario por ID
     const usuario = await Usuario.findByPk(id);
@@ -221,16 +223,31 @@ const actualizarUsuario = async (req, res) => {
     }
     
     // VALIDACIÓN: Si se envía rol, debe ser válido
-    if (rol && !['cliente', 'administrador'].includes(rol)) {
+    if (rol && !['cliente', 'administrador', 'auxiliar'].includes(rol)) {
       return res.status(400).json({
         success: false,
         message: 'Rol inválido'
       });
     }
+
+    // VALIDACIÓN: Si se envía email, verificar formato simple y unicidad
+    if (email) {
+      // Verificación básica de formato de email
+      const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ success: false, message: 'Email inválido' });
+      }
+
+      const usuarioConEmail = await Usuario.findOne({ where: { email } });
+      if (usuarioConEmail && usuarioConEmail.id !== usuario.id) {
+        return res.status(400).json({ success: false, message: 'El email ya está registrado' });
+      }
+    }
     
     // Actualiza SOLO los campos que se enviaron
     if (nombre !== undefined) usuario.nombre = nombre;
     if (apellido !== undefined) usuario.apellido = apellido;
+    if (email !== undefined) usuario.email = email;
     if (telefono !== undefined) usuario.telefono = telefono;
     if (direccion !== undefined) usuario.direccion = direccion;
     if (rol !== undefined) usuario.rol = rol;
@@ -345,6 +362,19 @@ const eliminarUsuario = async (req, res) => {
     
   } catch (error) {
     console.error('Error en eliminarUsuario:', error);
+
+    // Manejo especial para errores de clave foránea (usuario con pedidos)
+    // Sequelize lanza SequelizeForeignKeyConstraintError o el error SQL tiene código ER_ROW_IS_REFERENCED
+    const isFKError = error.name === 'SequelizeForeignKeyConstraintError' ||
+      (error.parent && (error.parent.code === 'ER_ROW_IS_REFERENCED' || /REFERENCED/.test(error.parent.sql || '')));
+
+    if (isFKError) {
+      return res.status(400).json({
+        success: false,
+        message: 'No se puede eliminar el usuario porque tiene pedidos asociados. Cancela o reasigna los pedidos antes de eliminar.'
+      });
+    }
+
     res.status(500).json({
       success: false,
       message: 'Error al eliminar usuario',

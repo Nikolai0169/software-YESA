@@ -86,7 +86,8 @@ function AdminUsuariosPage() {
       cargarUsuarios();
     } catch (error) {
       console.error('❌ Error al eliminar usuario:', error);
-      alert('Error al eliminar usuario');
+      const mensaje = error.response?.data?.message || error.message || 'Error al eliminar usuario';
+      alert(mensaje);
     }
   };
 
@@ -102,18 +103,9 @@ function AdminUsuariosPage() {
     if (!window.confirm(`¿Estás seguro de ${accion} al usuario "${usuario.nombre}"?`)) return;
 
     try {
-      // Enviar solo los campos necesarios para actualizar el estado
-      const datosActualizar = {
-        nombre: usuario.nombre,
-        email: usuario.email,
-        telefono: usuario.telefono || '',
-        direccion: usuario.direccion || '',
-        rol: usuario.rol,
-        activo: nuevoEstado
-      };
-      
       console.log(`🔄 ${accion} usuario ID ${usuario.id}...`);
-      await usuarioService.actualizarUsuario(usuario.id, datosActualizar);
+      // Usar el endpoint PATCH /admin/usuarios/:id/toggle del backend
+      await usuarioService.toggleUsuario(usuario.id);
       alert(`Usuario ${accion} exitosamente`);
       
       // Recargar la lista para reflejar el cambio
@@ -318,7 +310,7 @@ function AdminUsuariosPage() {
             <table className="table table-hover mb-0">
               <thead>
                 <tr>
-                  <th>Cliente</th>
+                  <th>Nombre</th>
                   <th>Contacto</th>
                   <th>Teléfono</th>
                   <th>Rol</th>
