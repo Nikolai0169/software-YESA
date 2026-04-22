@@ -19,6 +19,25 @@ const Categoria = require('../models/Categoria');
 // Representa la tabla 'Subcategoria' en la BD.
 const Subcategoria = require('../models/Subcategoria');
 
+// ✅ FUNCIÓN AUXILIAR PARA CONSTRUIR URLs DE IMÁGENES
+const construirURLProducto = (producto) => {
+  if (!producto) return producto;
+  
+  if (producto.imagen && !producto.imagen.startsWith('http')) {
+    const baseURL = process.env.BACKEND_URL || 'http://localhost:5000';
+    producto.imagen = `${baseURL}/uploads/${producto.imagen}`;
+  }
+  return producto;
+};
+
+// ✅ FUNCIÓN AUXILIAR PARA CONSTRUIR URLs EN ARRAYS
+const construirURLsProductos = (productos) => {
+  if (Array.isArray(productos)) {
+    return productos.map(construirURLProducto);
+  }
+  return construirURLProducto(productos);
+};
+
 /**
  * Obtener catálogo de productos (público)
  * 
@@ -132,11 +151,14 @@ const getProductos = async (req, res) => {
       order                       // Ordenamiento
     });
     
+    // ✅ CONSTRUIR URLs
+    const productosConURL = construirURLsProductos(productos);
+    
     // Responde con los productos y la info de paginación
     res.json({
       success: true,
       data: {
-        productos,                 // Array de productos de esta página
+        productos: productosConURL,                 // Array de productos de esta página
         paginacion: {
           total: count,            // Total de productos que coinciden con los filtros
           pagina: parseInt(pagina),
@@ -199,11 +221,14 @@ const getProductoById = async (req, res) => {
       });
     }
     
+    // ✅ CONSTRUIR URL
+    const productoConURL = construirURLProducto(producto.toJSON ? producto.toJSON() : producto);
+    
     // Responde con el producto encontrado
     res.json({
       success: true,
       data: {
-        producto
+        producto: productoConURL
       }
     });
     
@@ -387,11 +412,14 @@ const getProductosDestacados = async (req, res) => {
       order: [['createdAt', 'DESC']]  // Los más recientes primero
     });
     
+    // ✅ CONSTRUIR URLs
+    const productosConURL = construirURLsProductos(productos);
+    
     // Responde con los productos destacados
     res.json({
       success: true,
       data: {
-        productos
+        productos: productosConURL
       }
     });
     
