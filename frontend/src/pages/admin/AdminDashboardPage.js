@@ -13,7 +13,7 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 
 const AdminDashboardPage = () => {
-  const { isAdmin, isAuxiliar } = useAuth();
+  const { isAdmin } = useAuth();
   const navigate = useNavigate();
 
   const [stats, setStats] = useState({
