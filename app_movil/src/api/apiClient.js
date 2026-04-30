@@ -1,7 +1,7 @@
 //este artchivo centraliza axios para todas las peticiones http al backend
 //configura la url base y el tiempo maximo de espera desde las constantes
 //interceptor de peticiones: adjunta automaticamente el token JWT si existe
-//interceptor de respuesta: normaliza los errores para que todo el codigo reciba siempre un objetro error con un mensaje legible
+//interceptor de respuesta: normaliza los errores para que el codigo reciba siempre un objeto error con un mensaje legible
 
 import axios from 'axios';
 import {API_BASE_URL, API_TIMEOUT_MS, STORAGE_KEYS} from '../utils/constants';
