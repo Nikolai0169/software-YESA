@@ -18,7 +18,7 @@ export function carritoProvider({children}) {
     const {isAuthenticated, isLoadingSession} = useAuth();
 
     //estado del carrito
-    const [carrito, setItems] = useState([]);//lista de productos del carrito
+    const [items, setItems] = useState([]);//lista de productos del carrito
     const [totalItems, setTotalItems] = useState(0);//suma de cantidades
     const [total, setTotal] = useState(0);//precio total
     const [loading, setLoading] = useState(true);//true mientras se carga el carrito
@@ -59,9 +59,9 @@ export function carritoProvider({children}) {
         try{
             //getCarrito decide internamente si consulta el backend o asyncStorage
             const snapshot = await carritoService.getCarrito(isAuthenticated);
-            setItems(snapshot.setItems);
+            setItems(snapshot.items);
             setTotalItems(snapshot.totalItems);
-            setTotal(snapshot.setTotal);
+            setTotal(snapshot.total);
         }catch{
             //si falla muestra carrito vacio sin productos
             setItems([]);
@@ -98,6 +98,15 @@ export function carritoProvider({children}) {
     }, [isAuthenticated, hydrate]);
 
     /**
+     * elimina un item del carrito por su id
+     */
+
+    const eliminarItem = useCallback(async (itemId) => {
+        await carritoService.removeItem({isAuthenticated, itemId});
+        await hydrate();
+    }, [isAuthenticated, hydrate]);
+
+    /**
      * vaciar carrito
      * elimina todos los items del carrito de una vez
      */
@@ -106,5 +115,35 @@ export function carritoProvider({children}) {
         await carritoService.vaciarCarrito(isAuthenticated);
         await hydrate();
     }, [isAuthenticated, hydrate]);
+
+    /**
+     * usememo 
+     */
+
+    const value = useMemo( () => ({
+        items,
+        totalItems,
+        total,
+        loading,
+        refreshCarrito: hydrate,
+        agregarProducto,
+        cambiarCantidad,
+        vaciarCarrito,
+        eliminarItem,
+    }), [items, totalItems, total, loading, agregarProducto, cambiarCantidad, vaciarCarrito, eliminarItem]);
+
+    return <carritoContext.Provider value={value}>{children}</carritoContext.Provider>;
 }
+    /**
+     * hook 
+     * simplifica el acceso al contexto y lanza un error descriptivo si se usa fuera del arbol del carritoProvider
+     */
+
+    export function useCarrito() {
+        const context = useContext(carritoContext);
+        if (!context) {
+            throw new Error("useCarrito debe ser usado dentro de un carritoProvider");
+        }
+        return context;
+    }
 
