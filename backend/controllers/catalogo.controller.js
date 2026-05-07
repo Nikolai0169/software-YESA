@@ -23,10 +23,23 @@ const Subcategoria = require('../models/Subcategoria');
 const construirURLProducto = (producto) => {
   if (!producto) return producto;
   
+  const baseURL = process.env.BACKEND_URL || 'http://localhost:5000';
+
+  if (producto.imagenes && Array.isArray(producto.imagenes)) {
+    producto.imagenes = producto.imagenes.map((imagen) => {
+      if (!imagen) return imagen;
+      return imagen.startsWith('http') ? imagen : `${baseURL}/uploads/${imagen}`;
+    });
+
+    if (!producto.imagen && producto.imagenes.length) {
+      producto.imagen = producto.imagenes[0];
+    }
+  }
+
   if (producto.imagen && !producto.imagen.startsWith('http')) {
-    const baseURL = process.env.BACKEND_URL || 'http://localhost:5000';
     producto.imagen = `${baseURL}/uploads/${producto.imagen}`;
   }
+
   return producto;
 };
 

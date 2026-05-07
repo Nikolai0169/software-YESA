@@ -57,6 +57,11 @@ const catalogoController = require('../controllers/catalogo.controller');
 // Funciones: getCarrito, agregarAlCarrito, actualizarItemCarrito, eliminarItemCarrito, vaciarCarrito
 const carritoController = require('../controllers/carrito.controller');
 
+// Controlador de favoritos → desde controllers/favoritos.controller.js
+// Maneja la lista de favoritos del cliente (requiere autenticación)
+// Funciones: getFavoritos, agregarAFavoritos, eliminarFavorito
+const favoritosController = require('../controllers/favoritos.controller');
+
 // Controlador de pedidos → desde controllers/pedido.controller.js
 // Maneja la creación y consulta de pedidos del cliente (requiere autenticación)
 // Funciones: crearPedido, getMisPedidos, getPedidoById, cancelarPedido

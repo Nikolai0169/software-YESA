@@ -9,6 +9,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Navbar, Nav, Container, NavDropdown, Form, FormControl, Button } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
 import catalogoService from '../services/catalogoService';
+import FAQModal from './FAQModal';
 
 const NavigationBar = memo(() => {
   const { user, isAuthenticated, isAdmin, isAuxiliar, isCliente, logout } = useAuth();
@@ -82,13 +83,17 @@ const NavigationBar = memo(() => {
     navigate(`/catalogo?${params.toString()}`);
   }, [location.search, navigate]);
 
+  const [showFAQ, setShowFAQ] = useState(false);
+
   const handleLogout = useCallback(() => {
     logout();
     navigate('/login');
   }, [logout, navigate]);
 
   return (
-    <Navbar bg="dark" variant="dark" expand="lg" sticky="top" className="navbar shadow-sm">
+    <>
+      <FAQModal show={showFAQ} onHide={() => setShowFAQ(false)} />
+      <Navbar bg="dark" variant="dark" expand="lg" sticky="top" className="navbar shadow-sm">
       <Container fluid className="px-4">
         <Navbar.Brand as={Link} to="/" style={{ fontWeight: '700', fontSize: '1.4rem', letterSpacing: '1px' }}>
           <i className="bi bi-shop me-2" style={{
@@ -199,6 +204,14 @@ const NavigationBar = memo(() => {
           </Nav.Link>
 
           <Nav className="align-items-center">
+            <Button variant="outline-light" size="sm" className="me-2" onClick={() => setShowFAQ(true)}>
+              <i className="bi bi-question-circle-fill me-1"></i>FAQ
+            </Button>
+            {isAuthenticated && isCliente && (
+              <Nav.Link as={Link} to="/favoritos" className="me-2" style={{ color: '#fff' }}>
+                <i className="bi bi-heart-fill me-1"></i>Favoritos
+              </Nav.Link>
+            )}
             {isAuthenticated ? (
               <>
                 {isCliente && (
@@ -239,6 +252,7 @@ const NavigationBar = memo(() => {
         </Navbar.Collapse>
       </Container>
     </Navbar>
+    </>
   );
 });
 

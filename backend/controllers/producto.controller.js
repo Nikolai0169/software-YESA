@@ -18,10 +18,23 @@ const fs = require('fs').promises;
 const construirURLProducto = (producto) => {
   if (!producto) return producto;
   
+  const baseURL = process.env.BACKEND_URL || 'http://localhost:5000';
+
+  if (producto.imagenes && Array.isArray(producto.imagenes)) {
+    producto.imagenes = producto.imagenes.map((imagen) => {
+      if (!imagen) return imagen;
+      return imagen.startsWith('http') ? imagen : `${baseURL}/uploads/${imagen}`;
+    });
+
+    if (!producto.imagen && producto.imagenes.length) {
+      producto.imagen = producto.imagenes[0];
+    }
+  }
+
   if (producto.imagen && !producto.imagen.startsWith('http')) {
-    const baseURL = process.env.BACKEND_URL || 'http://localhost:5000';
     producto.imagen = `${baseURL}/uploads/${producto.imagen}`;
   }
+
   return producto;
 };
 
@@ -195,8 +208,14 @@ const crearProducto = async (req, res) => {
       });
     }
     
-    const imagen = req.file ? req.file.filename : null;
-    
+    const imagenes = (req.files && req.files.imagenes && req.files.imagenes.length)
+      ? req.files.imagenes.map(file => file.filename)
+      : (req.files && req.files.imagen && req.files.imagen.length)
+        ? [req.files.imagen[0].filename]
+        : null;
+
+    const imagen = imagenes && imagenes.length ? imagenes[0] : null;
+
     const nuevoProducto = await Producto.create({
       nombre,
       descripcion: descripcion || null,
@@ -205,6 +224,7 @@ const crearProducto = async (req, res) => {
       categoriaId: parseInt(categoriaId),
       subcategoriaId: parseInt(subcategoriaId),
       imagen,
+      imagenes,
       activo: true
     });
     
@@ -228,16 +248,28 @@ const crearProducto = async (req, res) => {
     
   } catch (error) {
     console.error('Error en crearProducto:', error);
-    
-    if (req.file) {
-      const rutaImagen = path.join(__dirname, '../uploads', req.file.filename);
+
+    const eliminarArchivoSubido = async (archivoSubido) => {
+      const rutaImagen = path.join(__dirname, '../uploads', archivoSubido);
       try {
         await fs.unlink(rutaImagen);
       } catch (err) {
         console.error('Error al eliminar imagen:', err);
       }
+    };
+
+    if (req.file) {
+      await eliminarArchivoSubido(req.file.filename);
     }
-    
+
+    if (req.files) {
+      const archivos = [
+        ...(req.files.imagenes || []),
+        ...(req.files.imagen || [])
+      ];
+      await Promise.all(archivos.map(file => eliminarArchivoSubido(file.filename)));
+    }
+
     if (error.name === 'SequelizeValidationError') {
       return res.status(400).json({
         success: false,
@@ -278,8 +310,24 @@ const actualizarProducto = async (req, res) => {
     if (subcategoriaId) producto.subcategoriaId = parseInt(subcategoriaId);
     if (activo !== undefined) producto.activo = activo;
     
-    if (req.file) {
-      if (producto.imagen) {
+    const nuevasImagenes = (req.files && req.files.imagenes && req.files.imagenes.length)
+      ? req.files.imagenes.map(file => file.filename)
+      : (req.files && req.files.imagen && req.files.imagen.length)
+        ? [req.files.imagen[0].filename]
+        : null;
+
+    if (nuevasImagenes) {
+      if (producto.imagenes && Array.isArray(producto.imagenes)) {
+        await Promise.all(producto.imagenes.map(async (imagenVieja) => {
+          if (!imagenVieja) return;
+          const rutaVieja = path.join(__dirname, '../uploads', imagenVieja);
+          try {
+            await fs.unlink(rutaVieja);
+          } catch (err) {
+            console.error('Error al eliminar imagen antigua:', err);
+          }
+        }));
+      } else if (producto.imagen) {
         const rutaVieja = path.join(__dirname, '../uploads', producto.imagen);
         try {
           await fs.unlink(rutaVieja);
@@ -287,7 +335,9 @@ const actualizarProducto = async (req, res) => {
           console.error('Error al eliminar imagen antigua:', err);
         }
       }
-      producto.imagen = req.file.filename;
+
+      producto.imagenes = nuevasImagenes;
+      producto.imagen = nuevasImagenes[0];
     }
     
     await producto.save();

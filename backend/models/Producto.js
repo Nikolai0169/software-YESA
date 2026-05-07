@@ -102,6 +102,21 @@ const Producto = sequelize.define('Producto', {
     }
   },
 
+  // Columna 'imagenes' → Arreglo de nombres de archivos para múltiples imágenes
+  // Se almacena como JSON y permite múltiples vistas por producto.
+  imagenes: {
+    type: DataTypes.JSON,
+    allowNull: true,
+    defaultValue: []
+  },
+
+  // Columna 'modelos3D' → Datos opcionales para personalización 3D
+  // Puede almacenar URLs, configuraciones o metadatos de modelos 3D.
+  modelos3D: {
+    type: DataTypes.JSON,
+    allowNull: true
+  },
+
   // Columna 'subcategoriaId' → Clave foránea (FK) a la tabla 'subcategorias'
   // Indica a QUÉ subcategoría pertenece el producto
   subcategoriaId: {

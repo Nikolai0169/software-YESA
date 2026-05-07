@@ -5,13 +5,15 @@
  * Página de detalle de un producto individual
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Container, Row, Col, Card, Button, Badge, Alert, Form } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom';
 import catalogoService from '../services/catalogoService';
 import carritoService from '../services/carritoService';
 import LoadingSpinner from '../components/LoadingSpinner';
+import Personalization3DModal from '../components/Personalization3DModal';
 import { useAuth } from '../context/AuthContext';
+import { getImageUrl } from '../utils/helpers';
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -22,23 +24,48 @@ const ProductDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [cantidad, setCantidad] = useState(1);
   const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [showPersonalization, setShowPersonalization] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
-  useEffect(() => {
-    loadProducto();
-  }, [id]);
+  const checkFavorite = useCallback(async (productoId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:5000/api/cliente/favoritos', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-  const loadProducto = async () => {
+      const data = await response.json();
+      if (data.success) {
+        const existe = data.data.favoritos.some((fav) => fav.producto.id === productoId);
+        setIsFavorite(existe);
+      }
+    } catch (error) {
+      console.error('Error al verificar favorito:', error);
+    }
+  }, []);
+
+  const loadProducto = useCallback(async () => {
     setLoading(true);
     try {
       const response = await catalogoService.getProductoById(id);
       setProducto(response.data.producto);
+      if (isAuthenticated && response.data.producto) {
+        await checkFavorite(response.data.producto.id);
+      }
     } catch (error) {
       console.error('Error al cargar producto:', error);
       setMensaje({ tipo: 'danger', texto: 'Producto no encontrado' });
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, isAuthenticated, checkFavorite]);
+
+  useEffect(() => {
+    loadProducto();
+  }, [loadProducto]);
 
   const handleAgregarAlCarrito = async () => {
     if (!isAuthenticated) {
@@ -57,10 +84,39 @@ const ProductDetailPage = () => {
     }
   };
 
-  const handleAgregarAFavoritos = async () => {
-  setMensaje({ tipo: 'info', texto: 'Función de agregar a favoritos proximamente' });
-  setTimeout(() => setMensaje({ tipo: '', texto: '' }), 2000);
-};
+  const handleToggleFavorito = async () => {
+    if (!isAuthenticated) {
+      setMensaje({ tipo: 'warning', texto: 'Debes iniciar sesión para agregar a favoritos' });
+      setTimeout(() => navigate('/login'), 2000);
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const url = `http://localhost:5000/api/cliente/favoritos${isFavorite ? `/${producto.id}` : ''}`;
+      const method = isFavorite ? 'DELETE' : 'POST';
+      const response = await fetch(url, {
+        method,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: isFavorite ? null : JSON.stringify({ productoId: producto.id }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setIsFavorite(!isFavorite);
+        setMensaje({ tipo: 'success', texto: isFavorite ? 'Producto removido de favoritos' : 'Producto agregado a favoritos' });
+        setTimeout(() => setMensaje({ tipo: '', texto: '' }), 2000);
+      } else {
+        setMensaje({ tipo: 'danger', texto: data.message || 'Error al actualizar favoritos' });
+      }
+    } catch (error) {
+      console.error('Error al actualizar favoritos:', error);
+      setMensaje({ tipo: 'danger', texto: 'Error de conexión' });
+    }
+  };
 
   const formatearPrecio = (precio) => {
     return new Intl.NumberFormat('es-CO', {
@@ -83,6 +139,12 @@ const ProductDetailPage = () => {
     );
   }
 
+  const productImages = producto?.imagenes && producto.imagenes.length > 0
+    ? producto.imagenes
+    : producto?.imagen
+      ? [producto.imagen]
+      : [];
+
   return (
     <Container className="py-5">
       {mensaje.texto && (
@@ -97,11 +159,30 @@ const ProductDetailPage = () => {
           <Card className="border-0 shadow-sm">
             <Card.Img
               variant="top"
-              src={producto.imagen || 'https://via.placeholder.com/400'}
+              src={getImageUrl(productImages[selectedImageIndex] || producto.imagen)}
               alt={producto.nombre}
               style={{ height: '400px', objectFit: 'cover' }}
             />
           </Card>
+
+          {productImages.length > 1 && (
+            <div className="d-flex flex-wrap gap-2 mt-3">
+              {productImages.map((imagen, index) => (
+                <Card
+                  key={index}
+                  onClick={() => setSelectedImageIndex(index)}
+                  className={`border rounded-3 overflow-hidden ${index === selectedImageIndex ? 'border-primary' : 'border-light'}`}
+                  style={{ width: '80px', height: '80px', cursor: 'pointer' }}
+                >
+                  <Card.Img
+                    src={getImageUrl(imagen)}
+                    alt={`${producto.nombre} ${index + 1}`}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                </Card>
+              ))}
+            </div>
+          )}
         </Col>
 
         {/* Información del producto */}
@@ -164,6 +245,22 @@ const ProductDetailPage = () => {
             </p>
           </div>
 
+          {producto.modelos3D && producto.modelos3D.length > 0 && (
+            <div className="mb-4 p-3 border rounded-4 bg-light">
+              <h5>Modelos 3D disponibles</h5>
+              <div className="d-flex flex-wrap gap-2 mt-3">
+                {producto.modelos3D.map((modelo, index) => (
+                  <Badge key={index} bg="dark" className="text-uppercase small py-2 px-3">
+                    {modelo.nombre || modelo.label || `Opción ${index + 1}`}
+                  </Badge>
+                ))}
+              </div>
+              <p className="text-muted small mt-2">
+                Selecciona la personalización 3D para ver detalles de color, acabado y opciones especiales.
+              </p>
+            </div>
+          )}
+
           {/* Cantidad y botones */}
           {producto.stock > 0 && (
             <div className="mb-4">
@@ -179,7 +276,7 @@ const ProductDetailPage = () => {
                 />
               </Form.Group>
 
-              <div className="d-grid gap-2">
+              <div className="d-grid gap-3">
                 <Button
                   variant="primary"
                   size="lg"
@@ -196,21 +293,33 @@ const ProductDetailPage = () => {
                   Agregar al Carrito
                 </Button>
 
-                <Button
-                  variant="outline-danger"
-                  size="lg"
-                  onClick={handleAgregarAFavoritos}
-                  style={{
-                    borderRadius: '0.75rem',
-                    fontWeight: '600',
-                    padding: '0.75rem',
-                    borderColor: '#ff0080',
-                    color: '#ff0080'
-                  }}
-                >
-                  <i className="bi bi-heart me-2"></i>
-                  Agregar a Favoritos
-                </Button>
+                <div className="d-flex gap-2">
+                  <Button
+                    variant={isFavorite ? 'danger' : 'outline-danger'}
+                    size="lg"
+                    onClick={handleToggleFavorito}
+                    style={{
+                      borderRadius: '0.75rem',
+                      fontWeight: '600',
+                      padding: '0.75rem',
+                      borderColor: '#ff0080',
+                      color: isFavorite ? '#fff' : '#ff0080',
+                      width: '100%',
+                    }}
+                  >
+                    <i className={`bi ${isFavorite ? 'bi-heart-fill' : 'bi-heart'} me-2`} />
+                    {isFavorite ? 'Quitar de Favoritos' : 'Agregar a Favoritos'}
+                  </Button>
+                  <Button
+                    variant="outline-secondary"
+                    size="lg"
+                    onClick={() => setShowPersonalization(true)}
+                    style={{ borderRadius: '0.75rem', fontWeight: '600', padding: '0.75rem', width: '100%' }}
+                  >
+                    <i className="bi bi-brush me-2" />
+                    Personalizar 3D
+                  </Button>
+                </div>
               </div>
             </div>
           )}
@@ -220,6 +329,17 @@ const ProductDetailPage = () => {
               No disponible
             </Button>
           )}
+
+          <Personalization3DModal
+            show={showPersonalization}
+            onHide={() => setShowPersonalization(false)}
+            producto={producto}
+            onPersonalizationComplete={(payload) => {
+              setMensaje({ tipo: 'success', texto: 'Personalización aplicada correctamente.' });
+              setTimeout(() => setMensaje({ tipo: '', texto: '' }), 2000);
+              console.log('Personalización seleccionada:', payload);
+            }}
+          />
         </Col>
       </Row>
 

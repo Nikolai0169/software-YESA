@@ -48,10 +48,14 @@ const { upload } = require('../config/multer');
 
 // Middleware condicional: si la petición es multipart/form-data, aplica multer.
 // Si viene JSON, pasa directo al controlador.
+// Se aceptan tanto el campo legacy 'imagen' como el nuevo campo 'imagenes'.
 const uploadIfMultipart = (req, res, next) => {
   const contentType = req.headers['content-type'] || '';
   if (contentType.includes('multipart/form-data')) {
-    return upload.single('imagen')(req, res, next);
+    return upload.fields([
+      { name: 'imagenes', maxCount: 6 },
+      { name: 'imagen', maxCount: 1 }
+    ])(req, res, next);
   }
   next();
 };

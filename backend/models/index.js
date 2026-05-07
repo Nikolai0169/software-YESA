@@ -32,6 +32,9 @@ const Subcategoria = require('./Subcategoria');
 // Importa el modelo Producto desde models/Producto.js → tabla 'productos'
 const Producto = require('./Producto');
 
+// Importa el modelo Favorito desde models/Favorito.js → tabla 'favoritos'
+const Favorito = require('./Favorito');
+
 // Importa el modelo Carrito desde models/Carrito.js → tabla 'carritos'
 const Carrito = require('./Carrito');
 
@@ -179,7 +182,41 @@ Carrito.belongsTo(Producto, {
 });
 
 // ==========================================
-// 6. USUARIO ↔ PEDIDO (Uno a Muchos)
+// 6. USUARIO ↔ FAVORITO (Uno a Muchos)
+// Un usuario puede tener muchos favoritos
+Usuario.hasMany(Favorito, {
+  foreignKey: 'usuarioId',
+  as: 'favoritos',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE'
+});
+
+Favorito.belongsTo(Usuario, {
+  foreignKey: 'usuarioId',
+  as: 'usuario',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE'
+});
+
+// ==========================================
+// 7. PRODUCTO ↔ FAVORITO (Uno a Muchos)
+// Un producto puede estar en muchos favoritos
+Producto.hasMany(Favorito, {
+  foreignKey: 'productoId',
+  as: 'favoritos',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE'
+});
+
+Favorito.belongsTo(Producto, {
+  foreignKey: 'productoId',
+  as: 'producto',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE'
+});
+
+// ==========================================
+// 8. USUARIO ↔ PEDIDO (Uno a Muchos)
 // ==========================================
 // Un usuario tiene muchos pedidos (historial de compras)
 // Cada pedido pertenece a un usuario
@@ -299,6 +336,7 @@ module.exports = {
   Categoria,                         // Modelo de categorías → tabla 'categorias'
   Subcategoria,                      // Modelo de subcategorías → tabla 'subcategorias'
   Producto,                          // Modelo de productos → tabla 'productos'
+  Favorito,                          // Modelo de favoritos → tabla 'favoritos'
   Carrito,                           // Modelo de carrito → tabla 'carritos'
   Pedido,                            // Modelo de pedidos → tabla 'pedidos'
   DetallePedido,                     // Modelo de detalles de pedido → tabla 'detalle_pedidos'
