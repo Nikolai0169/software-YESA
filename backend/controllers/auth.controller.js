@@ -281,9 +281,9 @@ const getMe = async (req, res) => {
  */
 const updateMe = async (req, res) => {
   try {
-    // Solo extrae los campos que el usuario tiene PERMITIDO cambiar.
+    // Extrae los campos que el usuario tiene PERMITIDO cambiar.
     // No extrae 'rol' ni 'activo' por seguridad.
-    const { nombre, apellido, telefono, direccion } = req.body;
+    const { nombre, apellido, telefono, direccion, email } = req.body;
     
     // Busca el usuario en la BD por su ID (viene del token via middleware)
     const usuario = await Usuario.findByPk(req.usuario.id);
@@ -295,7 +295,23 @@ const updateMe = async (req, res) => {
       });
     }
     
-    // ACTUALIZAR CAMPOS: solo actualiza si el campo viene definido en el body.
+    // VALIDACIÓN Y ACTUALIZACIÓN: solo actualiza si el campo viene definido en el body.
+    // Permitir cambiar email: validar formato y unicidad.
+    if (email !== undefined) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ success: false, message: 'Email inválido' });
+      }
+
+      const usuarioConEmail = await Usuario.findOne({ where: { email } });
+      if (usuarioConEmail && usuarioConEmail.id !== usuario.id) {
+        return res.status(400).json({ success: false, message: 'El email ya está registrado' });
+      }
+
+      usuario.email = email;
+    }
+
+    // ACTUALIZAR OTROS CAMPOS: solo actualiza si el campo viene definido en el body.
     // La condición !== undefined permite enviar valores vacíos o null intencionalmente.
     // Si el campo no viene en el body, no lo modifica (mantiene el valor actual).
     if (nombre !== undefined) usuario.nombre = nombre;

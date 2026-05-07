@@ -1,9 +1,6 @@
 # Ignorar node_modules
 node_modules/
 
-# Ignorar archivo de variables de entorno (contiene datos sensibles)
-.env
-
 # Ignorar carpeta de imágenes subidas
 uploads/*
 # Pero mantener la carpeta uploads con un .gitkeep

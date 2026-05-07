@@ -13,7 +13,7 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 
 const AdminDashboardPage = () => {
-  const { isAdmin, isAuxiliar } = useAuth();
+  const { isAdmin } = useAuth();
   const navigate = useNavigate();
 
   const [stats, setStats] = useState({
@@ -306,7 +306,7 @@ const AdminDashboardPage = () => {
                           <strong className="text-dark">Pedido #{pedido.id}</strong>
                         </div>
                         <small className="text-muted">
-                          {pedido.Usuario?.nombre || 'Cliente'} • {formatearFecha(pedido.createdAt)}
+                          {pedido.usuario?.nombre || 'Cliente'} • {formatearFecha(pedido.createdAt)}
                         </small>
                       </div>
                       <div className="text-end">

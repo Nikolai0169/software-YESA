@@ -78,6 +78,18 @@ const usuarioService = {
     } catch (error) {
       throw error.response?.data || { success: false, message: 'Error de conexión' };
     }
+  },
+
+  /**
+   * Toggle: activa/desactiva usando el endpoint PATCH específico del backend
+   */
+  toggleUsuario: async (id) => {
+    try {
+      const response = await api.patch(`/admin/usuarios/${id}/toggle`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error de conexión' };
+    }
   }
 };
 

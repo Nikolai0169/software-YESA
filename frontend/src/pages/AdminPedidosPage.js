@@ -59,8 +59,12 @@ function AdminPedidosPage() {
   const handleVerDetalle = async (pedidoId) => {
   console.log('👁️ Viendo detalle del pedido:', pedidoId);
   try {
-    const pedido = await pedidoService.obtenerPedidoPorId(pedidoId);
-    
+    const pedidoResp = await pedidoService.obtenerPedidoPorId(pedidoId);
+    console.log('Detalle pedido response:', pedidoResp);
+
+    // Normalizar diferentes formas de respuesta y obtener el objeto pedido
+    const pedido = pedidoResp?.data?.pedido || pedidoResp?.pedido || pedidoResp?.data || pedidoResp;
+
     // ✅ Verificar que sea un objeto válido con id
     if (pedido && pedido.id) {
       setPedidoSeleccionado(pedido);
@@ -109,8 +113,8 @@ function AdminPedidosPage() {
     let resultado = pedidos.filter(pedido => {
       if (filtros.busqueda) {
         const busqueda = filtros.busqueda.toLowerCase();
-        const nombreCliente = pedido.Usuario?.nombre?.toLowerCase() || '';
-        const emailCliente = pedido.Usuario?.email?.toLowerCase() || '';
+        const nombreCliente = pedido.usuario?.nombre?.toLowerCase() || '';
+        const emailCliente = pedido.usuario?.email?.toLowerCase() || '';
         if (!nombreCliente.includes(busqueda) && !emailCliente.includes(busqueda)) return false;
       }
       if (filtros.estado !== 'todos' && pedido.estado !== filtros.estado) return false;
@@ -339,8 +343,8 @@ function AdminPedidosPage() {
                     <tr key={pedido.id}>
                       <td className="align-middle">#{pedido.id}</td>
                       <td className="align-middle">
-                        {pedido.Usuario?.nombre || 'Usuario desconocido'}<br/>
-                        <small className="text-muted">{pedido.Usuario?.email}</small>
+                        {pedido.usuario?.nombre || 'Usuario desconocido'}<br/>
+                        <small className="text-muted">{pedido.usuario?.email}</small>
                       </td>
                       <td className="align-middle">{formatearFecha(pedido.createdAt)}</td>
                       <td className="align-middle"><strong>{formatearPrecio(pedido.total)}</strong></td>
@@ -396,7 +400,7 @@ function AdminPedidosPage() {
                 <div className="row mb-4">
                   <div className="col-md-6">
                     <h6>Información del Cliente</h6>
-                    <p><strong>Nombre:</strong> {pedidoSeleccionado.Usuario?.nombre}<br/><strong>Email:</strong> {pedidoSeleccionado.Usuario?.email}<br/><strong>Teléfono:</strong> {pedidoSeleccionado.telefono}</p>
+                    <p><strong>Nombre:</strong> {pedidoSeleccionado.usuario?.nombre}<br/><strong>Email:</strong> {pedidoSeleccionado.usuario?.email}<br/><strong>Teléfono:</strong> {pedidoSeleccionado.telefono}</p>
                   </div>
                   <div className="col-md-6">
                     <h6>Información del Pedido</h6>
@@ -404,7 +408,7 @@ function AdminPedidosPage() {
                   </div>
                 </div>
                 <div className="mb-4">
-                  <h6>Dirección de Envío</h6>
+                  <h6><strong>Dirección de Envío</strong></h6>
                   <p>{pedidoSeleccionado.direccionEnvio}</p>
                 </div>
                 {pedidoSeleccionado.notas && (
@@ -418,9 +422,9 @@ function AdminPedidosPage() {
                   <table className="table table-sm">
                     <thead><tr><th>Producto</th><th>Cantidad</th><th>Precio Unit.</th><th>Subtotal</th></tr></thead>
                     <tbody>
-                      {pedidoSeleccionado.DetallePedidos?.map((detalle, index) => (
+                      {pedidoSeleccionado.detalles?.map((detalle, index) => (
                         <tr key={index}>
-                          <td>{detalle.Producto?.nombre || 'Producto no disponible'}</td>
+                          <td>{detalle.producto?.nombre || 'Producto no disponible'}</td>
                           <td>{detalle.cantidad}</td>
                           <td>{formatearPrecio(detalle.precioUnitario)}</td>
                           <td><strong>{formatearPrecio(detalle.subtotal)}</strong></td>

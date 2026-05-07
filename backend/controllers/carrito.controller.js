@@ -23,6 +23,25 @@ const Categoria = require('../models/Categoria');
 // Se incluye en las consultas para mostrar la subcategoría de cada producto.
 const Subcategoria = require('../models/Subcategoria');
 
+// ✅ FUNCIÓN AUXILIAR PARA CONSTRUIR URLs DE IMÁGENES
+const construirURLProducto = (producto) => {
+  if (!producto) return producto;
+  
+  if (producto.imagen && !producto.imagen.startsWith('http')) {
+    const baseURL = process.env.BACKEND_URL || 'http://localhost:5000';
+    producto.imagen = `${baseURL}/uploads/${producto.imagen}`;
+  }
+  return producto;
+};
+
+// ✅ FUNCIÓN AUXILIAR PARA CONSTRUIR URLs EN ARRAYS
+const construirURLsProductos = (productos) => {
+  if (Array.isArray(productos)) {
+    return productos.map(construirURLProducto);
+  }
+  return construirURLProducto(productos);
+};
+
 /**
  * Obtener carrito del usuario autenticado
  * 
@@ -65,10 +84,19 @@ const getCarrito = async (req, res) => {
       order: [['createdAt', 'ASC']]
     });
     
+    // ✅ CONSTRUIR URLs EN ITEMS DEL CARRITO
+    const itemsConURL = itemsCarrito.map(item => {
+      const itemJSON = item.toJSON ? item.toJSON() : item;
+      if (itemJSON.producto) {
+        itemJSON.producto = construirURLProducto(itemJSON.producto);
+      }
+      return itemJSON;
+    });
+    
     // Calcula el total del carrito sumando (precioUnitario * cantidad) de cada item.
     let total = 0;
     // forEach recorre cada item del array
-    itemsCarrito.forEach(item => {
+    itemsConURL.forEach(item => {
       // parseFloat convierte el precio (que puede ser string) a número decimal
       total += parseFloat(item.precioUnitario) * item.cantidad;
     });
@@ -77,12 +105,12 @@ const getCarrito = async (req, res) => {
     res.json({
       success: true,
       data: {
-        items: itemsCarrito,   // Array con todos los items del carrito
+        items: itemsConURL,   // Array con todos los items del carrito
         resumen: {
-          totalItems: itemsCarrito.length,  // Cantidad de productos diferentes en el carrito
+          totalItems: itemsConURL.length,  // Cantidad de productos diferentes en el carrito
           // reduce() acumula un valor recorriendo el array:
           // sum empieza en 0 y va sumando la cantidad de cada item
-          cantidadTotal: itemsCarrito.reduce((sum, item) => sum + item.cantidad, 0),
+          cantidadTotal: itemsConURL.reduce((sum, item) => sum + item.cantidad, 0),
           // toFixed(2) formatea el número con 2 decimales: 15000 -> "15000.00"
           total: total.toFixed(2)
         }
@@ -186,12 +214,18 @@ const agregarAlCarrito = async (req, res) => {
         }]
       });
       
+      // ✅ CONSTRUIR URL
+      const itemJSON = itemExistente.toJSON ? itemExistente.toJSON() : itemExistente;
+      if (itemJSON.producto) {
+        itemJSON.producto = construirURLProducto(itemJSON.producto);
+      }
+      
       // Responde con el item actualizado
       return res.json({
         success: true,
         message: 'Cantidad actualizada en el carrito',
         data: {
-          item: itemExistente
+          item: itemJSON
         }
       });
     }
@@ -222,12 +256,18 @@ const agregarAlCarrito = async (req, res) => {
       }]
     });
     
+    // ✅ CONSTRUIR URL
+    const itemJSON = nuevoItem.toJSON ? nuevoItem.toJSON() : nuevoItem;
+    if (itemJSON.producto) {
+      itemJSON.producto = construirURLProducto(itemJSON.producto);
+    }
+    
     // Responde con status 201 (Created) y el nuevo item
     res.status(201).json({
       success: true,
       message: 'Producto agregado al carrito',
       data: {
-        item: nuevoItem
+        item: itemJSON
       }
     });
     
@@ -276,7 +316,7 @@ const actualizarItemCarrito = async (req, res) => {
       include: [{
         model: Producto,
         as: 'producto',
-        attributes: ['id', 'nombre', 'precio', 'stock']
+        attributes: ['id', 'nombre', 'precio', 'stock', 'imagen']
       }]
     });
     
@@ -300,12 +340,18 @@ const actualizarItemCarrito = async (req, res) => {
     item.cantidad = cantidadNum;
     await item.save();
     
+    // ✅ CONSTRUIR URL
+    const itemJSON = item.toJSON ? item.toJSON() : item;
+    if (itemJSON.producto) {
+      itemJSON.producto = construirURLProducto(itemJSON.producto);
+    }
+    
     // Responde con el item actualizado
     res.json({
       success: true,
       message: 'Cantidad actualizada',
       data: {
-        item
+        item: itemJSON
       }
     });
     
