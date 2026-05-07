@@ -1,0 +1,8 @@
+$kind: http-request
+url: "{{url}}/admin/productos"
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{admin}}"
+order: 1000

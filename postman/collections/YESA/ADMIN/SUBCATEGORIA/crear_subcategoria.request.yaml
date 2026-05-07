@@ -1,0 +1,20 @@
+$kind: http-request
+name: crear_subcategoria
+url: "{{url}}/admin/subcategorias"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"nombre\": \"adsosub2\",\r
+
+    \  \"descripcion\": \"sub2\",\r
+
+    \  \"categoriaId\": 7\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{admin}}"
+order: 3000

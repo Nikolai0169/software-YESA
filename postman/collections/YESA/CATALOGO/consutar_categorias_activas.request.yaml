@@ -1,0 +1,6 @@
+$kind: http-request
+url: "{{url}}/catalogo/categorias"
+method: GET
+auth:
+  type: noauth
+order: 3000

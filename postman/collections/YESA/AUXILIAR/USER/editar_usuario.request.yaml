@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{url}}/admin/usuarios/19"
+method: PUT
+body:
+  type: json
+  content: "{\r
+
+    \    \"nombre\": \"Adsonew\",\r
+
+    \    \"apellido\": \"adso\",\r
+
+    \    \"telefono\": \"3111234567\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{admin}}"
+order: 6000

@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{url}}/admin/categorias/33"
+method: PUT
+body:
+  type: json
+  content: "{\r
+
+    \    \"nombre\": \"adso1\",\r
+
+    \    \"descripcion\": \"categoria A convertia a 1\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{auxiliar}}"
+order: 4000

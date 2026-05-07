@@ -1,0 +1,18 @@
+$kind: http-request
+name: agregar_producto_carrito
+url: "{{url}}/cliente/carrito"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"productoId\": 7,\r
+
+    \  \"cantidad\": 6\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{cliente}}"
+order: 2000

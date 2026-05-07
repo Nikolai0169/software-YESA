@@ -1,0 +1,9 @@
+$kind: http-request
+name: consultar_subcategoria_ID
+url: "{{url}}/admin/subcategorias/20"
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{admin}}"
+order: 2000

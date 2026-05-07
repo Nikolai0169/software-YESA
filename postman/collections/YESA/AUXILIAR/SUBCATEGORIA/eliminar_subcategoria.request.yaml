@@ -1,0 +1,8 @@
+$kind: http-request
+url: "{{url}}/admin/subcategorias/36"
+method: DELETE
+auth:
+  type: bearer
+  credentials:
+    token: "{{auxiliar}}"
+order: 6000

@@ -1,0 +1,28 @@
+$kind: http-request
+name: crear_producto
+url: "{{url}}/admin/productos"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"nombre\": \"adsopro2\",\r
+
+    \  \"descripcion\": \"ADSO evaluacion2\",\r
+
+    \  \"precio\": 42000,\r
+
+    \  \"stock\": 54,\r
+
+    \  \"categoriaId\": 7,\r
+
+    \  \"subcategoriaId\": 19,\r
+
+    \  \"imagen\": \"uploads/productos/imagen_producto_B\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{admin}}"
+order: 3000

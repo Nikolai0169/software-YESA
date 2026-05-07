@@ -1,0 +1,8 @@
+$kind: http-request
+url: "{{url}}/admin/usuarios/stats"
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{auxiliar}}"
+order: 4000

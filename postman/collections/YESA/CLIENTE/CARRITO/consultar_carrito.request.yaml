@@ -1,0 +1,8 @@
+$kind: http-request
+url: "{{url}}/cliente/carrito"
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{cliente}}"
+order: 1000

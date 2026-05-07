@@ -1,0 +1,9 @@
+$kind: http-request
+name: eliminar_usuario
+url: "{{url}}/admin/usuarios/9"
+method: DELETE
+auth:
+  type: bearer
+  credentials:
+    token: "{{admin}}"
+order: 8000

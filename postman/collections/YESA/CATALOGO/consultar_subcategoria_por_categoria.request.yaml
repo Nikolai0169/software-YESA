@@ -1,0 +1,6 @@
+$kind: http-request
+url: "{{url}}/catalogo/categorias/33/subcategorias"
+method: GET
+auth:
+  type: noauth
+order: 4000

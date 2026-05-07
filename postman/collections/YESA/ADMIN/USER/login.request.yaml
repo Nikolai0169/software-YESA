@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{url}}/auth/login"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{\r
+
+    \    \"email\": \"admin@yesa.com\",\r
+
+    \    \"password\": \"admin1234\"\r
+
+    }"
+auth:
+  type: noauth
+order: 1000

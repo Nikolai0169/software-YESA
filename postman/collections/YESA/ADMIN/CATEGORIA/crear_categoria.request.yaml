@@ -1,0 +1,18 @@
+$kind: http-request
+name: crear_categoria
+url: "{{url}}/admin/categorias"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"nombre\": \"adsocate2\",\r
+
+    \    \"descripcion\": \"categoria adsocate2\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{admin}}"
+order: 4000

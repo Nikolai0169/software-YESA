@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{url}}/admin/categorias"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"nombre\": \"adsoB\",\r
+
+    \    \"descripcion\": \"categoria B\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{auxiliar}}"
+order: 3000

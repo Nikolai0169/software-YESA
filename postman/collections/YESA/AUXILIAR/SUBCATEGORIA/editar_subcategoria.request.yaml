@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{url}}/admin/subcategorias/34"
+method: PUT
+body:
+  type: json
+  content: "{\r
+
+    \  \"nombre\": \"Subcategoria 1\",\r
+
+    \  \"descripcion\": \"Subcategoria A convertida en 1\",\r
+
+    \  \"categoriaId\": 33\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{auxiliar}}"
+order: 4000

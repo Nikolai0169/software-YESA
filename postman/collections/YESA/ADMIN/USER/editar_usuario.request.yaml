@@ -1,0 +1,20 @@
+$kind: http-request
+name: editar_usuario
+url: "{{url}}/admin/usuarios/9"
+method: PUT
+body:
+  type: json
+  content: "{\r
+
+    \    \"nombre\": \"Adsoclinew\",\r
+
+    \    \"direccion\": \"adsonew\"\r
+
+    \r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{admin}}"
+order: 6000

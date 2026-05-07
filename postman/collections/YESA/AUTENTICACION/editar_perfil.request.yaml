@@ -1,0 +1,21 @@
+$kind: http-request
+url: "{{url}}/auth/me"
+method: PUT
+body:
+  type: json
+  content: "{\r
+
+    \  \"nombre\": \"cliente01\",\r
+
+    \  \"apellido\": \"cliente Actualizado\",\r
+
+    \  \"telefono\": \"3009876543\",\r
+
+    \  \"direccion\": \"Nueva Dirección 456\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{cliente}}"
+order: 3000

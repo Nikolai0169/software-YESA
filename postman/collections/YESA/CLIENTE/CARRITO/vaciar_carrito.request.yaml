@@ -1,0 +1,8 @@
+$kind: http-request
+url: "{{url}}/cliente/carrito"
+method: DELETE
+auth:
+  type: bearer
+  credentials:
+    token: "{{cliente}}"
+order: 5000

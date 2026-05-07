@@ -1,0 +1,8 @@
+$kind: http-request
+url: "{{url}}/admin/subcategorias/34/toggle"
+method: PATCH
+auth:
+  type: bearer
+  credentials:
+    token: "{{auxiliar}}"
+order: 5000

@@ -1,0 +1,27 @@
+$kind: http-request
+url: "{{url}}/admin/usuarios"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"nombre\": \"Adso\",\r
+
+    \    \"apellido\": \"adsod\",\r
+
+    \    \"email\": \"adso@ecommerce.com\",\r
+
+    \    \"password\": \"adso123\",\r
+
+    \    \"rol\": \"auxiliar\",\r
+
+    \    \"telefono\": \"3001000001\",\r
+
+    \    \"direccion\": \"Dirección adso\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{auxiliar}}"
+order: 5000

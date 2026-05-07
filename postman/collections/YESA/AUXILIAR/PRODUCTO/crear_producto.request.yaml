@@ -1,0 +1,27 @@
+$kind: http-request
+url: "{{url}}/admin/productos"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"nombre\": \"producto B\",\r
+
+    \  \"descripcion\": \"producto B\",\r
+
+    \  \"precio\": 20000,\r
+
+    \  \"stock\": 30,\r
+
+    \  \"categoriaId\": 1,\r
+
+    \  \"subcategoriaId\": 3,\r
+
+    \  \"imagen\": \"uploads/productos/imagen_producto_B\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{auxiliar}}"
+order: 3000

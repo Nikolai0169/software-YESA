@@ -1,0 +1,16 @@
+$kind: http-request
+name: editar_subcategoria
+url: "{{url}}/admin/subcategorias/20"
+method: PUT
+body:
+  type: json
+  content: "{\r
+
+    \  \"nombre\": \"adsosubnew2\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{admin}}"
+order: 4000

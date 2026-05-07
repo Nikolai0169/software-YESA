@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{url}}/admin/productos/76/stock"
+method: PATCH
+body:
+  type: json
+  content: "{\r
+
+    \  \"cantidad\": 20,\r
+
+    \  \"operacion\": \"aumentar\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{auxiliar}}"
+order: 5000

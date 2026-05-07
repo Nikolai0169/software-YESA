@@ -1,0 +1,24 @@
+$kind: http-request
+name: register
+url: "{{url}}/auth/register"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"nombre\": \"Adsocli2\",\r
+
+    \  \"apellido\": \"Adsor\",\r
+
+    \  \"email\": \"adso@ejemplo.com\",\r
+
+    \  \"password\": \"adsor123\",\r
+
+    \  \"telefono\": \"3001234567\",\r
+
+    \  \"direccion\": \"Calle 123 #45-67\"\r
+
+    }"
+auth:
+  type: noauth
+order: 1000

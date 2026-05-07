@@ -1,0 +1,9 @@
+$kind: http-request
+name: consultar_user_ID
+url: "{{url}}/admin/usuarios/9"
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{admin}}"
+order: 3000

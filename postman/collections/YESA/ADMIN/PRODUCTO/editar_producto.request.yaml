@@ -1,0 +1,18 @@
+$kind: http-request
+name: editar_producto
+url: "{{url}}/admin/productos/38"
+method: PUT
+body:
+  type: json
+  content: "{\r
+
+    \  \"nombre\": \"adsopronew2\",\r
+
+    \  \"precio\": 10000\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{admin}}"
+order: 4000

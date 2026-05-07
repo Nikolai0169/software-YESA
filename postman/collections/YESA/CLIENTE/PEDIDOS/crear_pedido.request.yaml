@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{url}}/cliente/pedidos"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"direccionEnvio\": \"Calle 123 #45-67, Bogotá\",\r
+
+    \  \"telefono\": \"3001234567\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{cliente}}"
+order: 1000

@@ -1,0 +1,11 @@
+$kind: http-request
+url: "{{url}}/auth/me"
+method: GET
+body:
+  type: json
+  content: ""
+auth:
+  type: bearer
+  credentials:
+    token: "{{cliente}}"
+order: 2000

@@ -1,0 +1,7 @@
+$kind: collection
+name: YESA
+variables:
+  url: ""
+  admin: ""
+  auxiliar: ""
+  cliente: ""

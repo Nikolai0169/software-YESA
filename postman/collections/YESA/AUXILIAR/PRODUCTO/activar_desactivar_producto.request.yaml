@@ -1,0 +1,11 @@
+$kind: http-request
+url: "{{url}}/admin/productos/15/toggle"
+method: PATCH
+body:
+  type: json
+  content: ""
+auth:
+  type: bearer
+  credentials:
+    token: "{{auxiliar}}"
+order: 6000

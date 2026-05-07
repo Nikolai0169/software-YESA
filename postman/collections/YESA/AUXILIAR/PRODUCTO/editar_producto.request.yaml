@@ -1,0 +1,27 @@
+$kind: http-request
+url: "{{url}}/admin/productos/2"
+method: PUT
+body:
+  type: json
+  content: "{\r
+
+    \  \"nombre\": \"alcancia de la mechita el mejor\",\r
+
+    \  \"descripcion\": \"america de cali\",\r
+
+    \  \"precio\": 50000,\r
+
+    \  \"stock\": 18,\r
+
+    \  \"categoriaId\": 1,\r
+
+    \  \"subcategoriaId\": 1,\r
+
+    \  \"imagen\": \"uploads/productos/imagen_producto_A1\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{auxiliar}}"
+order: 4000

@@ -1,0 +1,15 @@
+$kind: http-request
+url: "{{url}}/admin/pedidos/2/estado"
+method: PUT
+body:
+  type: json
+  content: "{\r
+
+    \    \"estado\": \"cancelado\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{auxiliar}}"
+order: 3000

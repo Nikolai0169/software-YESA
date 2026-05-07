@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{url}}/auth/password"
+method: PUT
+body:
+  type: json
+  content: "{\r
+
+    \  \"currentPassword\": \"admin1234\",\r
+
+    \  \"newPassword\": \"adminnew\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{admin}}"
+order: 4000

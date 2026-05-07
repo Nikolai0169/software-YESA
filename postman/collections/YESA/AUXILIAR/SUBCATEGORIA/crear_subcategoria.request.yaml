@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{url}}/admin/subcategorias"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"nombre\": \"subcategoria B\",\r
+
+    \  \"descripcion\": \"subcategoria B\",\r
+
+    \  \"categoriaId\": 33\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{auxiliar}}"
+order: 3000

@@ -1,0 +1,11 @@
+$kind: http-request
+url: "{{url}}/cliente/pedidos/3/cancelar"
+method: PUT
+body:
+  type: json
+  content: ""
+auth:
+  type: bearer
+  credentials:
+    token: "{{cliente}}"
+order: 4000

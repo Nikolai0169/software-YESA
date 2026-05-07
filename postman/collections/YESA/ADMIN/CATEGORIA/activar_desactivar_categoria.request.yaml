@@ -1,0 +1,12 @@
+$kind: http-request
+name: activar_desactivar_categoria
+url: "{{url}}/admin/categorias/8/toggle"
+method: PATCH
+body:
+  type: json
+  content: ""
+auth:
+  type: bearer
+  credentials:
+    token: "{{admin}}"
+order: 6000

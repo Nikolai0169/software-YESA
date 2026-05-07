@@ -1,0 +1,28 @@
+$kind: http-request
+name: crear_usuario
+url: "{{url}}/admin/usuarios"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"nombre\": \"Adsocli2\",\r
+
+    \    \"apellido\": \"adsod\",\r
+
+    \    \"email\": \"adsocli2@ecommerce.com\",\r
+
+    \    \"password\": \"adso123\",\r
+
+    \    \"rol\": \"cliente\",\r
+
+    \    \"telefono\": \"3001000001\",\r
+
+    \    \"direccion\": \"Dirección adso\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{admin}}"
+order: 5000

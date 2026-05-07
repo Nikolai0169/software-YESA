@@ -1,0 +1,9 @@
+$kind: http-request
+name: activar_desactivar_subcategoria
+url: "{{url}}/admin/subcategorias/20/toggle"
+method: PATCH
+auth:
+  type: bearer
+  credentials:
+    token: "{{admin}}"
+order: 5000

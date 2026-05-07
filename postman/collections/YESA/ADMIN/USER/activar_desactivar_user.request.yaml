@@ -1,0 +1,9 @@
+$kind: http-request
+name: activar_desactivar_user
+url: "{{url}}/admin/usuarios/9/toggle"
+method: PATCH
+auth:
+  type: bearer
+  credentials:
+    token: "{{admin}}"
+order: 7000

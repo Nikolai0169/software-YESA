@@ -1,0 +1,6 @@
+$kind: http-request
+url: "{{url}}/catalogo/productos"
+method: GET
+auth:
+  type: noauth
+order: 1000

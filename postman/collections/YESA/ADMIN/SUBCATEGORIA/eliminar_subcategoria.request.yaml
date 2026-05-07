@@ -1,0 +1,9 @@
+$kind: http-request
+name: eliminar_subcategoria
+url: "{{url}}/admin/subcategorias/20"
+method: DELETE
+auth:
+  type: bearer
+  credentials:
+    token: "{{admin}}"
+order: 6000

@@ -1,0 +1,18 @@
+$kind: http-request
+name: editar_categoria
+url: "{{url}}/admin/categorias/8"
+method: PUT
+body:
+  type: json
+  content: "{\r
+
+    \    \"nombre\": \"adsocatenew\",\r
+
+    \    \"descripcion\": \"categoria A conuhuihu\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{admin}}"
+order: 5000

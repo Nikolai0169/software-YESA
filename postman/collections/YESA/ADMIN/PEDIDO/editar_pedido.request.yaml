@@ -1,0 +1,11 @@
+$kind: http-request
+url: "{{url}}/admin/pedidos/2/estado"
+method: PUT
+body:
+  type: json
+  content: "{\r\n    \"estado\": \"enviado\"\r\n}"
+auth:
+  type: bearer
+  credentials:
+    token: "{{admin}}"
+order: 4000

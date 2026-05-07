@@ -1,0 +1,12 @@
+$kind: http-request
+name: editar_cantidad_item
+url: "{{url}}/cliente/carrito/3"
+method: PUT
+body:
+  type: json
+  content: "{\r\n  \"cantidad\": 10\r\n}"
+auth:
+  type: bearer
+  credentials:
+    token: "{{cliente}}"
+order: 3000
