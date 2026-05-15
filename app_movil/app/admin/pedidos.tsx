@@ -1,4 +1,4 @@
- /**
+/**
  * este archivo y pantalla es la lista de pedidos en el panel de administrador
  * muestra todos los pedidos del sistema en una lista paginada (de 10 por pagina)
  * permite buscar pedidos por texto en tiempo real mientras escribe
