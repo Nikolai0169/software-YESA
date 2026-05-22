@@ -7,13 +7,13 @@
  * expone items totales y las accioones: agregar cambiar cantidad eliminar y vaciar 
  */
 
-import {createContext, useCallback, useContext, useEffect, useMemo, useState} from 'react';
+import {createContext, useCallback, useContext, useEffect, useMemo, useRef, useState} from 'react';
 import {useAuth} from './authContext';
 import carritoService from '../services/carritoService';
 
 const carritoContext = createContext(null);
 
-export function carritoProvider({children}) {
+export function CarritoProvider({children}) {
     //lee isAuthenticated e isLoadingSession contexto de autenticacion 
     const {isAuthenticated, isLoadingSession} = useAuth();
 
@@ -46,7 +46,7 @@ export function carritoProvider({children}) {
 
         if (isAuthenticated && !prevAuthenticated.current) {
             try{
-                await carritoService.mergeLocalToBavckend();
+                await carritoService.mergeLocalToBackend();
             }catch{
                 //si la fusion falla continua sin bloquear 
             }
@@ -83,7 +83,7 @@ export function carritoProvider({children}) {
      */
 
     const agregarProducto = useCallback(async(producto,cantidad=1) => {
-        await carritoService.addToCarrito({isAuthenticated, producto, cantidad,});
+        await carritoService.addToCarrito({isAuthenticated, producto, cantidad});
         await hydrate();
     }, [isAuthenticated, hydrate]);
 
@@ -146,4 +146,3 @@ export function carritoProvider({children}) {
         }
         return context;
     }
-

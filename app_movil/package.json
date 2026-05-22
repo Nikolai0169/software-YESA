@@ -1,7 +1,7 @@
 {
   "name": "app_movil",
   "version": "1.0.0",
-  "main": "index.ts",
+  "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
@@ -36,6 +36,8 @@
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
+    "babel-preset-expo": "^55.0.22",
+    "react-native-worklets": "^0.5.1",
     "typescript": "~5.9.2"
   },
   "private": true

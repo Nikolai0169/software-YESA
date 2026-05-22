@@ -14,13 +14,18 @@ const pedidoService = {
             metodoPago,
             notasAdicionales,
         });
-        return response.data?.data?.pedidos || response.data?.pedidos || [];
+        // backend responde { data: { pedido } }
+        const pedido = response.data?.data?.pedido || response.data?.pedido || null;
+        console.log('[pedidoService] crearPedido response', { pedido });
+        return pedido;
     },
 
     //devuelve el historial de pedidos el usuario autenticado
-    getHistorialPedidos: async() => {
+    getMisPedidos: async() => {
         const response = await apiClient.get('/cliente/pedidos');
-        return response.data?.data?.pedido || response.data?.pedido || response.data;
+        // backend responde { data: { pedidos, paginacion } }
+        const pedidos = response.data?.data?.pedidos || response.data?.pedidos || [];
+        return pedidos;
     },
 
     //obtiene el detalle completo de un pedido por id
@@ -31,7 +36,7 @@ const pedidoService = {
 
     //cancela un pedido siempre que el backend permita el cambio de estado
     cancelarPedido: async(id) => {
-        const response = await apiClient.post(`/cliente/pedidos/${id}/cancelar`)
+        const response = await apiClient.put(`/cliente/pedidos/${id}/cancelar`)
         return response.data;
     }
 };

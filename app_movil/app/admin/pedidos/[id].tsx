@@ -18,7 +18,7 @@ import {ActivityIndicator, Pressable, ScrollView, StyleSheet, TextInput, View, A
 //lee los parametros de la url para obtener el id del pedido
 import {useLocalSearchParams} from 'expo-router';
 //themedText : texto que aplica colores del tema del dispositivo de manera automatica claro u oscuro
-import {ThemedText} from '@/components/themed-text';
+import {ThemedText} from '../../../components/themed-text';
 //cliente http axios con JWT 
 import apiClient from '../../../src/api/apiClient';
 
@@ -113,14 +113,19 @@ export default function AdminPedidoDetalleScreen() {
     const cambiarEstado = async(nuevoEstado: string) => {
         setCambiando(true); //bloquea los botones para evitar clicks multiples
         try {
-            //patch /admin/pedidos/:id/estado con el nuevo estado en el body 
-            await apiClient.patch(`/admin/pedidos/${id}/estado`, {estado: nuevoEstado});
-        }catch {
-            //si falla muestra un alert nativo con el mensaje de error
-            Alert.alert('Error', 'No se pudo cambiar el estado')
-        }finally {
+            //put /admin/pedidos/:id/estado con el nuevo estado en el body (backend espera PUT)
+            const res = await apiClient.put(`/admin/pedidos/${id}/estado`, { estado: nuevoEstado });
+            //refresca el pedido para mostrar el nuevo estado
+            await fetchPedido();
+            //muestra mensaje de exito si el backend lo incluye
+            const msg = res.data?.message || 'Estado actualizado';
+            Alert.alert('Éxito', msg);
+          } catch (error: unknown) {
+            const msg = (error as {message?:string})?.message || 'No se pudo cambiar el estado';
+            Alert.alert('Error', msg);
+          } finally {
             setCambiando(false); //desbloquea los botones 
-        }
+          }
     };
 
     // ── RENDERIZADO CONDICIONAL: cargando ─────────────────────────────────────
@@ -251,9 +256,9 @@ const styles = StyleSheet.create({
   // Columna de botones de acción con separación entre ellos.
   actionsRow: { flexDirection: 'column', gap: 10, marginTop: 20 },
 
-  // Botón de acción principal: azul (#0a7ea4), bordes redondeados, texto centrado.
+  // Botón de acción principal: color primario, bordes redondeados, texto centrado.
   actionBtn: {
-    backgroundColor: '#0a7ea4', // Azul petróleo.
+    backgroundColor: '#7d2181',
     borderRadius: 10,
     paddingVertical: 12,
     alignItems: 'center',

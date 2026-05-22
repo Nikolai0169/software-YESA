@@ -45,9 +45,8 @@ type carritoCtx = {
 //directamente en typescript, se usa as unknown as .... para forzar el tipo y poder llamar a las funciones de navegacion sin errores de compilador
 
 //routerPush navega a una nueva pantalla apilandola, es decir, se puede volver atras
-const routerPush = (path:string) => (router as unknown as {push:(p: string) => void}).push(path);
 //routerreplace navega a una pantalla reemplazando la actual recuerda que se puede volver atras
-const routerReplace = (path:string) => (router as unknown as {replace: (p:string) => void}).replace(path);
+// NOTE: helpers that call `router` will be created inside the component
 
 //fmt: formatea un numero como precio en pesos colombianos eje fmt (15000) -> $15.000
 const fmt = (n: number) => `$${Number(n).toLocaleString('es-CO')}`;
@@ -61,19 +60,24 @@ export default function carritoScreen() {
     //se usa as carritoCtx porque el contexto de js y typeScript no infiere en tipos
     const {items, total, totalItems, loading, cambiarCantidad, eliminarItem, vaciarCarrito} = useCarrito() as carritoCtx;
 
+    // Helpers using router must be created inside the component to avoid
+    // accessing the router store before it's initialized by Expo Router.
+    const routerPush = (path:string) => (router as unknown as {push:(p: string) => void}).push(path);
+    const routerReplace = (path:string) => (router as unknown as {replace: (p:string) => void}).replace(path);
+
     //pantall de carga 
     //si el carrito aun esta cargando por ejemplo recuperando datos guardados
     //se muestra un spinner centrado en lugar del contenido normal
 
     if(loading) {
         return (
-            <view style={styles.centered}>
+          <View style={styles.centered}>
                 {/**
                  * spinner circular color indigo
                  */}
                  <ActivityIndicator size='large' color='#6366f1'/>
-                <text style={styles.loadingText}>Cargando carrito...</text> 
-            </view>
+            <Text style={styles.loadingText}>Cargando carrito...</Text>
+          </View>
         );
     }
 
@@ -89,7 +93,7 @@ export default function carritoScreen() {
                     //boton 'cancelar' cierra el dialogo sin hacer nada
                     {text: 'Cancelar', style: 'cancel'},
                     //boton iniciar sesione leva a la pestaña cuenta explore.tsx
-                    {text: 'Iniciar sesion', onPress: () => routerReplace('/tabs/explore')}
+                    {text: 'Iniciar sesion', onPress: () => routerReplace('/(tabs)/explore')}
                 ]
             );
 

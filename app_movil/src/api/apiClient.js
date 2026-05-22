@@ -5,7 +5,7 @@
 
 import axios from 'axios';
 import {API_BASE_URL, API_TIMEOUT_MS, STORAGE_KEYS} from '../utils/constants';
-import {storageGetItem} from './utils/storage';
+import {storageGetItem} from '../utils/storage';
 
 //instancias de axios
 const apiClient= axios.create({
@@ -44,9 +44,13 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
     (response) => response,
     (error) => {
-        const backendMessage = error.response?.data?.message; //mensaje del servidor
+        const backendData = error.response?.data;
+        const backendMessage = backendData?.message; // mensaje del servidor
         const message = backendMessage || error.message || 'Error de conexion';
-        return Promise.reject(new Error(message));
+        const err = new Error(message);
+        // Adjunta los datos crudos del backend para que los catch puedan analizarlos (errores por campo, array de errores, etc.)
+        err.responseData = backendData;
+        return Promise.reject(err);
     }
 );
 

@@ -24,9 +24,9 @@ import {Ionicons} from '@expo/vector-icons';
 //catalogoService servicio que hace las llamadas http (api) del backend para productos y categorias
 import catalogoService  from '../../src/services/catalogoService'
 //themedText : texto que aplica colores del tema del dispositivo de manera automatica claro u oscuro
-import {ThemedText} from '@/components/themed-text';
+import {ThemedText} from '../../components/themed-text';
 //themedView : color de fondo automatico segun el tema del dispositivo
-import {ThemedView} from '@/components/themed-view';
+import {ThemedView} from '../../components/themed-view';
 //useCarrito hook del contexto del carrito para agregar prdouctos 
 import {useCarrito} from '../../src/context/carritoContext';
 
@@ -57,7 +57,7 @@ const CARD_WIDTH = (SCREEN_WIDTH - 32 - CARD_GAP) /2;
 const ITEMS_POR_PAGINA = 15;
 
 const FEATURES = [
-  { icon: 'cube-outline', title: 'Envío Rápido', desc: 'Recibe en tu hogar', color: '#6366f1', bg: '#eef2ff' },
+  { icon: 'cube-outline', title: 'Envío Rápido', desc: 'Recibe en tu hogar', color: '#7d2181', bg: '#f8f2ff' },
   { icon: 'shield-checkmark', title: 'Compra Segura', desc: 'Datos protegidos', color: '#10b981', bg: '#d1fae5' },
   { icon: 'headset', title: 'Atención 24/7', desc: 'Siempre disponibles', color: '#06b6d4', bg: '#cffafe' },
 ] as const;
@@ -210,11 +210,11 @@ export default function HomeScreen() {
       {/* Tarjeta índigo con título, subtítulo y 3 estadísticas en tiempo real */}
       <View style={styles.hero}>
         {/* Etiqueta superior en mayúsculas pequeñas */}
-        <ThemedText style={styles.heroLabel}>TIENDA OFICIAL</ThemedText>
+        <ThemedText style={styles.heroLabel}>YESA</ThemedText>
         {/* Título principal con salto de línea usando {'\n'} */}
-        <ThemedText style={styles.heroTitle}>Bienvenido a{'\n'}E-Commerce</ThemedText>
+        <ThemedText style={styles.heroTitle}>YESA - Orfebrería{"\n"}y Cerámica</ThemedText>
         <ThemedText style={styles.heroSubtitle}>
-          Encuentra los mejores productos al mejor precio.{'\n'}Compra segura y entrega a domicilio.
+          YESA es un ecommerce de orfebrería y cerámica artesanal con productos hechos a mano y una experiencia de compra exclusiva.
         </ThemedText>
         {/* Fila de 3 estadísticas dinámicas */}
         <View style={styles.heroStatsRow}>
@@ -310,8 +310,8 @@ export default function HomeScreen() {
 
       {/* ── ESTADO: CARGANDO ────────────────────────────────────────────── */}
       {loading && (
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color="#6366f1" />
+          <View style={styles.centered}>
+          <ActivityIndicator size="large" color="#7d2181" />
           <ThemedText style={styles.loadingText}>Cargando catálogo...</ThemedText>
         </View>
       )}
@@ -338,7 +338,7 @@ export default function HomeScreen() {
           style={[styles.pagBtn, paginaActual === 1 && styles.pagBtnDisabled]}
           onPress={() => setPaginaActual((p) => Math.max(1, p - 1))} // No baja de la página 1.
           disabled={paginaActual === 1}>
-          <Ionicons name="chevron-back" size={15} color={paginaActual === 1 ? '#d1d5db' : '#6366f1'} />
+          <Ionicons name="chevron-back" size={15} color={paginaActual === 1 ? '#d1d5db' : '#7d2181'} />
           <ThemedText style={[styles.pagBtnText, paginaActual === 1 && styles.pagBtnTextDisabled]}>
             Anterior
           </ThemedText>
@@ -355,7 +355,7 @@ export default function HomeScreen() {
           <ThemedText style={[styles.pagBtnText, paginaActual === totalPaginas && styles.pagBtnTextDisabled]}>
             Siguiente
           </ThemedText>
-          <Ionicons name="chevron-forward" size={15} color={paginaActual === totalPaginas ? '#d1d5db' : '#6366f1'} />
+          <Ionicons name="chevron-forward" size={15} color={paginaActual === totalPaginas ? '#d1d5db' : '#7d2181'} />
         </Pressable>
       </View>
     ) : (
@@ -366,6 +366,15 @@ export default function HomeScreen() {
   // ── FUNCIÓN: renderProducto ───────────────────────────────────────────────
   // FlatList llama esta función por cada ítem de productosVisibles.
   // Recibe { item: producto, index } y devuelve el JSX de la tarjeta.
+  const openDetalle = (producto: any) => {
+    try {
+      console.log('[producto] abrir detalle', producto);
+    } catch (e) {
+      console.warn('[producto] error al loguear detalle', e);
+    }
+    setProductoDetalle(producto);
+  };
+
   const renderProducto = ({ item: producto, index }: { item: any; index: number }) => (
     <View
       style={[
@@ -400,7 +409,7 @@ export default function HomeScreen() {
         {/* Fila de botones: "Ver" (detalle) y carrito */}
         <View style={styles.cardActions}>
           {/* Botón "Ver": abre el modal de detalle con este producto */}
-          <Pressable style={styles.outlineBtn} onPress={() => setProductoDetalle(producto)}>
+          <Pressable style={styles.outlineBtn} onPress={() => openDetalle(producto)}>
             <ThemedText style={styles.outlineBtnText}>Ver</ThemedText>
           </Pressable>
           {/* Botón del carrito: agrega directamente 1 unidad */}
@@ -439,8 +448,8 @@ export default function HomeScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => loadCatalogo({ isRefresh: true })}
-            colors={['#6366f1']}     // Color del spinner en Android.
-            tintColor="#6366f1"      // Color del spinner en iOS.
+            colors={['#7d2181']}     // Color del spinner en Android.
+            tintColor="#7d2181"      // Color del spinner en iOS.
           />
         }
       />
@@ -468,7 +477,7 @@ export default function HomeScreen() {
                 />
                 {/* Categoría del producto en texto pequeño índigo */}
                 <ThemedText style={styles.modalCategoria}>
-                  {productoDetalle.Categoria?.nombre || 'Sin categoría'}
+                  {productoDetalle.Categoria?.nombre || productoDetalle.categoria?.nombre || 'Sin categoría'}
                 </ThemedText>
                 {/* Nombre del producto en grande */}
                 <ThemedText style={styles.modalTitle}>{productoDetalle.nombre}</ThemedText>
@@ -532,14 +541,14 @@ const styles = StyleSheet.create({
   hero: {
     borderRadius: 24,
     padding: 22,
-    backgroundColor: '#6366f1', // Índigo.
+    backgroundColor: '#7d2181', // Primary.
     marginTop: 16,
     marginBottom: 16,
     gap: 10,                    // Espacio entre cada hijo directo.
   },
   // Etiqueta pequeña en mayúsculas con espaciado de letras (tracking).
   heroLabel: {
-    color: '#c7d2fe',           // Índigo muy claro.
+    color: '#f3dffb',           // Primary light.
     letterSpacing: 1.4,
     fontSize: 11,
     fontWeight: '700',
@@ -551,7 +560,7 @@ const styles = StyleSheet.create({
     lineHeight: 34,             // Interlineado para texto de 2 líneas.
   },
   heroSubtitle: {
-    color: '#e0e7ff',           // Blanco azulado.
+    color: '#ffeef8',           // Light on primary.
     fontSize: 14,
     lineHeight: 21,
   },
@@ -666,7 +675,7 @@ const styles = StyleSheet.create({
   // Chip activo: fondo y borde índigo (se aplica junto a 'chip').
   chipActive: {
     backgroundColor: '#6366f1',
-    borderColor: '#6366f1',
+    borderColor: '#7d2181',
   },
   chipText: {
     color: '#374151',
@@ -703,7 +712,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#f3f4f6',
-    shadowColor: '#6366f1',     // Sombra levemente índigo.
+    shadowColor: '#7d2181',     // Sombra levemente primaria.
     shadowOpacity: 0.08,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 3 },
@@ -721,7 +730,7 @@ const styles = StyleSheet.create({
     position: 'absolute',       // Se posiciona sobre la imagen.
     top: 8,
     left: 8,
-    backgroundColor: 'rgba(99,102,241,0.85)', // Índigo semitransparente.
+    backgroundColor: 'rgba(125,33,129,0.85)', // Primary semitransparente.
     borderRadius: 6,
     paddingHorizontal: 7,
     paddingVertical: 3,
@@ -747,7 +756,7 @@ const styles = StyleSheet.create({
   cardPrecio: {
     fontSize: 15,
     fontWeight: '800',
-    color: '#6366f1',
+    color: '#7d2181',
     marginTop: 2,
   },
   // Fila de botones: "Ver" y carrito.
@@ -762,14 +771,14 @@ const styles = StyleSheet.create({
   outlineBtn: {
     borderRadius: 8,
     borderWidth: 1.5,
-    borderColor: '#6366f1',
+    borderColor: '#7d2181',
     paddingHorizontal: 12,
     paddingVertical: 7,
     alignItems: 'center',
     justifyContent: 'center',
   },
   outlineBtnText: {
-    color: '#6366f1',
+    color: '#7d2181',
     fontWeight: '700',
     fontSize: 12,
   },
@@ -777,7 +786,7 @@ const styles = StyleSheet.create({
   cartBtn: {
     flex: 1,
     borderRadius: 8,
-    backgroundColor: '#6366f1',
+    backgroundColor: '#7d2181',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 7,
@@ -785,7 +794,7 @@ const styles = StyleSheet.create({
   // Botón primario relleno con ícono + texto en fila.
   primaryBtn: {
     borderRadius: 8,
-    backgroundColor: '#6366f1',
+    backgroundColor: '#7d2181',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -847,7 +856,7 @@ const styles = StyleSheet.create({
     borderColor: '#d1d5db',     // Gris cuando está deshabilitado.
   },
   pagBtnText: {
-    color: '#6366f1',
+    color: '#7d2181',
     fontWeight: '600',
     fontSize: 13,
   },
@@ -885,7 +894,7 @@ const styles = StyleSheet.create({
   // Nombre de la categoría en pequeño sobre el título.
   modalCategoria: {
     fontSize: 11,
-    color: '#6366f1',
+    color: '#7d2181',
     fontWeight: '700',
     textTransform: 'uppercase',
     letterSpacing: 0.6,
@@ -906,7 +915,7 @@ const styles = StyleSheet.create({
   modalPrecio: {
     fontSize: 24,
     fontWeight: '800',
-    color: '#6366f1',
+    color: '#7d2181',
   },
   // Fila de stock: ícono + texto.
   modalStock: {

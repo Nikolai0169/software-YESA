@@ -17,7 +17,7 @@ import {useEffect, useState} from 'react';
 import {ActivityIndicator, Alert, FlatList, Pressable, StyleSheet, TextInput, View} from 'react-native';
 
 //lee los parametros de la url para obtener el id del pedido
-import {ThemedText} from '@/components/themed-text';
+import {ThemedText} from '../../components/themed-text';
 
 import apiClient from '../../src/api/apiClient';
 import {activarUsuario, desactivarUsuario, deleteUsuario} from '../../src/services/usuarioAdminService';
@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
   // Fila de búsqueda: input expandible + botón fijo.
   searchRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
   input: { flex: 1, borderWidth: 1, borderColor: '#d5d5d5', borderRadius: 10, paddingHorizontal: 12, backgroundColor: '#fff' },
-  searchBtn: { backgroundColor: '#0a7ea4', borderRadius: 10, paddingHorizontal: 14, justifyContent: 'center' },
+  searchBtn: { backgroundColor: '#7d2181', borderRadius: 10, paddingHorizontal: 14, justifyContent: 'center' },
   searchBtnText: { color: '#fff', fontWeight: '700' },
   // Lista ocupa todo el espacio vertical entre los controles.
   list: { flex: 1 },
@@ -258,8 +258,8 @@ const styles = StyleSheet.create({
   meta: { color: '#888', fontSize: 13 },
   // Paginación centrada.
   paginationRow: { flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'center', marginTop: 10 },
-  // Botones de página: azul petróleo con texto blanco.
-  pageBtn: { backgroundColor: '#0a7ea4', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6 },
+  // Botones de página: color primario con texto blanco.
+  pageBtn: { backgroundColor: '#7d2181', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6 },
   pageBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
   pageLabel: { fontWeight: 'bold' },
 });

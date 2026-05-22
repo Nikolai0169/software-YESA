@@ -8,13 +8,14 @@ import {Tabs} from 'expo-router';
 //react necesario para que JSX funcione correctamente
 import React from 'react';
 //hapticTab version personalizada del boton de la pestaña que agrega vibracion tactil (haptic feedback) al presionar el tab
-import {HapticTab} from '@/components/haptic-tab';
+import {HapticTab} from '../../components/haptic-tab';
 //InconSymbols componente que muestra inconos SF Synbols iOS y material de android
-import {IconSymbol} from '@/components/ui/icon-symbol';
+import {IconSymbol} from '../../components/ui/icon-symbol';
+import { Ionicons } from '@expo/vector-icons';
 //colors objeto de colores del tema de app modo claro y oscuro
-import {Colors} from '@/constats/theme';
+import {Colors} from '../../constants/theme';
 //useColoSchema hook que detecta si el dispositivo esta en modo claro u oscuro
-import {useColorScheme} from '@/hooks/use-color-scheme';
+import {useColorScheme} from '../../hooks/use-color-scheme';
 
 //TabLayOut componente principal que configura toda la barra de navegacion
 //expo router lo exporta como default y lo monte automaticamente
@@ -26,9 +27,9 @@ export default function TabLayout() {
         //tabs renderiza la barra de pestañas inferior y gestiona que la pantalla esté activa en cada momento 
         <Tabs
             screenOptions = {{
-                //tabbar ActiveTintColor color del icono y texto de la pestaña activa 
-                //si colorSchema es null (no detectado) usa light por defecto
-                tabBarActiveTintColor: Colors[colorSchema ?? 'light'].tint,
+                // Colores explícitos para los iconos de la barra (activa/inactiva)
+                tabBarActiveTintColor: Colors[colorSchema ?? 'light'].tabIconSelected,
+                tabBarInactiveTintColor: Colors[colorSchema ?? 'light'].tabIconDefault,
                 //headerShown false oculta el encabezado superior en todas las pantallas
                 headerShown: false,
                 //tabBarButton reemplaza el boton estandar por hapticTab con vibracion
@@ -43,8 +44,8 @@ export default function TabLayout() {
             <Tabs.Screen
                 name='index'
                 options={{
-                    //texto que aparece debajo del icono de la barra
-                    title: 'Tienda Adso',
+                        //texto que aparece debajo del icono de la barra
+                        title: 'Catálogo',
                     //tabBarIcon funcion que recibe el color activo o inactivo y devuelve el icono 
                     //house.fill = iconos de casa relleno (representa el icono de la tienda)
                     tabBarIcon: ({color}) => <IconSymbol size={28} name='house.fill' color={color}/>
@@ -76,8 +77,8 @@ export default function TabLayout() {
                     //texto que aparece debajo del icono de la barra
                     title: 'Cuenta',
                     //tabBarIcon funcion que recibe el color activo o inactivo y devuelve el icono 
-                    //house.fill = iconos de casa relleno (representa el icono de la tienda)
-                    tabBarIcon: ({color}) => <IconSymbol size={28} name='person.circle' color={color}/>
+                    //usamos 'person.fill' para que coincida con estilo relleno de otras pestañas
+                    tabBarIcon: ({color}) => <Ionicons name="person" size={28} color={color} />
                 }}
             />
             

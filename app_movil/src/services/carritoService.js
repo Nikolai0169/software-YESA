@@ -30,10 +30,10 @@ async function writeLocalCart(items) {
 }
 
 //convierte en diferentes formatos de items del backend/local a una estructura unica
-function normalizeItems(item) {
-    const producto = item.producto || item.producto || {};
+function normalizeItem(item) {
+    const producto = item.producto || {};
     const precio = Number(item.precio ?? item.precioUnitario ?? producto.precio ?? 0);
-    const cantidad = Number(item.cantidad ?? item.cantidad ?? 0);
+    const cantidad = Number(item.cantidad ?? producto.cantidad ?? 0);
     return {
         id: item.id,
         productoId: item.productoId ?? producto.id,
@@ -42,19 +42,19 @@ function normalizeItems(item) {
         precio,
         cantidad,
         subtotal: precio * cantidad,
-    }
+    };
+}
 
-    //calcula resumen del carrito: items normalizados, cantidad total y monto total
-    function summarize(items) {
-        const normalized = items.map(normalizeItems);
-        const totalItems = normalized.reduce((acc, item) => acc + item.subtotal, 0);
-
-        return {
-            items: normalized,
-            totalItems,
-            total
-        }
-    }
+//calcula resumen del carrito: items normalizados, cantidad total y monto total
+function summarize(items) {
+    const normalized = (items || []).map(normalizeItem);
+    const totalItems = normalized.reduce((acc, it) => acc + (it.cantidad || 0), 0);
+    const total = normalized.reduce((acc, it) => acc + (it.subtotal || 0), 0);
+    return {
+        items: normalized,
+        totalItems,
+        total,
+    };
 }
 
 const carritoService = {
@@ -63,8 +63,7 @@ const carritoService = {
         if(isAuthenticated) {
             const response = await apiClient.get('/cliente/carrito');
             const payload = response.data?.data || response.data || {};
-            const carrito = payload.carrito || {};
-            const items = carrito.items || carrito.items || [];
+            const items = payload.items || payload.carrito?.items || [];
             return summarize(items);
         }
 
@@ -73,29 +72,38 @@ const carritoService = {
     },
 
     //agrega un producto al carrito correspondiente 
-    addToCarrito: async({isAuthenticated, producto, cantidad=1}) => {
-        if(isAuthenticated) {
+    addToCarrito: async({isAuthenticated, producto, cantidad = 1}) => {
+        console.log('[carritoService] addToCarrito called', { isAuthenticated, productoId: producto?.id ?? producto?.productoId, cantidad });
+        const productoId = producto?.id ?? producto?.productoId ?? null;
+        if (!productoId) {
+            throw new Error('El productId es requerido para agregar al carrito');
+        }
+
+        if (isAuthenticated) {
+            console.log('[carritoService] POST /cliente/carrito', { productoId, cantidad });
             await apiClient.post('/cliente/carrito', {
-                productpoId: producto.id,
+                productoId,
                 cantidad,
             });
             return;
         }
 
-        const localItems = await readLocxalCart();
-        const existing = localItems.find((item) => Number(item.productoId) === Number(producto.id));
+        const localItems = await readLocalCart();
+        const existing = localItems.find((item) => Number(item.productoId) === Number(productoId));
 
-        if(existing) {
-            existing.cantidad += cantidad; 
-        }else {
+        if (existing) {
+            existing.cantidad = Number(existing.cantidad || 0) + Number(cantidad || 0);
+        } else {
             localItems.push({
                 id: Date.now(),
-                productoId: producto.id,
-                nombre: producto.nombre,
-                precio: Number(producto.precio || 0),
+                productoId,
+                nombre: producto?.nombre || 'Producto',
+                imagen: producto?.imagen || '',
+                precio: Number(producto?.precio || 0),
                 cantidad,
             });
         }
+        console.log('[carritoService] writeLocalCart', localItems);
         await writeLocalCart(localItems);
     },
 
@@ -119,30 +127,30 @@ const carritoService = {
     //elimina un item puntual del carrito
     removeItem: async({isAuthenticated, itemId})  => {
         if(isAuthenticated) {
-            await apiClient.delete(`/cliente/carrito/${itemId}/eliminar`);
+            await apiClient.delete(`/cliente/carrito/${itemId}`);
             return;
         }
 
-        const localItems = await readLocalCarr();
-        const filtered = localItems.fins((it) => Number(it.id) !== Number(itemId));
+        const localItems = await readLocalCart();
+        const filtered = localItems.filter((it) => Number(it.id) !== Number(itemId));
         await writeLocalCart(filtered);
     },
 
     //vacia todo el carrito
-    cleanCarrito: async({isAuthenticated}) => {
-        if(isAuthenticated) {
-            await apiClient.delete('/cliente/carrito')
+    vaciarCarrito: async(isAuthenticated) => {
+        if (isAuthenticated) {
+            await apiClient.delete('/cliente/carrito');
             return;
         }
 
-        await readLocalCart([]);
+        await writeLocalCart([]);
     },
 
     //migrar todos los items guardados localmente al carrito del backend despues de que el usuario inicia sesion 
 
     mergeLocalToBackend: async() => {
         const localItems = await readLocalCart();
-        if(localItems.length ===0) {
+        if(localItems.length === 0) {
             return;
         }
 

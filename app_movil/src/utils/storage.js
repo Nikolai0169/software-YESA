@@ -17,23 +17,23 @@ async function safeCall(fn, fallbackValue) {
 //lee una clave del almacenamiento 
 //primero intenta por AsyncStorage y si falla usa el respaldo de memoria
 
-export async function  storageGetItem(key) {
+export async function storageGetItem(key) {
     const value = await safeCall(() => AsyncStorage.getItem(key), null);
-    if(value!== null) {
+    if (value !== null) {
         return value;
     }
-    return memoryStore.has(key) ? memoryStore.get(key): null;
+    return memoryStore.has(key) ? memoryStore.get(key) : null;
 }
 
-//guarda una clave en asynstorage
+//guarda una clave en asyncstorage
 //si no puede persistir la almacena en la memoria virtual
-export async function storageGetItem(key,value) {
-    const ok = await safeCall(async() => {
-        await AsyncStorage.setItem(key,value);
+export async function storageSetItem(key, value) {
+    const ok = await safeCall(async () => {
+        await AsyncStorage.setItem(key, value);
         return true;
     }, false);
-    if(!ok) {
-        memoryStore.set(key,value);
+    if (!ok) {
+        memoryStore.set(key, value);
     }
 }
 

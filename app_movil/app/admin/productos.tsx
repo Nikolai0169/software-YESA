@@ -20,7 +20,7 @@ import {ActivityIndicator, ScrollView, StyleSheet,TextInput, Alert, FlatList, Im
 
 //lee los parametros de la url para obtener el id del pedido
 import {router} from 'expo-router';//navegacion y parametros de ruta
-import {ThemedText} from '@/components/themed-text';
+import {ThemedText} from '../../components/themed-text';
 import apiClient from '../../src/api/apiClient';
 import {activarProducto, desactivarProducto, deleteProduct} from '../../src/services/adminService';
 import {useAuth} from '../../src/context/authContext';
@@ -75,15 +75,16 @@ export default function AdminProductosScreen() {
         setErrorMessage('');
         try{
             const params: string[] = [];
-            if(search.trim()) params.push(`search=${encodeURIComponent(search.trim())}`);
+            if(search.trim()) params.push(`buscar=${encodeURIComponent(search.trim())}`);
             params.push(`pagina=${page}`);
             params.push(`limite=10`);
             const url = `/admin/productos?${params.join('&')}`;
             const res = await apiClient.get(url);
-            const productosData: Producto[] = res.data?.productos || [];
+            // El backend responde { success:true, data: { productos, paginacion } }
+            const productosData: Producto[] = res.data?.data?.productos || [];
             setProductos(productosData);
             setPagina(page);
-            setTotalPaginas(res.data?.data.paginacion?.totalPaginas || 1);
+            setTotalPaginas(res.data?.data?.paginacion?.totalPaginas || 1);
         }catch(error: unknown) {
             setErrorMessage((error as {message?:string})?.message || 'Error al cargar productos');
         }finally {
@@ -126,7 +127,7 @@ export default function AdminProductosScreen() {
       </View>
 
       {/* Botón para crear un nuevo producto: navega al formulario vacío */}
-      <Pressable style={styles.createBtn} onPress={() => push('/admin/producto-form')}>
+      <Pressable style={styles.createBtn} onPress={() => push('/admin/productos-form')}>
         <ThemedText style={styles.createBtnText}>+ Crear producto</ThemedText>
       </Pressable>
 
@@ -152,7 +153,7 @@ export default function AdminProductosScreen() {
               style={{ flex: 1, flexDirection: 'row', gap: 10 }}
               // Navega al formulario de edición pasando el objeto producto serializado como JSON.
               // JSON.stringify convierte el objeto a string para pasarlo como parámetro de ruta.
-              onPress={() => pushParams('/admin/producto-form', { producto: JSON.stringify(item) })}
+              onPress={() => pushParams('/admin/productos-form', { producto: JSON.stringify(item) })}
             >
               {/* Miniatura del producto. Si no tiene imagen usa un placeholder externo. */}
               <Image
@@ -250,7 +251,7 @@ const styles = StyleSheet.create({
   // Fila de búsqueda: input expandible + botón fijo a la derecha.
   searchRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
   input: { flex: 1, borderWidth: 1, borderColor: '#d5d5d5', borderRadius: 10, paddingHorizontal: 12, backgroundColor: '#fff' },
-  searchBtn: { backgroundColor: '#0a7ea4', borderRadius: 10, paddingHorizontal: 14, justifyContent: 'center' },
+  searchBtn: { backgroundColor: '#7d2181', borderRadius: 10, paddingHorizontal: 14, justifyContent: 'center' },
   searchBtnText: { color: '#fff', fontWeight: '700' },
   // Botón verde para crear nuevo producto.
   createBtn: { backgroundColor: '#218f4c', borderRadius: 10, paddingVertical: 12, alignItems: 'center', marginBottom: 8 },

@@ -20,18 +20,18 @@ export async function updateProduct (id, data) {
 
 //eliminar un producto del backend por su id
 export async function deleteProduct(id){
-    const res = await api.delete(`/admin/productos/${id}`)
+    const res = await api.delete(`/admin/productos/${id}`);
     return res.data;
 }
 
 //activar un producto del backend por id 
 export async function activarProducto(id) {
-    const res = await api.toggle(`/admin/productos/${id}/activar`)
+    const res = await api.patch(`/admin/productos/${id}/toggle`);
     return res.data;
 }
 
 //desactiva un producto del backend por id
 export async function desactivarProducto(id) {
-    const res = await api.toggle(`/admin/productos/${id}/desactivar`)
+    const res = await api.patch(`/admin/productos/${id}/toggle`);
     return res.data;
 }

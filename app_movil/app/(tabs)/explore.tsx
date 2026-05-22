@@ -26,9 +26,9 @@ import {router} from 'expo-router';
 import {Ionicons} from '@expo/vector-icons';
 import {useAuth} from '../../src/context/authContext';
 //themedText : texto que aplica colores del tema del dispositivo de manera automatica claro u oscuro
-import {ThemedText} from '@/components/themed-text';
+import {ThemedText} from '../../components/themed-text';
 //themedView : color de fondo automatico segun el tema del dispositivo
-import {ThemedView} from '@/components/themed-view';
+import {ThemedView} from '../../components/themed-view';
 
 /**
  * AuthCtx define la forma del objeto devuelto por useAuth es necesario
@@ -441,7 +441,7 @@ export default function TabTwoScreen() {
               <Text style={styles.errorText}>{perfilError}</Text>
             </View>
           ) : null}
-          {/* Fila de botones: "Guardar" (índigo) y "Cancelar" (outline) */}lllllll,m  
+          {/* Fila de botones: "Guardar" (índigo) y "Cancelar" (outline) */}
           <View style={styles.editActions}>
             {/* Botón guardar: muestra spinner mientras guarda */}
             <Pressable style={[styles.btn, styles.btnPrimary, { flex: 1 }]} onPress={handleGuardarPerfil} disabled={savingPerfil}>
@@ -471,10 +471,22 @@ export default function TabTwoScreen() {
       ) : null}
 
       {/* ── BOTÓN: MIS PEDIDOS (visible para todos los roles) ───────────── */}
-      <Pressable style={[styles.btn, { backgroundColor: '#0a7ea4' }]} onPress={() => routerPush('/mis-pedidos')}>
+      <Pressable style={[styles.btn, { backgroundColor: '#7d2181' }]} onPress={() => routerPush('/mis-pedidos')}>
         <Ionicons name="receipt-outline" size={17} color="#fff" />
         <Text style={styles.btnTextWhite}>Mis Pedidos</Text>
       </Pressable>
+
+      {/* ── SECCIÓN: AYUDA Y CONTACTO ───────────────────────────────── */}
+      <Pressable style={[styles.btn, { backgroundColor: '#7d2181' }]} onPress={() => routerPush('/faq')}>
+        <Ionicons name="help-circle-outline" size={17} color="#fff" />
+        <Text style={styles.btnTextWhite}>Preguntas Frecuentes</Text>
+      </Pressable>
+
+      <ThemedView style={{ padding: 12, borderRadius: 10, marginTop: 8 }}>
+        <ThemedText type="defaultSemiBold">Atención al Cliente</ThemedText>
+        <ThemedText style={{ color: '#6b7280' }}>yesa@gmail.com</ThemedText>
+        <ThemedText style={{ color: '#6b7280' }}>Tel: 01-800-YESA · WhatsApp: +57 300 123 4567</ThemedText>
+      </ThemedView>
 
       {/* ── BOTÓN: CERRAR SESIÓN ────────────────────────────────────────── */}
       <Pressable style={[styles.btn, { backgroundColor: '#ef4444' }]} onPress={handleLogout}>
@@ -498,14 +510,14 @@ const styles = StyleSheet.create({
   formCard: { borderRadius: 12, padding: 16, gap: 12, margin: 20 }, // Tarjeta con fondo temático.
   editSection: { borderRadius: 10, padding: 12, gap: 8, borderWidth: 1, borderColor: '#e0eaf3' }, // Sección de edición (no usada actualmente).
   editActions: { flexDirection: 'row', gap: 8, marginTop: 4 },      // Fila de botones Guardar/Cancelar.
-  editBtn: { borderRadius: 10, borderWidth: 1, borderColor: '#0a7ea4', paddingVertical: 10, alignItems: 'center' },
-  editBtnText: { color: '#0a7ea4', fontWeight: '600' },
+  editBtn: { borderRadius: 10, borderWidth: 1, borderColor: '#7d2181', paddingVertical: 10, alignItems: 'center' },
+  editBtnText: { color: '#7d2181', fontWeight: '600' },
   meta: { color: '#666', fontSize: 13 },                             // Texto secundario pequeño.
-  primaryButton: { borderRadius: 10, paddingVertical: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: '#0a7ea4' }, // Botón "Entrar" / "Crear cuenta".
+  primaryButton: { borderRadius: 10, paddingVertical: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: '#7d2181' }, // Botón "Entrar" / "Crear cuenta".
   primaryButtonText: { color: '#fff', fontWeight: '700', fontSize: 16 },
   secondaryButton: { flex: 1, borderRadius: 10, borderWidth: 1, borderColor: '#d5d5d5', paddingVertical: 12, alignItems: 'center', justifyContent: 'center' },
   logoutButton: { borderRadius: 10, backgroundColor: '#b93a32', paddingVertical: 12, alignItems: 'center', marginTop: 8 },
-  ordersButton: { borderRadius: 10, backgroundColor: '#0a7ea4', paddingVertical: 12, alignItems: 'center', marginTop: 8 },
+  ordersButton: { borderRadius: 10, backgroundColor: '#7d2181', paddingVertical: 12, alignItems: 'center', marginTop: 8 },
   adminBtn: { borderRadius: 10, backgroundColor: '#04566f', paddingVertical: 12, alignItems: 'center', marginTop: 8 },
   adminBtnText: { color: '#fff', fontWeight: '700' },
   ordersText: { color: '#fff', fontWeight: '700' },

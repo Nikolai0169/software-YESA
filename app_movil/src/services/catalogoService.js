@@ -9,7 +9,7 @@ import  apiClient from '../api/apiClient';
 const catalogoService = {
     //consulta la lista del categorias disponibles para filtrar productos de navegacion
     getCategorias: async() => {
-        const response = await apiClient.pget('catalogo/categorias');
+        const response = await apiClient.get('catalogo/categorias');
         const payload = response.data?.data || response.data || {};
         return payload.categorias || [];
     },

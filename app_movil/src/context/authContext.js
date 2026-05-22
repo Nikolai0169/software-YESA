@@ -11,7 +11,7 @@ import authService from '../services/authService';
 //valor inicial null; useAuth() valida que esta dentro del provider
 const authContext = createContext(null);
 
-export function authProvider({children}) {
+export function AuthProvider({children}) {
     //usuario autenticado objeto con id, nombre, rol o null
     const [user, setUser] = useState(null);
     //JWT recibido del backend}; su presencia indica que el usuario esta logueado
@@ -30,9 +30,9 @@ export function authProvider({children}) {
             const session = await authService.getSession();
             setToken(session?.token || null);
             setUser(session?.user || null);
-        }finally {
-            //siemnpr marca la carga como terminada, aunque falle la lectura
-            setIsLoading(false);
+        } finally {
+            //siempre marca la carga como terminada, aunque falle la lectura
+            setLoading(false);
         }
     }, []);
 
@@ -48,12 +48,14 @@ export function authProvider({children}) {
 
     const login = useCallback (async (email, password) => {
         const response = await authService.login(email,password);
-        //el backend puede devoler el payload dento de response.data o directo
-        const payload = response.data || response; 
+        // el servicio authService.login retorna el payload (data) o la respuesta
+        const payload = response.data || response;
 
         setToken(payload?.token || null);
-        setUser(payload?.user || null);
-        
+        // el backend puede devolver el usuario en `usuario` o `user`
+        const usuario = payload?.usuario || payload?.user || null;
+        setUser(usuario);
+
         return payload;
     }, []);
 
@@ -83,9 +85,10 @@ export function authProvider({children}) {
      */
 
     const updatePerfil = useCallback(async (data) => {
-        const usuario = await authService.updatePerfil(data);
-        if(usuario) setUser(usuario)
-        return usuario;
+        const resp = await authService.updatePerfil(data);
+        const usuario = resp?.data?.usuario || resp?.usuario || resp?.user || null;
+        if (usuario) setUser(usuario);
+        return resp;
     }, []);
 
     /**
@@ -106,7 +109,7 @@ export function authProvider({children}) {
     }),[user, token, isLoading, login, register, logout, updatePerfil, restoreSession]
     );
 
-    return <authContext.Provider valuye={value}>{children}</authContext.Provider>;
+    return <authContext.Provider value={value}>{children}</authContext.Provider>;
 }
 
     /**

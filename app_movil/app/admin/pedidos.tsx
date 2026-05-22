@@ -16,9 +16,9 @@ import {useState, useEffect} from 'react';
 import {ActivityIndicator, Pressable, ScrollView, StyleSheet, TextInput, View, FlatList} from 'react-native';
 
 //lee los parametros de la url para obtener el id del pedido
-import {router} from 'expo-router';
+import {router, useLocalSearchParams} from 'expo-router';
 //themedText : texto que aplica colores del tema del dispositivo de manera automatica claro u oscuro
-import {ThemedText} from '@/components/themed-text';
+import {ThemedText} from '../../components/themed-text';
 //cliente http axios con JWT 
 import apiClient from '../../src/api/apiClient';
 
@@ -65,13 +65,17 @@ export default function AdminPedidoScreen() {
      * search texto de busqueda default si la cadena va vacia carga todos los pedidos 
      */
 
-    const fetchPedidos = async(page = 1, search = '') => {
+    const paramsUrl = useLocalSearchParams<{estado?: string}>();
+    const estadoFiltro = paramsUrl.estado?.toString();
+
+    const fetchPedidos = async(page = 1, search = '', estado?: string) => {
         setLoading(true); //muestra el spinner de carga 
         setErrorMessage('');
         try {
             //construye el query del string dinamicamente 
             const params: string[] = [];
-            if(search.trim()) params.push(`buscar=${encodeURIComponent(search.trim())}`);//codifica los caracteres especiales en la busqeuda 
+        if(search.trim()) params.push(`buscar=${encodeURIComponent(search.trim())}`);//codifica los caracteres especiales en la busqeuda 
+        if(estado) params.push(`estado=${encodeURIComponent(estado)}`);
             params.push(`pagina=${page}`); //numero de la pagina
             params.push('limite=10'); //10 pedidos por pagina
             const url = `/admin/pedidos?${params.join('&')}`; //construye la url completa con los parametros 
@@ -100,8 +104,8 @@ export default function AdminPedidoScreen() {
      */
 
     useEffect(() => {
-        fetchPedidos(1, '');
-    }, []);
+      fetchPedidos(1, '', estadoFiltro);
+    }, [estadoFiltro]);
 
     /**
      * funcion handlePaina
@@ -111,8 +115,8 @@ export default function AdminPedidoScreen() {
      */
 
     const handlePagina = (next: number) => {
-        const nueva = Math.max(1, Math.min(totalPaginas, pagina + next)); 
-        fetchPedidos(nueva, busqueda); //recarga con la nueva página pero conserva el filtro 
+      const nueva = Math.max(1, Math.min(totalPaginas, pagina + next)); 
+      fetchPedidos(nueva, busqueda, estadoFiltro); //recarga con la nueva página y conserva el filtro 
     };
     // ── RENDERIZADO ───────────────────────────────────────────────────────────
   return (
@@ -211,8 +215,8 @@ const styles = StyleSheet.create({
   searchRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
   // Campo de texto: ocupa el espacio disponible (flex:1), borde gris, fondo blanco.
   input: { flex: 1, borderWidth: 1, borderColor: '#d5d5d5', borderRadius: 10, paddingHorizontal: 12, backgroundColor: '#fff' },
-  // Botón de búsqueda: azul petróleo.
-  searchBtn: { backgroundColor: '#0a7ea4', borderRadius: 10, paddingHorizontal: 14, justifyContent: 'center' },
+  // Botón de búsqueda: color primario del sistema.
+  searchBtn: { backgroundColor: '#7d2181', borderRadius: 10, paddingHorizontal: 14, justifyContent: 'center' },
   searchBtnText: { color: '#fff', fontWeight: '700' },
   // La lista ocupa todo el espacio vertical disponible entre la búsqueda y la paginación.
   list: { flex: 1 },
@@ -223,8 +227,8 @@ const styles = StyleSheet.create({
   meta: { color: '#888', fontSize: 13 },
   // Fila de paginación centrada horizontalmente.
   paginationRow: { flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'center', marginTop: 10 },
-  // Botón de página: azul petróleo con texto blanco.
-  pageBtn: { backgroundColor: '#0a7ea4', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6 },
+  // Botón de página: color primario con texto blanco.
+  pageBtn: { backgroundColor: '#7d2181', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6 },
   pageBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
   pageLabel: { fontWeight: 'bold' },
 });
