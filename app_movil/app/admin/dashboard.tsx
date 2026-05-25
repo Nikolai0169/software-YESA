@@ -83,9 +83,9 @@ export default function AdminDashboardScreen() {
                     apiClient.get('/admin/pedidos/estadisticas'), 
                 ]);
 
-                //los stats de usuarios solo se piden si el usuario es admin
-                //los auxiliares no tienen acceso a ese endpoint
-                const userStats = isAdmin? await apiClient.get('/admin/usuarios/stats'): null;
+                // Obtener el total exacto de la lista de usuarios usando la paginación
+                // Solicitamos un solo registro y leemos `paginacion.total`.
+                const userStats = isAdmin ? await apiClient.get('/admin/usuarios?limite=1') : null;
 
                 //extraer los datos de cada respuesta con optional chaining y fallback 
                 const catsData = cats.data?.data?.categorias || [];
@@ -101,7 +101,8 @@ export default function AdminDashboardScreen() {
                   categorias: Array.isArray(catsData) ? catsData.length: 0,
                   subcategorias: Array.isArray(subsData) ? subsData.length: 0,
                   productos: prods.data?.data?.paginacion?.total || 0,
-                  usuarios: userStats?.data?.data?.stats?.totalUsuarios || 0,
+                  // Usar el total que devuelve la lista paginada (coincide con /admin/usuarios)
+                  usuarios: userStats?.data?.data?.paginacion?.total || 0,
                   pedidos: ordData.totalPedidos || 0,
                   pendientes: pendientesObj.cantidad || 0,
                   ventas: ordData.ventasTotales || 0,

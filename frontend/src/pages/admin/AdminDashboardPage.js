@@ -56,9 +56,34 @@ const AdminDashboardPage = () => {
       const pedidosEntregados = pedidosArray.filter(p => p.estado === 'entregado').length;
       const pedidosCancelados = pedidosArray.filter(p => p.estado === 'cancelado').length;
 
+      // Helper robusto para convertir totales a número (maneja strings con separadores y símbolos)
+      const parseNumber = (v) => {
+        if (v === null || v === undefined) return 0;
+        if (typeof v === 'number' && !Number.isNaN(v)) return v;
+        const s = String(v).trim();
+        // eliminar cualquier caracter que no sea dígito, punto, coma, signo menos
+        const cleaned = s.replace(/[^0-9.,-]/g, '');
+        const lastComma = cleaned.lastIndexOf(',');
+        const lastDot = cleaned.lastIndexOf('.');
+        try {
+          if (lastComma > lastDot) {
+            // formato 1.234,56 -> quitar puntos y convertir coma a punto
+            const noThousand = cleaned.replace(/\./g, '');
+            return parseFloat(noThousand.replace(',', '.')) || 0;
+          }
+          if (lastDot > lastComma) {
+            // formato 1,234.56 -> quitar comas miles
+            return parseFloat(cleaned.replace(/,/g, '')) || 0;
+          }
+          return parseFloat(cleaned.replace(',', '.')) || 0;
+        } catch (e) {
+          return 0;
+        }
+      };
+
       const ventasTotales = pedidosArray
         .filter(p => p.estado === 'entregado' || p.estado === 'pagado')
-        .reduce((acc, p) => acc + (p.total || 0), 0);
+        .reduce((acc, p) => acc + parseNumber(p.total), 0);
 
       const ultimos = [...pedidosArray]
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
@@ -89,11 +114,13 @@ const AdminDashboardPage = () => {
   }, [loadStats]);
 
   const formatearPrecio = (precio) => {
+    const n = (precio === null || precio === undefined) ? 0 : Number(precio);
+    const safe = Number.isNaN(n) ? 0 : n;
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
       currency: 'COP',
       minimumFractionDigits: 0
-    }).format(precio);
+    }).format(safe);
   };
 
   const formatearFecha = (fecha) => {

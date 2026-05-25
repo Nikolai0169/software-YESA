@@ -74,18 +74,9 @@ export default function AdminCategorias() {
   };
 
   const eliminar = (id?: number) => {
-    if (!id) return;
-    Alert.alert('Eliminar', 'Confirma eliminar esta categoría?', [
-      { text: 'Cancelar', style: 'cancel' },
-      { text: 'Eliminar', style: 'destructive', onPress: async () => {
-        try {
-          await apiClient.delete(`/admin/categorias/${id}`);
-          fetchCategorias();
-        } catch (error: unknown) {
-          Alert.alert('Error', (error as {message?:string})?.message || 'No se pudo eliminar');
-        }
-      } }
-    ]);
+    // En la app móvil no permitimos eliminar categorías.
+    // Mostramos una alerta informativa en lugar de llamar al backend.
+    Alert.alert('Acción no permitida', 'No se puede eliminar categoria desde app movil');
   };
 
   return (

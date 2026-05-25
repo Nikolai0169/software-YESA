@@ -20,6 +20,8 @@ import {router} from 'expo-router';
 import {Ionicons} from '@expo/vector-icons';
 import {useAuth} from '../../src/context/authContext';
 import {useCarrito} from '../../src/context/carritoContext';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
 
 //carritoctx define la forma de los datos que devuelve useCarrito
 //TypeScript necesita esto porque carritoContext.js esta en javaScript
@@ -59,6 +61,14 @@ export default function carritoScreen() {
     //obtiene del contexto del carrito los datos y funciones necesarias 
     //se usa as carritoCtx porque el contexto de js y typeScript no infiere en tipos
     const {items, total, totalItems, loading, cambiarCantidad, eliminarItem, vaciarCarrito} = useCarrito() as carritoCtx;
+    const { refreshCarrito } = useCarrito() as any;
+
+    // Recarga el carrito cada vez que la pantalla recibe foco (por ejemplo, tras acciones externas)
+    useFocusEffect(
+      useCallback(() => {
+        refreshCarrito();
+      }, [refreshCarrito])
+    );
 
     // Helpers using router must be created inside the component to avoid
     // accessing the router store before it's initialized by Expo Router.

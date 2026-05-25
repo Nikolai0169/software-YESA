@@ -61,27 +61,26 @@ export default function AdminUsuariosScreen() {
      * consultas get /admin/usuarios con filtro de busqueda y paginacion
      * page pagina a cargar search texto e filtro vacio sin filtro
      */
-    const fetchUsuarios = async(page=1, search='') => {
-        setLoading(true);
-        setErrorMessage('');
-        try {
-            //construye la query string dinamicamente segun los parametros 
-            const params = [];
-            if(search.trim()) params.push(`search=${encodeURIComponent(search.trim())}`);
-            params.push(`page=${page}`);
-            params.push(`limite=10`);
-            const url = `/admin/usuarios?${params.join('&')}`;
-            const res = await apiClient.get(url);
-            const usuariosData: Usuario[] = res.data?.data?.usuarios || [];
-            setUsuarios(usuariosData);
-            setPagina(page);
-            setTotalPaginas(res.data?.data?.paginacion?.totalPaginas || 1);
-        }catch (error: unknown) {
-            setErrorMessage((error as {message?:string})?.message || 'No se pudo cargar usuarios');
-        }finally {
-            setLoading(false); 
-            setBusqueda('');
-        }
+    const fetchUsuarios = async(paginaParam=1, buscarParam='') => {
+      setLoading(true);
+      setErrorMessage('');
+      try {
+        // construye la query string con los nombres que espera el backend
+        const params = [];
+        if (String(buscarParam || '').trim()) params.push(`buscar=${encodeURIComponent(String(buscarParam).trim())}`);
+        params.push(`pagina=${paginaParam}`);
+        params.push(`limite=10`);
+        const url = `/admin/usuarios?${params.join('&')}`;
+        const res = await apiClient.get(url);
+        const usuariosData: Usuario[] = res.data?.data?.usuarios || [];
+        setUsuarios(usuariosData);
+        setPagina(paginaParam);
+        setTotalPaginas(res.data?.data?.paginacion?.totalPaginas || 1);
+      } catch (error: unknown) {
+        setErrorMessage((error as {message?:string})?.message || 'No se pudo cargar usuarios');
+      } finally {
+        setLoading(false);
+      }
     };
 
     /**
@@ -169,7 +168,7 @@ export default function AdminUsuariosScreen() {
               <View style={styles.actionsRow}>
                 {/* Botón Activar/Desactivar: rojo si está activo, verde si inactivo */}
                 <Pressable
-                  style={[styles.actionBtn, { backgroundColor: item.activo ? '#b93a32' : '#218f4c' }]}
+                  style={[styles.actionBtn, { backgroundColor: item.activo ? '#547200' : '#218f4c' }]}
                   onPress={async () => {
                     try {
                       if (item.activo) {
@@ -190,21 +189,7 @@ export default function AdminUsuariosScreen() {
                 <Pressable
                   style={[styles.actionBtn, { backgroundColor: '#b93a32' }]}
                   onPress={() => {
-                    Alert.alert('Eliminar usuario', 'Estas seguro de eliminar este usuario?', [
-                      { text: 'Cancelar', style: 'cancel' },
-                      {
-                        text: 'Eliminar',
-                        style: 'destructive',
-                        onPress: async () => {
-                          try {
-                            await deleteUsuario(item.id || item.id); // DELETE al backend.
-                            fetchUsuarios(pagina, busqueda);           // Recarga la lista.
-                          } catch {
-                            Alert.alert('Error', 'No se pudo eliminar');
-                          }
-                        },
-                      },
-                    ]);
+                    Alert.alert('Acción no permitida', 'No se puede eliminar usuario desde app movil');
                   }}
                 >
                   <ThemedText style={styles.actionBtnText}>Eliminar</ThemedText>

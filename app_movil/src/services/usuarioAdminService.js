@@ -7,19 +7,21 @@ import api from '../api/apiClient';
 
 //activa un usuario 
 export async function activarUsuario(id) {
-    const res = await api.patch(`/admin/usuarios/${id}/activat`);
+    // backend expone un endpoint toggle; mantenemos compatibilidad llamando al mismo
+    const res = await api.patch(`/admin/usuarios/${id}/toggle`);
     return res.data;
 }
 
 
 //desactiva un usuario 
 export async function desactivarUsuario(id) {
-    const res = await api.patch(`/admin/usuarios/${id}/desactivar`);
+    // backend expone un endpoint toggle; mantenemos compatibilidad llamando al mismo
+    const res = await api.patch(`/admin/usuarios/${id}/toggle`);
     return res.data;
 }
 
 //elimina un usuario
 export async function deleteUsuario(id) {
-    const res = await api.delete(`/admin/usuarios/${id}/eliminar`);
+    const res = await api.delete(`/admin/usuarios/${id}`);
     return res.data;
 }
