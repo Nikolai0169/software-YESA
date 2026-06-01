@@ -19,6 +19,7 @@ import RegisterPage from './pages/RegisterPage';
 import CatalogoPage from './pages/CatalogoPage';
 import ProductDetailPage from './pages/ProductDetailPage';
 import FavoritesPage from './pages/FavoritesPage';
+import PersonalizacionPage from './pages/personalizacion';
 import CarritoPage from './pages/CarritoPage';
 import CheckoutPage from './pages/CheckoutPage';
 import PedidoConfirmadoPage from './pages/PedidoConfirmadoPage';
@@ -56,6 +57,7 @@ function App() {
                   <FavoritesPage />
                 </ProtectedRoute>
               } />
+              <Route path="/personalizacion" element={<PersonalizacionPage />} />
               <Route path="/carrito" element={<CarritoPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/pedido-confirmado/:id" element={<PedidoConfirmadoPage />} />

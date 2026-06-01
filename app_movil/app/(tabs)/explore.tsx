@@ -29,6 +29,8 @@ import {useAuth} from '../../src/context/authContext';
 import {ThemedText} from '../../components/themed-text';
 //themedView : color de fondo automatico segun el tema del dispositivo
 import {ThemedView} from '../../components/themed-view';
+import { Colors } from '../../constants/theme';
+import { useColorScheme } from '../../hooks/use-color-scheme';
 
 /**
  * AuthCtx define la forma del objeto devuelto por useAuth es necesario
@@ -60,6 +62,7 @@ const routerPush = (path: string) => (router as unknown as {push: (p: string) =>
 
 export default function TabTwoScreen() {
     const {user, isAuthenticated, logout, login, register, isLoadingSession, updatePerfil} = useAuth() as AuthCtx;
+    const theme = Colors[useColorScheme() ?? 'light'];
     // estado del formulario login y registro
     //isRegisterMode true mostrar formulario de registro false mostrar login
     const [isRegisterMode, setIsRegisterMode] = useState(false);
@@ -224,10 +227,10 @@ export default function TabTwoScreen() {
   // un token de sesión guardado en el almacenamiento local del dispositivo.
   if (isLoadingSession) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" />
+      <ThemedView style={[styles.centered, { backgroundColor: theme.background }]}> 
+        <ActivityIndicator size="large" color={theme.primary} />
         <ThemedText>Cargando sesion...</ThemedText>
-      </View>
+      </ThemedView>
     );
   }
 
@@ -238,10 +241,10 @@ export default function TabTwoScreen() {
       // contenido hacia arriba para que los campos no queden tapados.
       // En iOS usa 'padding', en Android no es necesario (undefined).
       <KeyboardAvoidingView
-        style={styles.container}
+        style={[styles.container, { backgroundColor: theme.background }]}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         {/* ThemedView: aplica el color de fondo del tema (claro/oscuro) */}
-        <ThemedView style={styles.formCard}>
+        <ThemedView style={[styles.formCard, { backgroundColor: theme.surface, borderColor: theme.border, shadowColor: theme.shadow }]}> 
           {/* Título dinámico: "Registro" o "Iniciar sesion" según el modo */}
           <ThemedText type="title">{isRegisterMode ? 'Registro' : 'Iniciar sesion'}</ThemedText>
 
@@ -252,13 +255,13 @@ export default function TabTwoScreen() {
                 placeholder="Nombre *"
                 value={nombre}
                 onChangeText={setNombre}
-                style={styles.input}
+                style={[styles.input, { backgroundColor: theme.surface, borderColor: theme.border, color: theme.text }]}
               />
               <TextInput
                 placeholder="Apellido *"
                 value={apellido}
                 onChangeText={setApellido}
-                style={styles.input}
+                style={[styles.input, { backgroundColor: theme.surface, borderColor: theme.border, color: theme.text }]}
               />
             </>
           ) : null}
@@ -270,7 +273,7 @@ export default function TabTwoScreen() {
             keyboardType="email-address" // Muestra teclado con @ y .com fácilmente.
             value={email}
             onChangeText={setEmail}
-            style={styles.input}
+            style={[styles.input, { backgroundColor: theme.surface, borderColor: theme.border, color: theme.text }]}
           />
 
           {/* Campo de contraseña: texto oculto con puntos */}
@@ -279,7 +282,7 @@ export default function TabTwoScreen() {
             secureTextEntry               // Oculta el texto ingresado.
             value={password}
             onChangeText={setPassword}
-            style={styles.input}
+            style={[styles.input, { backgroundColor: theme.surface, borderColor: theme.border, color: theme.text }]}
           />
 
           {/* Campos adicionales SOLO en modo registro */}
@@ -291,7 +294,7 @@ export default function TabTwoScreen() {
                 secureTextEntry
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
-                style={styles.input}
+                style={[styles.input, { backgroundColor: theme.surface, borderColor: theme.border, color: theme.text }]}
               />
               {/* Teléfono: opcional, solo números, máximo 10 dígitos */}
               <TextInput
@@ -300,14 +303,14 @@ export default function TabTwoScreen() {
                 value={telefono}
                 onChangeText={setTelefono}
                 maxLength={10}
-                style={styles.input}
+                style={[styles.input, { backgroundColor: theme.surface, borderColor: theme.border, color: theme.text }]}
               />
               {/* Dirección: opcional */}
               <TextInput
                 placeholder="Direccion"
                 value={direccion}
                 onChangeText={setDireccion}
-                style={styles.input}
+                style={[styles.input, { backgroundColor: theme.surface, borderColor: theme.border, color: theme.text }]}
               />
             </>
           ) : null}
@@ -319,10 +322,10 @@ export default function TabTwoScreen() {
 
           {/* Botón principal: "Crear cuenta" o "Entrar" según el modo.
               disabled durante el proceso para evitar envíos múltiples. */}
-          <Pressable style={styles.primaryButton} onPress={handleSubmit} disabled={loadingSubmit}>
+          <Pressable style={[styles.primaryButton, { backgroundColor: theme.primary }]} onPress={handleSubmit} disabled={loadingSubmit}>
             {loadingSubmit ? (
               // Spinner mientras se procesa la solicitud.
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={theme.surface} />
             ) : (
               <Text style={styles.primaryButtonText}>
                 {isRegisterMode ? 'Crear cuenta' : 'Entrar'}
@@ -395,27 +398,27 @@ export default function TabTwoScreen() {
       {/* ── BANNER DE ÉXITO (tras actualizar perfil) ────────────────────── */}
       {/* Solo visible si perfilSuccess tiene texto */}
       {perfilSuccess ? (
-        <View style={styles.successBanner}>
-          <Ionicons name="checkmark-circle" size={16} color="#10b981" />
-          <Text style={styles.successText}>{perfilSuccess}</Text>
+        <View style={[styles.successBanner, { backgroundColor: theme.surfaceSoft, borderColor: theme.success }]}> 
+          <Ionicons name="checkmark-circle" size={16} color={theme.success} />
+          <Text style={[styles.successText, { color: theme.success }]}>{perfilSuccess}</Text>
         </View>
       ) : null}
 
       {/* ── SECCIÓN: EDITAR PERFIL ──────────────────────────────────────── */}
       {editMode ? (
         // ── FORMULARIO DE EDICIÓN ──────────────────────────────────────────
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border, shadowColor: theme.shadow }]}> 
           {/* Cabecera de la tarjeta con ícono de edición + título */}
           <View style={styles.cardHeader}>
-            <Ionicons name="create-outline" size={18} color="#6366f1" />
-            <Text style={styles.cardTitle}>Editar perfil</Text>
+            <Ionicons name="create-outline" size={18} color={theme.primary} />
+            <Text style={[styles.cardTitle, { color: theme.text }]}>Editar perfil</Text>
           </View>
           {/* Campo de nombre: placeholder muestra el valor actual */}
           <TextInput
             placeholder={`Nombre actual: ${user?.nombre || ''}`}
             value={editNombre}
             onChangeText={setEditNombre}
-            style={styles.input}
+            style={[styles.input, { backgroundColor: theme.surface, borderColor: theme.border, color: theme.text }]}
           />
           {/* Campo de email: teclado email, sin mayúsculas automáticas */}
           <TextInput
@@ -424,7 +427,7 @@ export default function TabTwoScreen() {
             onChangeText={setEditEmail}
             keyboardType="email-address"
             autoCapitalize="none"
-            style={styles.input}
+            style={[styles.input, { backgroundColor: theme.surface, borderColor: theme.border, color: theme.text }]}
           />
           {/* Campo de contraseña: dejar vacío = no cambiar */}
           <TextInput
@@ -432,65 +435,66 @@ export default function TabTwoScreen() {
             value={editPassword}
             onChangeText={setEditPassword}
             secureTextEntry
-            style={styles.input}
+            style={[styles.input, { backgroundColor: theme.surface, borderColor: theme.border, color: theme.text }]}
           />
           {/* Banner de error si la actualización falla */}
           {perfilError ? (
-            <View style={styles.errorBanner}>
-              <Ionicons name="alert-circle" size={15} color="#ef4444" />
-              <Text style={styles.errorText}>{perfilError}</Text>
+            <View style={[styles.errorBanner, { backgroundColor: theme.surfaceSoft, borderColor: theme.danger }]}> 
+              <Ionicons name="alert-circle" size={15} color={theme.danger} />
+              <Text style={[styles.errorText, { color: theme.danger }]}>{perfilError}</Text>
             </View>
           ) : null}
           {/* Fila de botones: "Guardar" (índigo) y "Cancelar" (outline) */}
           <View style={styles.editActions}>
             {/* Botón guardar: muestra spinner mientras guarda */}
-            <Pressable style={[styles.btn, styles.btnPrimary, { flex: 1 }]} onPress={handleGuardarPerfil} disabled={savingPerfil}>
-              {savingPerfil ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnTextWhite}>Guardar</Text>}
+            <Pressable style={[styles.btn, styles.btnPrimary, { flex: 1, backgroundColor: theme.primary }]} onPress={handleGuardarPerfil} disabled={savingPerfil}>
+              {savingPerfil ? <ActivityIndicator color={theme.surface} /> : <Text style={styles.btnTextWhite}>Guardar</Text>}
             </Pressable>
             {/* Botón cancelar: cierra el formulario sin guardar */}
-            <Pressable style={[styles.btn, styles.btnOutline, { flex: 1 }]} onPress={() => { setEditMode(false); setPerfilError(''); }}>
-              <Text style={styles.btnTextOutline}>Cancelar</Text>
+            <Pressable style={[styles.btn, styles.btnOutline, { flex: 1, borderColor: theme.primary, backgroundColor: theme.surface }]}
+              onPress={() => { setEditMode(false); setPerfilError(''); }}>
+              <Text style={[styles.btnTextOutline, { color: theme.primary }]}>Cancelar</Text>
             </Pressable>
           </View>
         </View>
       ) : (
         // ── BOTÓN PARA ABRIR EL FORMULARIO DE EDICIÓN ─────────────────────
-        <Pressable style={[styles.btn, styles.btnOutline]} onPress={() => { setEditMode(true); setPerfilSuccess(''); }}>
-          <Ionicons name="create-outline" size={17} color="#6366f1" />
-          <Text style={[styles.btnTextOutline, { color: '#6366f1' }]}>Editar perfil</Text>
+        <Pressable style={[styles.btn, styles.btnOutline, { borderColor: theme.primary, backgroundColor: theme.surface }]} onPress={() => { setEditMode(true); setPerfilSuccess(''); }}>
+          <Ionicons name="create-outline" size={17} color={theme.primary} />
+          <Text style={[styles.btnTextOutline, { color: theme.primary }]}>Editar perfil</Text>
         </Pressable>
       )}
 
       {/* ── BOTÓN: PANEL DE ADMINISTRACIÓN (solo admin y auxiliar) ─────── */}
       {/* La condición evalúa el rol del usuario antes de renderizar */}
       {user?.rol === 'administrador' || user?.rol === 'auxiliar' ? (
-        <Pressable style={[styles.btn, { backgroundColor: '#6366f1' }]} onPress={() => routerPush('/admin/dashboard')}>
-          <Ionicons name="speedometer-outline" size={17} color="#fff" />
+        <Pressable style={[styles.btn, { backgroundColor: theme.primary }]} onPress={() => routerPush('/admin/dashboard')}>
+          <Ionicons name="speedometer-outline" size={17} color={theme.surface} />
           <Text style={styles.btnTextWhite}>Panel de Administración</Text>
         </Pressable>
       ) : null}
 
       {/* ── BOTÓN: MIS PEDIDOS (visible para todos los roles) ───────────── */}
-      <Pressable style={[styles.btn, { backgroundColor: '#7d2181' }]} onPress={() => routerPush('/mis-pedidos')}>
-        <Ionicons name="receipt-outline" size={17} color="#fff" />
+      <Pressable style={[styles.btn, { backgroundColor: theme.primary }]} onPress={() => routerPush('/mis-pedidos')}>
+        <Ionicons name="receipt-outline" size={17} color={theme.surface} />
         <Text style={styles.btnTextWhite}>Mis Pedidos</Text>
       </Pressable>
 
       {/* ── SECCIÓN: AYUDA Y CONTACTO ───────────────────────────────── */}
-      <Pressable style={[styles.btn, { backgroundColor: '#7d2181' }]} onPress={() => routerPush('/faq')}>
-        <Ionicons name="help-circle-outline" size={17} color="#fff" />
+      <Pressable style={[styles.btn, { backgroundColor: theme.primary }]} onPress={() => routerPush('/faq')}>
+        <Ionicons name="help-circle-outline" size={17} color={theme.surface} />
         <Text style={styles.btnTextWhite}>Preguntas Frecuentes</Text>
       </Pressable>
 
-      <ThemedView style={{ padding: 12, borderRadius: 10, marginTop: 8 }}>
+      <ThemedView style={{ padding: 12, borderRadius: 10, marginTop: 8, backgroundColor: theme.surface }}>
         <ThemedText type="defaultSemiBold">Atención al Cliente</ThemedText>
-        <ThemedText style={{ color: '#6b7280' }}>yesa@gmail.com</ThemedText>
-        <ThemedText style={{ color: '#6b7280' }}>Tel: 01-800-YESA · WhatsApp: +57 300 123 4567</ThemedText>
+        <ThemedText style={{ color: theme.icon }}>yesa@gmail.com</ThemedText>
+        <ThemedText style={{ color: theme.icon }}>Tel: 01-800-YESA · WhatsApp: +57 300 123 4567</ThemedText>
       </ThemedView>
 
       {/* ── BOTÓN: CERRAR SESIÓN ────────────────────────────────────────── */}
-      <Pressable style={[styles.btn, { backgroundColor: '#ef4444' }]} onPress={handleLogout}>
-        <Ionicons name="log-out-outline" size={17} color="#fff" />
+      <Pressable style={[styles.btn, { backgroundColor: theme.danger }]} onPress={handleLogout}>
+        <Ionicons name="log-out-outline" size={17} color={theme.surface} />
         <Text style={styles.btnTextWhite}>Cerrar sesión</Text>
       </Pressable>
     </ScrollView>

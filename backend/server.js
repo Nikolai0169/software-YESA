@@ -65,6 +65,8 @@ const { runSeeders } = require('./seeders/adminSeeder');
 // 'app' es el objeto principal del servidor: se le agregan middlewares, rutas y se pone a escuchar
 const app = express();
 
+
+
 // Promesa que indica cuándo el servidor backend está listo para procesar peticiones.
 // Esperamos a esta promesa en un middleware global para evitar que tests y peticiones
 // lleguen antes de que la base de datos se sincronice y los seeders terminen.

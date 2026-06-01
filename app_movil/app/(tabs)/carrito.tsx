@@ -22,6 +22,8 @@ import {useAuth} from '../../src/context/authContext';
 import {useCarrito} from '../../src/context/carritoContext';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
+import { Colors } from '../../constants/theme';
+import { useColorScheme } from '../../hooks/use-color-scheme';
 
 //carritoctx define la forma de los datos que devuelve useCarrito
 //TypeScript necesita esto porque carritoContext.js esta en javaScript
@@ -57,6 +59,7 @@ const fmt = (n: number) => `$${Number(n).toLocaleString('es-CO')}`;
 export default function carritoScreen() {
     //obtiene el contexto de auth solo si el usuario estta autenticado
     const {isAuthenticated} = useAuth() as {isAuthenticated:boolean};
+    const theme = Colors[useColorScheme() ?? 'light'];
 
     //obtiene del contexto del carrito los datos y funciones necesarias 
     //se usa as carritoCtx porque el contexto de js y typeScript no infiere en tipos
@@ -85,7 +88,7 @@ export default function carritoScreen() {
                 {/**
                  * spinner circular color indigo
                  */}
-                 <ActivityIndicator size='large' color='#6366f1'/>
+                 <ActivityIndicator size='large' color={theme.primary} />
             <Text style={styles.loadingText}>Cargando carrito...</Text>
           </View>
         );
@@ -135,7 +138,7 @@ export default function carritoScreen() {
      * contentContainerStyle -> aplica padding y gad al contenido interno 
      */
     return(
-        <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <ScrollView style={[styles.container, { backgroundColor: theme.background }]} contentContainerStyle={styles.content}>
 
             {/**
              * encabezado 
@@ -143,16 +146,16 @@ export default function carritoScreen() {
              */}
             
             <View style={styles.header}>
-                <Ionicons name="cart" size={28} color="#6366f1" />
-                <Text style={styles.headerTitle}>Mi Carrito</Text>
+                <Ionicons name="cart" size={28} color={theme.primary} />
+                <Text style={[styles.headerTitle, { color: theme.text }]}>Mi Carrito</Text>
             </View>
 
       {/* ── BANNER INFORMATIVO (solo para usuarios NO autenticados) ─────── */}
       {/* Se muestra un aviso azul explicando que pueden comprar sin iniciar sesión */}
       {!isAuthenticated && (
-        <View style={styles.infoBanner}>
-          <Ionicons name="information-circle" size={18} color="#1d4ed8" />
-          <Text style={styles.infoBannerText}>
+        <View style={[styles.infoBanner, { backgroundColor: theme.surfaceSoft, borderLeftColor: theme.primary }]}> 
+          <Ionicons name="information-circle" size={18} color={theme.primary} />
+          <Text style={[styles.infoBannerText, { color: theme.text }]}>
             Puedes agregar productos sin iniciar sesión. Al momento de pagar deberás iniciar sesión.
           </Text>
         </View>
@@ -164,12 +167,12 @@ export default function carritoScreen() {
         // Se muestra cuando no hay ningún producto agregado.
         <View style={styles.emptyContainer}>
           {/* Ícono grande de carrito vacío en gris */}
-          <Ionicons name="cart-outline" size={90} color="#ccc" />
-          <Text style={styles.emptyTitle}>Tu carrito está vacío</Text>
-          <Text style={styles.empty}>Agrega productos para comenzar tu compra</Text>
+          <Ionicons name="cart-outline" size={90} color={theme.icon} />
+          <Text style={[styles.emptyTitle, { color: theme.text }]}>Tu carrito está vacío</Text>
+          <Text style={[styles.empty, { color: theme.icon }]}>Agrega productos para comenzar tu compra</Text>
           {/* Botón para ir al catálogo (reemplaza la pantalla actual) */}
-          <Pressable style={styles.catalogBtn} onPress={() => routerReplace('/')}>
-            <Ionicons name="storefront-outline" size={16} color="#fff" />
+          <Pressable style={[styles.catalogBtn, { backgroundColor: theme.primary }]} onPress={() => routerReplace('/')}>
+            <Ionicons name="storefront-outline" size={16} color={theme.surface} />
             <Text style={styles.catalogBtnText}>Ir al Catálogo</Text>
           </Pressable>
         </View>
@@ -178,21 +181,21 @@ export default function carritoScreen() {
         // Fragment (<>) para agrupar sin agregar un View extra al árbol.
         <>
           {/* ── TARJETA DE PRODUCTOS ────────────────────────────────────── */}
-          <View style={styles.sectionCard}>
+          <View style={[styles.sectionCard, { backgroundColor: theme.surface, borderColor: theme.border }] }>
 
             {/* Cabecera de la tarjeta: título + badge con cantidad + botón vaciar */}
-            <View style={styles.sectionHeader}>
+            <View style={[styles.sectionHeader, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}> 
               <View style={styles.sectionTitleRow}>
-                <Text style={styles.sectionTitle}>Productos en tu carrito</Text>
+                <Text style={[styles.sectionTitle, { color: theme.text }]}>Productos en tu carrito</Text>
                 {/* Badge índigo con el número de ítems distintos */}
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>{items.length}</Text>
+                <View style={[styles.badge, { backgroundColor: theme.primary }]}> 
+                  <Text style={[styles.badgeText, { color: theme.surface }]}>{items.length}</Text>
                 </View>
               </View>
               {/* Botón "Vaciar carrito" con borde rojo → llama handleVaciarCarrito */}
-              <Pressable style={styles.vaciarBtn} onPress={handleVaciarCarrito}>
-                <Ionicons name="trash-outline" size={14} color="#b93a32" />
-                <Text style={styles.vaciarText}>Vaciar carrito</Text>
+              <Pressable style={[styles.vaciarBtn, { borderColor: theme.danger }] } onPress={handleVaciarCarrito}>
+                <Ionicons name="trash-outline" size={14} color={theme.danger} />
+                <Text style={[styles.vaciarText, { color: theme.danger }]}>Vaciar carrito</Text>
               </Pressable>
             </View>
 
@@ -202,7 +205,7 @@ export default function carritoScreen() {
               // key={item.id}: identificador único para que React optimice el renderizado.
               <View key={item.id}>
                 {/* Línea separadora entre ítems (no se muestra antes del primero) */}
-                {index > 0 && <View style={styles.itemDivider} />}
+                {index > 0 && <View style={[styles.itemDivider, { backgroundColor: theme.border }]} />}
 
                 {/* Fila de un ítem: imagen + datos + controles */}
                 <View style={styles.itemRow}>
@@ -216,27 +219,27 @@ export default function carritoScreen() {
                   {/* Columna derecha: nombre, precio unitario y controles de cantidad */}
                   <View style={styles.itemBody}>
                     {/* numberOfLines={2}: trunca el nombre si es muy largo */}
-                    <Text style={styles.itemName} numberOfLines={2}>{item.nombre}</Text>
+                    <Text style={[styles.itemName, { color: theme.text }]} numberOfLines={2}>{item.nombre}</Text>
                     {/* Precio unitario formateado */}
-                    <Text style={styles.itemPrice}>{fmt(item.precio || 0)} c/u</Text>
+                    <Text style={[styles.itemPrice, { color: theme.icon }]}>{fmt(item.precio || 0)} c/u</Text>
 
                     {/* Fila de controles de cantidad */}
                     <View style={styles.qtyRow}>
                       {/* Botón "-": reduce 1 unidad, mínimo 1 (Math.max evita llegar a 0) */}
-                      <Pressable style={styles.qtyBtn} onPress={() => cambiarCantidad(item.id, Math.max(1, item.cantidad - 1))}>
-                        <Ionicons name="remove" size={14} color="#555" />
+                      <Pressable style={[styles.qtyBtn, { borderColor: theme.border, backgroundColor: theme.surface }]} onPress={() => cambiarCantidad(item.id, Math.max(1, item.cantidad - 1))}>
+                        <Ionicons name="remove" size={14} color={theme.icon} />
                       </Pressable>
                       {/* Cantidad actual del ítem */}
-                      <Text style={styles.qtyText}>{item.cantidad}</Text>
+                      <Text style={[styles.qtyText, { color: theme.text }]}>{item.cantidad}</Text>
                       {/* Botón "+": aumenta 1 unidad */}
-                      <Pressable style={styles.qtyBtn} onPress={() => cambiarCantidad(item.id, item.cantidad + 1)}>
-                        <Ionicons name="add" size={14} color="#555" />
+                      <Pressable style={[styles.qtyBtn, { borderColor: theme.border, backgroundColor: theme.surface }]} onPress={() => cambiarCantidad(item.id, item.cantidad + 1)}>
+                        <Ionicons name="add" size={14} color={theme.icon} />
                       </Pressable>
                       {/* Subtotal del ítem: precio × cantidad formateado */}
-                      <Text style={styles.subtotalItem}>{fmt((item.precio || 0) * item.cantidad)}</Text>
+                      <Text style={[styles.subtotalItem, { color: theme.primary }]}>{fmt((item.precio || 0) * item.cantidad)}</Text>
                       {/* Botón de papelera: elimina el ítem del carrito */}
                       <Pressable onPress={() => eliminarItem(item.id)} style={styles.trashBtn}>
-                        <Ionicons name="trash-outline" size={18} color="#b93a32" />
+                        <Ionicons name="trash-outline" size={18} color={theme.danger} />
                       </Pressable>
                     </View>
                   </View>
@@ -246,42 +249,42 @@ export default function carritoScreen() {
           </View>
 
           {/* ── TARJETA DE RESUMEN DEL PEDIDO ───────────────────────────── */}
-          <View style={styles.summaryCard}>
-            <Text style={styles.summaryTitle}>Resumen del Pedido</Text>
+          <View style={[styles.summaryCard, { backgroundColor: theme.surface, borderColor: theme.border }] }>
+            <Text style={[styles.summaryTitle, { color: theme.text }]}>Resumen del Pedido</Text>
 
             {/* Fila: Subtotal (igual al total porque no hay descuentos) */}
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Subtotal:</Text>
-              <Text style={styles.summaryValue}>{fmt(total)}</Text>
+              <Text style={[styles.summaryLabel, { color: theme.icon }]}>Subtotal:</Text>
+              <Text style={[styles.summaryValue, { color: theme.text }]}>{fmt(total)}</Text>
             </View>
             {/* Fila: Envío (se calcula en el checkout, aquí solo se indica) */}
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Envío:</Text>
-              <Text style={styles.summaryMuted}>A calcular</Text>
+              <Text style={[styles.summaryLabel, { color: theme.icon }]}>Envío:</Text>
+              <Text style={[styles.summaryMuted, { color: theme.icon }]}>A calcular</Text>
             </View>
 
             {/* Línea divisoria antes del total final */}
-            <View style={styles.separator} />
+            <View style={[styles.separator, { backgroundColor: theme.border }]} />
 
             {/* Fila: Total final destacado en grande color índigo */}
             <View style={styles.summaryRow}>
-              <Text style={styles.totalLabel}>Total:</Text>
-              <Text style={styles.totalValue}>{fmt(total)}</Text>
+              <Text style={[styles.totalLabel, { color: theme.text }]}>Total:</Text>
+              <Text style={[styles.totalValue, { color: theme.primary }]}>{fmt(total)}</Text>
             </View>
 
             {/* Botón principal de checkout → llama handleIrACheckout */}
             {/* El texto cambia según si el usuario está autenticado o no */}
-            <Pressable style={styles.checkoutBtn} onPress={handleIrACheckout}>
-              <Ionicons name="card-outline" size={18} color="#fff" />
-              <Text style={styles.checkoutText}>
+            <Pressable style={[styles.checkoutBtn, { backgroundColor: theme.primary }]} onPress={handleIrACheckout}>
+              <Ionicons name="card-outline" size={18} color={theme.surface} />
+              <Text style={[styles.checkoutText, { color: theme.surface }]}> 
                 {isAuthenticated ? 'Proceder al Pago' : 'Iniciar Sesión para Pagar'}
               </Text>
             </Pressable>
 
             {/* Botón secundario "Seguir Comprando" → vuelve al catálogo (index.tsx) */}
-            <Pressable style={styles.continueBtn} onPress={() => routerReplace('/')}>
-              <Ionicons name="arrow-back-outline" size={16} color="#555" />
-              <Text style={styles.continueBtnText}>Seguir Comprando</Text>
+            <Pressable style={[styles.continueBtn, { borderColor: theme.border }]} onPress={() => routerReplace('/')}>
+              <Ionicons name="arrow-back-outline" size={16} color={theme.icon} />
+              <Text style={[styles.continueBtnText, { color: theme.text }]}>Seguir Comprando</Text>
             </Pressable>
           </View>
         </>

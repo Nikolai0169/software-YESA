@@ -29,6 +29,9 @@ import {ThemedText} from '../../components/themed-text';
 import {ThemedView} from '../../components/themed-view';
 //useCarrito hook del contexto del carrito para agregar prdouctos 
 import {useCarrito} from '../../src/context/carritoContext';
+//theme colors y esquema claro/oscuro
+import { Colors } from '../../constants/theme';
+import { useColorScheme } from '../../hooks/use-color-scheme';
 
 /**
  * tipo carrito ctx 
@@ -70,6 +73,7 @@ const FEATURES = [
 export default function HomeScreen() {
     //extrae las funciones del carrito necesarias para la pantalla
     const {agregarProducto, totalItems} = useCarrito() as CarritoCtx;
+    const theme = Colors[useColorScheme() ?? 'light'];
 
     /**
      * estado de datos 
@@ -244,31 +248,36 @@ export default function HomeScreen() {
         contentContainerStyle={styles.featuresRow}>
         {/* Genera una tarjeta por cada entrada en FEATURES */}
         {FEATURES.map((f) => (
-          <View key={f.title} style={styles.featureCard}>
+          <View
+            key={f.title}
+            style={[
+              styles.featureCard,
+              { backgroundColor: theme.surface, borderColor: theme.border, shadowColor: theme.shadow },
+            ]}>
             {/* Círculo de color con el ícono de la característica */}
             <View style={[styles.featureIconCircle, { backgroundColor: f.bg }]}>
               <Ionicons name={f.icon as any} size={22} color={f.color} />
             </View>
-            <ThemedText style={styles.featureTitle}>{f.title}</ThemedText>
-            <ThemedText style={styles.featureDesc}>{f.desc}</ThemedText>
+            <ThemedText style={[styles.featureTitle, { color: theme.text }]}>{f.title}</ThemedText>
+            <ThemedText style={[styles.featureDesc, { color: theme.icon }]}>{f.desc}</ThemedText>
           </View>
         ))}
       </ScrollView>
 
       {/* ── BUSCADOR ────────────────────────────────────────────────────── */}
-      <View style={styles.searchContainer}>
-        <Ionicons name="search" size={18} color="#9ca3af" />
+      <View style={[styles.searchContainer, { backgroundColor: theme.surface, borderColor: theme.border, shadowColor: theme.shadow }]}> 
+        <Ionicons name="search" size={18} color={theme.icon} />
         <TextInput
           placeholder="Buscar productos..."
           value={busqueda}
           onChangeText={setBusqueda}       // Actualiza busqueda en cada keystroke.
-          style={styles.searchInput}
-          placeholderTextColor="#9ca3af"
+          style={[styles.searchInput, { color: theme.text }]}
+          placeholderTextColor={theme.icon}
         />
         {/* Botón "X" para limpiar la búsqueda, solo visible cuando hay texto */}
         {busqueda.length > 0 && (
           <Pressable onPress={() => setBusqueda('')}>
-            <Ionicons name="close-circle" size={18} color="#9ca3af" />
+            <Ionicons name="close-circle" size={18} color={theme.icon} />
           </Pressable>
         )}
       </View>
@@ -282,9 +291,16 @@ export default function HomeScreen() {
         {/* Chip "Todas": selecciona categoriaActiva = 'all' */}
         <Pressable
           onPress={() => setCategoriaActiva('all')}
-          style={[styles.chip, categoriaActiva === 'all' && styles.chipActive]}>
-          {/* chipActive agrega fondo índigo cuando está seleccionado */}
-          <ThemedText style={[styles.chipText, categoriaActiva === 'all' && styles.chipTextActive]}>
+          style={[
+            styles.chip,
+            { backgroundColor: theme.surface, borderColor: theme.border },
+            categoriaActiva === 'all' && { backgroundColor: theme.primary, borderColor: theme.primary },
+          ]}>
+          <ThemedText style={[
+            styles.chipText,
+            { color: theme.text },
+            categoriaActiva === 'all' && { color: theme.surface },
+          ]}>
             Todas
           </ThemedText>
         </Pressable>
@@ -293,25 +309,31 @@ export default function HomeScreen() {
           <Pressable
             key={cat.id}
             onPress={() => setCategoriaActiva(String(cat.id))} // Guarda el ID como string.
-            style={[styles.chip, categoriaActiva === String(cat.id) && styles.chipActive]}>
-            <ThemedText style={[styles.chipText, categoriaActiva === String(cat.id) && styles.chipTextActive]}>
+            style={[
+              styles.chip,
+              { backgroundColor: theme.surface, borderColor: theme.border },
+              categoriaActiva === String(cat.id) && { backgroundColor: theme.primary, borderColor: theme.primary },
+            ]}>
+            <ThemedText style={[
+              styles.chipText,
+              { color: theme.text },
+              categoriaActiva === String(cat.id) && { color: theme.surface },
+            ]}>
               {cat.nombre}
             </ThemedText>
           </Pressable>
         ))}
       </ScrollView>
-
-      {/* ── ENCABEZADO DE LA SECCIÓN DE PRODUCTOS ───────────────────────── */}
       <View style={styles.sectionHeader}>
-        <ThemedText style={styles.sectionTitle}>Productos Disponibles</ThemedText>
+        <ThemedText style={[styles.sectionTitle, { color: theme.text }]}>Productos Disponibles</ThemedText>
         {/* Contador de resultados filtrados */}
-        <ThemedText style={styles.sectionCount}>{productosFiltrados.length} encontrados</ThemedText>
+        <ThemedText style={[styles.sectionCount, { color: theme.icon }]}>{productosFiltrados.length} encontrados</ThemedText>
       </View>
 
       {/* ── ESTADO: CARGANDO ────────────────────────────────────────────── */}
       {loading && (
           <View style={styles.centered}>
-          <ActivityIndicator size="large" color="#7d2181" />
+          <ActivityIndicator size="large" color={theme.primary} />
           <ThemedText style={styles.loadingText}>Cargando catálogo...</ThemedText>
         </View>
       )}
@@ -335,27 +357,27 @@ export default function HomeScreen() {
       <View style={styles.paginacionRow}>
         {/* Botón "Anterior": desactivado en la primera página */}
         <Pressable
-          style={[styles.pagBtn, paginaActual === 1 && styles.pagBtnDisabled]}
+          style={[styles.pagBtn, { borderColor: theme.primary }, paginaActual === 1 && { borderColor: theme.border }]}
           onPress={() => setPaginaActual((p) => Math.max(1, p - 1))} // No baja de la página 1.
           disabled={paginaActual === 1}>
-          <Ionicons name="chevron-back" size={15} color={paginaActual === 1 ? '#d1d5db' : '#7d2181'} />
-          <ThemedText style={[styles.pagBtnText, paginaActual === 1 && styles.pagBtnTextDisabled]}>
+          <Ionicons name="chevron-back" size={15} color={paginaActual === 1 ? theme.border : theme.primary} />
+          <ThemedText style={[styles.pagBtnText, { color: theme.primary }, paginaActual === 1 && styles.pagBtnTextDisabled]}>
             Anterior
           </ThemedText>
         </Pressable>
         {/* Indicador de página actual / total de páginas */}
-        <ThemedText style={styles.pagInfo}>
+        <ThemedText style={[styles.pagInfo, { color: theme.text }]}> 
           {paginaActual} / {totalPaginas}
         </ThemedText>
         {/* Botón "Siguiente": desactivado en la última página */}
         <Pressable
-          style={[styles.pagBtn, paginaActual === totalPaginas && styles.pagBtnDisabled]}
+          style={[styles.pagBtn, { borderColor: theme.primary }, paginaActual === totalPaginas && { borderColor: theme.border }]}
           onPress={() => setPaginaActual((p) => Math.min(totalPaginas, p + 1))} // No supera el total.
           disabled={paginaActual === totalPaginas}>
-          <ThemedText style={[styles.pagBtnText, paginaActual === totalPaginas && styles.pagBtnTextDisabled]}>
+          <ThemedText style={[styles.pagBtnText, { color: theme.primary }, paginaActual === totalPaginas && styles.pagBtnTextDisabled]}>
             Siguiente
           </ThemedText>
-          <Ionicons name="chevron-forward" size={15} color={paginaActual === totalPaginas ? '#d1d5db' : '#7d2181'} />
+          <Ionicons name="chevron-forward" size={15} color={paginaActual === totalPaginas ? theme.border : theme.primary} />
         </Pressable>
       </View>
     ) : (
@@ -379,6 +401,7 @@ export default function HomeScreen() {
     <View
       style={[
         styles.card,
+        { backgroundColor: theme.surface, borderColor: theme.border, shadowColor: theme.shadow },
         // Aplica margen para separar columnas:
         //   columna izquierda (índice par) → margen derecho
         //   columna derecha (índice impar) → margen izquierdo
@@ -399,22 +422,22 @@ export default function HomeScreen() {
       {/* Cuerpo de la tarjeta: nombre, precio y botones */}
       <View style={styles.cardBody}>
         {/* numberOfLines={2}: el nombre se trunca a 2 líneas máximo */}
-        <ThemedText style={styles.cardNombre} numberOfLines={2}>
+        <ThemedText style={[styles.cardNombre, { color: theme.text }]} numberOfLines={2}>
           {producto.nombre}
         </ThemedText>
         {/* Precio formateado en pesos colombianos */}
-        <ThemedText style={styles.cardPrecio}>
+        <ThemedText style={[styles.cardPrecio, { color: theme.primary }]}> 
           ${Number(producto.precio || 0).toLocaleString('es-CO')}
         </ThemedText>
         {/* Fila de botones: "Ver" (detalle) y carrito */}
         <View style={styles.cardActions}>
           {/* Botón "Ver": abre el modal de detalle con este producto */}
-          <Pressable style={styles.outlineBtn} onPress={() => openDetalle(producto)}>
-            <ThemedText style={styles.outlineBtnText}>Ver</ThemedText>
+          <Pressable style={[styles.outlineBtn, { borderColor: theme.primary }]} onPress={() => openDetalle(producto)}>
+            <ThemedText style={[styles.outlineBtnText, { color: theme.primary }]}>Ver</ThemedText>
           </Pressable>
           {/* Botón del carrito: agrega directamente 1 unidad */}
-          <Pressable style={styles.cartBtn} onPress={() => handleAgregarAlCarrito(producto)}>
-            <Ionicons name="cart" size={16} color="#fff" />
+          <Pressable style={[styles.cartBtn, { backgroundColor: theme.primary }]} onPress={() => handleAgregarAlCarrito(producto)}>
+            <Ionicons name="cart" size={16} color={theme.surface} />
           </Pressable>
         </View>
       </View>
@@ -427,6 +450,7 @@ export default function HomeScreen() {
     <>
       {/* ── FLATLIST: LISTA PRINCIPAL DE PRODUCTOS ─────────────────────── */}
       <FlatList
+        style={{ backgroundColor: theme.background }}
         // data: cuando está cargando o no hay productos, pasa array vacío para no
         //       renderizar ítems, pero sí muestra ListHeader (con el spinner).
         data={loading || !hasProductos ? [] : productosVisibles}
@@ -448,8 +472,8 @@ export default function HomeScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => loadCatalogo({ isRefresh: true })}
-            colors={['#7d2181']}     // Color del spinner en Android.
-            tintColor="#7d2181"      // Color del spinner en iOS.
+            colors={[theme.primary]}     // Color del spinner en Android.
+            tintColor={theme.primary}      // Color del spinner en iOS.
           />
         }
       />
@@ -465,7 +489,7 @@ export default function HomeScreen() {
         {/* Fondo semitransparente negro que cubre toda la pantalla */}
         <View style={styles.modalBackdrop}>
           {/* Tarjeta blanca con esquinas superiores redondeadas */}
-          <ThemedView style={styles.modalCard}>
+          <ThemedView style={[styles.modalCard, { backgroundColor: theme.surface, borderColor: theme.border, shadowColor: theme.shadow }]}> 
             {/* Solo renderiza el contenido si productoDetalle tiene datos */}
             {productoDetalle ? (
               <>
@@ -476,23 +500,23 @@ export default function HomeScreen() {
                   resizeMode="cover"
                 />
                 {/* Categoría del producto en texto pequeño índigo */}
-                <ThemedText style={styles.modalCategoria}>
+                <ThemedText style={[styles.modalCategoria, { color: theme.primary }]}> 
                   {productoDetalle.Categoria?.nombre || productoDetalle.categoria?.nombre || 'Sin categoría'}
                 </ThemedText>
                 {/* Nombre del producto en grande */}
-                <ThemedText style={styles.modalTitle}>{productoDetalle.nombre}</ThemedText>
+                <ThemedText style={[styles.modalTitle, { color: theme.text }]}>{productoDetalle.nombre}</ThemedText>
                 {/* Descripción o texto fallback si no hay descripción */}
-                <ThemedText style={styles.modalDesc}>
+                <ThemedText style={[styles.modalDesc, { color: theme.icon }]}> 
                   {productoDetalle.descripcion || 'Sin descripción disponible.'}
                 </ThemedText>
                 {/* Precio formateado en pesos colombianos */}
-                <ThemedText style={styles.modalPrecio}>
+                <ThemedText style={[styles.modalPrecio, { color: theme.primary }]}> 
                   ${Number(productoDetalle.precio || 0).toLocaleString('es-CO')}
                 </ThemedText>
                 {/* Fila de stock disponible con ícono */}
                 <View style={styles.modalStock}>
-                  <Ionicons name="cube-outline" size={14} color="#6b7280" />
-                  <ThemedText style={styles.modalStockText}>
+                  <Ionicons name="cube-outline" size={14} color={theme.icon} />
+                  <ThemedText style={[styles.modalStockText, { color: theme.icon }]}> 
                     {/* ?? 'N/A': muestra N/A si stock es null o undefined */}
                     Stock disponible: {productoDetalle.stock ?? 'N/A'} unidades
                   </ThemedText>
@@ -501,18 +525,18 @@ export default function HomeScreen() {
                 <View style={styles.modalActions}>
                   {/* Botón "Cerrar": cierra el modal limpiando productoDetalle */}
                   <Pressable
-                    style={[styles.outlineBtn, { flex: 1, paddingVertical: 12 }]}
+                    style={[styles.outlineBtn, { flex: 1, paddingVertical: 12, borderColor: theme.primary }]}
                     onPress={() => setProductoDetalle(null)}>
-                    <ThemedText style={styles.outlineBtnText}>Cerrar</ThemedText>
+                    <ThemedText style={[styles.outlineBtnText, { color: theme.primary }]}>Cerrar</ThemedText>
                   </Pressable>
                   {/* Botón "Agregar al carrito": agrega y cierra el modal */}
                   <Pressable
-                    style={[styles.primaryBtn, { flex: 2, paddingVertical: 12 }]}
+                    style={[styles.primaryBtn, { flex: 2, paddingVertical: 12, backgroundColor: theme.primary }]}
                     onPress={async () => {
                       await handleAgregarAlCarrito(productoDetalle); // Agrega al carrito.
                       setProductoDetalle(null);                      // Cierra el modal.
                     }}>
-                    <Ionicons name="cart" size={16} color="#fff" />
+                    <Ionicons name="cart" size={16} color={theme.surface} />
                     <ThemedText style={styles.primaryBtnText}>Agregar al carrito</ThemedText>
                   </Pressable>
                 </View>

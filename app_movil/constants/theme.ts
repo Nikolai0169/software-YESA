@@ -17,6 +17,15 @@ const DANGER = '#ef4444';
 const BACKGROUND_LIGHT = '#f8f2ff';
 const TEXT_DARK = '#1f2937';
 const ICON_GRAY = '#4b5563';
+const ICON_GRAY_DARK = '#9BA1A6';
+const BACKGROUND_DARK = '#000000';
+const TEXT_LIGHT = '#f8fafc';
+const SURFACE_LIGHT = '#ffffff';
+const SURFACE_SOFT_LIGHT = '#f3f4f6';
+const SURFACE_DARK = 'rgba(255,255,255,0.12)';
+const SURFACE_SOFT_DARK = 'rgba(255,255,255,0.08)';
+const BORDER_LIGHT = '#e5e7eb';
+const BORDER_DARK = 'rgba(255,255,255,0.10)';
 
 export const Colors = {
   light: {
@@ -33,10 +42,15 @@ export const Colors = {
     icon: ICON_GRAY,
     tabIconDefault: ICON_GRAY,
     tabIconSelected: PRIMARY,
+    surface: SURFACE_LIGHT,
+    surfaceSoft: SURFACE_SOFT_LIGHT,
+    surfaceTransparent: 'rgba(255,255,255,0.15)',
+    border: BORDER_LIGHT,
+    shadow: 'rgba(0,0,0,0.05)',
   },
   dark: {
-    text: '#ECEDEE',
-    background: '#151718',
+    text: TEXT_LIGHT,
+    background: BACKGROUND_DARK,
     tint: '#ffffff',
     primary: PRIMARY,
     primaryDark: PRIMARY_DARK,
@@ -45,9 +59,14 @@ export const Colors = {
     success: SUCCESS,
     warning: WARNING,
     danger: DANGER,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
+    icon: ICON_GRAY_DARK,
+    tabIconDefault: ICON_GRAY_DARK,
     tabIconSelected: '#ffffff',
+    surface: SURFACE_DARK,
+    surfaceSoft: SURFACE_SOFT_DARK,
+    surfaceTransparent: 'rgba(255,255,255,0.20)',
+    border: BORDER_DARK,
+    shadow: 'rgba(0,0,0,0.30)',
   },
 };
 

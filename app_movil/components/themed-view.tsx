@@ -1,4 +1,5 @@
-import { View, Text, type ReactNode, type ViewProps } from 'react-native';
+import { View, Text, type ViewProps } from 'react-native';
+import type { ReactNode } from 'react';
 
 import { useThemeColor } from '../hooks/use-theme-color';
 

@@ -187,6 +187,22 @@ const NavigationBar = memo(() => {
             </NavDropdown>
           )}
 
+          <Nav.Link as={Link} to="/personalizacion" className="btn-personalizacion me-2">
+            <div style={{
+              backgroundColor: '#6f42c1',
+              borderRadius: '8px',
+              fontWeight: '500',
+              height: '28px',
+              padding: '0 10px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              color: '#fff',
+            }}>
+              Personalizar <i className="bi bi-pencil-square text-white fs-5"></i>
+            </div>
+          </Nav.Link>
+
           <Nav.Link as={Link} to="/carrito" className="btn-carrito me-2">
             <div style={{
               backgroundColor: '#E91E63',

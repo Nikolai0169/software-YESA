@@ -139,5 +139,45 @@ export const downloadFile = (url) => {
   });
 };
 
+/**
+ * Guardar diseño personalizado
+ * 
+ * @param {Object} data - Datos del diseño (color, textura, etc.)
+ * @returns {Promise} - Promesa con la respuesta del servidor
+ */
+export const guardarDiseno = async (data) => {
+  const response = await fetch("/api/personalizacion/guardar", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return response.json();
+};
+
+/**
+ * Cotizar producto personalizado
+ * 
+ * @param {Object} data - Datos del producto para cotizar
+ * @returns {Promise} - Promesa con la cotización del servidor
+ */
+export const cotizarProducto = async (data) => {
+  const response = await fetch("/api/personalizacion/cotizar", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return response.json();
+};
+
+/**
+ * Obtener modelos disponibles para personalizar
+ * 
+ * @returns {Promise} - Promesa con la lista de modelos
+ */
+export const obtenerModelos = async () => {
+  const response = await fetch("/api/personalizacion/modelos");
+  return response.json();
+};
+
 // Exportar la instancia configurada de axios
 export default apiClient;

@@ -16,6 +16,23 @@ const { DataTypes } = require('sequelize');
 // Importa la instancia 'sequelize' (conexión activa a MySQL) desde config/database.js
 const { sequelize } = require('../config/database');
 
+
+/**
+ * productos 3d
+ */
+
+const mongoose = require("mongoose");
+
+const ProductoSchema = new mongoose.Schema({
+  imagen: { type: String, required: true },
+  color: { type: String, required: true },
+  especificaciones: { type: String },
+  estado: { type: String, default: "pendiente" },
+  fechaCreacion: { type: Date, default: Date.now },
+});
+
+module.exports = mongoose.model("Producto", ProductoSchema);
+
 /**
  * sequelize.define() crea el modelo que mapea a la tabla 'productos'.
  * 'Producto' → nombre interno del modelo

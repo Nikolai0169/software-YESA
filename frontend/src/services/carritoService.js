@@ -73,9 +73,9 @@ const carritoService = {
           id: Date.now(), // ID temporal para el carrito local
           productoId,
           cantidad,
-          precio: productoInfo.precio,
+          precio: productoInfo.precio || 0,
           nombre: productoInfo.nombre,
-          imagen: productoInfo.imagen,
+          imagen: productoInfo.imagen || null,
           producto: productoInfo
         });
       }
