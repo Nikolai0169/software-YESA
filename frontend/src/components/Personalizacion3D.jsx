@@ -1,13 +1,38 @@
-import React, { useEffect, useRef } from "react";
+﻿import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
 
-const Personalizacion3D = ({ colorInterior = "#ffffff", colorBase = "#ffffff", colorExterior = "#ffffff", colorAsa = "#ffffff", texture, zoom = 1 }) => {
+const createTextSprite = (text) => {
+  const width = 512;
+  const height = 128;
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = "rgba(0, 0, 0, 0)";
+  ctx.fillRect(0, 0, width, height);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 40px sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  const lines = text ? text.split("\n") : [];
+  lines.forEach((line, index) => {
+    ctx.fillText(line, width / 2, height / 2 + (index - (lines.length - 1) / 2) * 45);
+  });
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.minFilter = THREE.LinearFilter;
+  texture.needsUpdate = true;
+  return texture;
+};
+
+const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBase = "#ffffff", colorExterior = "#ffffff", colorAsa = "#ffffff", texture, textInterior = "", textExterior = "", zoom = 1 }) => {
   const mountRef = useRef(null);
 
   useEffect(() => {
     // Escena
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x000000);
+    const isRing = modelo === "anillo";
+    scene.background = new THREE.Color(isRing ? 0x111111 : 0x000000);
 
     // Cámara
     const camera = new THREE.PerspectiveCamera(
@@ -16,7 +41,7 @@ const Personalizacion3D = ({ colorInterior = "#ffffff", colorBase = "#ffffff", c
       0.1,
       1000
     );
-    camera.position.z = 5 / zoom;
+    camera.position.z = isRing ? 4 / zoom : 5 / zoom;
 
     // Renderizador
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -48,92 +73,134 @@ const Personalizacion3D = ({ colorInterior = "#ffffff", colorBase = "#ffffff", c
     resizeScene();
 
     // Luz
-    const light = new THREE.AmbientLight(0xffffff, 0.8);
-    scene.add(light);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+    scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-    directionalLight.position.set(5, 5, 5);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+    directionalLight.position.set(5, 8, 7);
     scene.add(directionalLight);
 
-    // Geometría de ejemplo (pocillo con cilindro abierto, fondo y asa)
-    // Material para el interior (sin textura)
-    const interiorMaterial = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(colorInterior || "#ffffff"),
-      roughness: 0.3,
-      metalness: 0.1,
-      side: THREE.BackSide, // Solo la cara interior
-    });
+    const modelGroup = new THREE.Group();
+    scene.add(modelGroup);
 
-    // Material para el exterior (con textura)
-    const exteriorMaterial = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(colorExterior || "#ffffff"),
-      map: texture ? new THREE.TextureLoader().load(texture) : null,
-      roughness: 0.3,
-      metalness: 0.1,
-      side: THREE.FrontSide, // Solo la cara exterior
-    });
+    if (isRing) {
+      const ringMaterial = new THREE.MeshStandardMaterial({
+        color: new THREE.Color(colorExterior || "#ffffff"),
+        roughness: 0.2,
+        metalness: 0.9,
+        side: THREE.DoubleSide,
+        emissive: 0x0d3b82,
+        emissiveIntensity: 0.05,
+      });
 
-    // Material para la base
-    const baseMaterial = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(colorBase || "#ffffff"),
-      roughness: 0.3,
-      metalness: 0.1,
-    });
+      // Single centered ring (one circunferencia)
+      const radius = 0.7; // radio principal
+      const tube = 0.11; // grosor del anillo
+      const segmentsRadial = 32;
+      const segmentsTubular = 200;
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(radius, tube, segmentsRadial, segmentsTubular), ringMaterial);
+      ring.rotation.x = Math.PI / 2;
+      ring.position.set(0, 0, 0);
+      modelGroup.add(ring);
 
-    // Material para el asa
-    const asaMaterial = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(colorAsa || "#ffffff"),
-      roughness: 0.3,
-      metalness: 0.1,
-      side: THREE.DoubleSide,
-    });
+      const sprites = [];
+      const addTextSprite = (text, zOffset) => {
+        if (!text) return;
+        const textTexture = createTextSprite(text);
+        const spriteMaterial = new THREE.SpriteMaterial({ map: textTexture, transparent: true });
+        const sprite = new THREE.Sprite(spriteMaterial);
+        sprite.scale.set(2, 0.5, 1);
+        sprite.position.set(0, 0, zOffset);
+        modelGroup.add(sprite);
+        sprites.push(sprite);
+      };
 
-    const cupGroup = new THREE.Group();
+      addTextSprite(textInterior, -0.75);
+      addTextSprite(textExterior, 0.75);
 
-    const cupGeometry = new THREE.CylinderGeometry(1, 1, 2, 32, 1, true);
-    
-    // Malla para interior
-    const cupInterior = new THREE.Mesh(cupGeometry, interiorMaterial);
-    cupInterior.position.y = 0;
-    cupGroup.add(cupInterior);
-    
-    // Malla para exterior
-    const cupExterior = new THREE.Mesh(cupGeometry, exteriorMaterial);
-    cupExterior.position.y = 0;
-    cupGroup.add(cupExterior);
+      const disposeSprites = () => {
+        sprites.forEach((sprite) => {
+          if (sprite.material.map) sprite.material.map.dispose();
+          sprite.material.dispose();
+          modelGroup.remove(sprite);
+        });
+      };
 
-    const bottomGeometry = new THREE.CylinderGeometry(1.02, 1.02, 0.15, 32);
-    const bottomMesh = new THREE.Mesh(bottomGeometry, baseMaterial);
-    bottomMesh.position.y = -1.075;
-    cupGroup.add(bottomMesh);
+      modelGroup.userData.disposeSprites = disposeSprites;
+    } else {
+      // Geometría de ejemplo (pocillo con cilindro abierto, fondo y asa)
+      const interiorMaterial = new THREE.MeshStandardMaterial({
+        color: new THREE.Color(colorInterior || "#ffffff"),
+        roughness: 0.3,
+        metalness: 0.1,
+        side: THREE.BackSide,
+      });
 
-    class HandleCurve extends THREE.Curve {
-      constructor(scale = 1) {
-        super();
-        this.scale = scale;
+      const exteriorMaterial = new THREE.MeshStandardMaterial({
+        color: new THREE.Color(colorExterior || "#ffffff"),
+        map: texture ? new THREE.TextureLoader().load(texture) : null,
+        roughness: 0.3,
+        metalness: 0.1,
+        side: THREE.FrontSide,
+      });
+
+      const baseMaterial = new THREE.MeshStandardMaterial({
+        color: new THREE.Color(colorBase || "#ffffff"),
+        roughness: 0.3,
+        metalness: 0.1,
+      });
+
+      const asaMaterial = new THREE.MeshStandardMaterial({
+        color: new THREE.Color(colorAsa || "#ffffff"),
+        roughness: 0.3,
+        metalness: 0.1,
+        side: THREE.DoubleSide,
+      });
+
+      const cupGroup = new THREE.Group();
+
+      const cupGeometry = new THREE.CylinderGeometry(1, 1, 2, 32, 1, true);
+      const cupInterior = new THREE.Mesh(cupGeometry, interiorMaterial);
+      cupInterior.position.y = 0;
+      cupGroup.add(cupInterior);
+
+      const cupExterior = new THREE.Mesh(cupGeometry, exteriorMaterial);
+      cupExterior.position.y = 0;
+      cupGroup.add(cupExterior);
+
+      const bottomGeometry = new THREE.CylinderGeometry(1.02, 1.02, 0.15, 32);
+      const bottomMesh = new THREE.Mesh(bottomGeometry, baseMaterial);
+      bottomMesh.position.y = -1.075;
+      cupGroup.add(bottomMesh);
+
+      class HandleCurve extends THREE.Curve {
+        constructor(scale = 1) {
+          super();
+          this.scale = scale;
+        }
+
+        getPoint(t) {
+          const angle = Math.PI * (t - 0.5);
+          const radius = 0.5;
+          const x = 1 + Math.cos(angle) * radius;
+          const y = Math.sin(angle) * radius;
+          return new THREE.Vector3(x, y, 0).multiplyScalar(this.scale);
+        }
       }
 
-      getPoint(t) {
-        const angle = Math.PI * (t - 0.5);
-        const radius = 0.5;
-        const x = 1 + Math.cos(angle) * radius;
-        const y = Math.sin(angle) * radius;
-        return new THREE.Vector3(x, y, 0).multiplyScalar(this.scale);
-      }
+      const handleCurve = new HandleCurve();
+      const handleGeometry = new THREE.TubeGeometry(handleCurve, 32, 0.12, 16, false);
+      const handleMesh = new THREE.Mesh(handleGeometry, asaMaterial);
+      cupGroup.add(handleMesh);
+
+      const rimGeometry = new THREE.TorusGeometry(1.02, 0.08, 16, 100, Math.PI * 2);
+      const rimMesh = new THREE.Mesh(rimGeometry, asaMaterial);
+      rimMesh.rotation.x = Math.PI / 2;
+      rimMesh.position.y = 1;
+      cupGroup.add(rimMesh);
+
+      modelGroup.add(cupGroup);
     }
-
-    const handleCurve = new HandleCurve();
-    const handleGeometry = new THREE.TubeGeometry(handleCurve, 32, 0.12, 16, false);
-    const handleMesh = new THREE.Mesh(handleGeometry, asaMaterial);
-    cupGroup.add(handleMesh);
-
-    const rimGeometry = new THREE.TorusGeometry(1.02, 0.08, 16, 100, Math.PI * 2);
-    const rimMesh = new THREE.Mesh(rimGeometry, asaMaterial);
-    rimMesh.rotation.x = Math.PI / 2;
-    rimMesh.position.y = 1;
-    cupGroup.add(rimMesh);
-
-    scene.add(cupGroup);
 
     const isDraggingRef = { current: false };
     const previousPointerRef = { current: { x: 0, y: 0 } };
@@ -149,8 +216,8 @@ const Personalizacion3D = ({ colorInterior = "#ffffff", colorBase = "#ffffff", c
       const deltaX = event.clientX - previousPointerRef.current.x;
       const deltaY = event.clientY - previousPointerRef.current.y;
 
-      cupGroup.rotation.y += deltaX * 0.005;
-      cupGroup.rotation.x = Math.max(Math.min(cupGroup.rotation.x + deltaY * 0.005, Math.PI / 2), -Math.PI / 2);
+      modelGroup.rotation.y += deltaX * 0.005;
+      modelGroup.rotation.x = Math.max(Math.min(modelGroup.rotation.x + deltaY * 0.005, Math.PI / 2), -Math.PI / 2);
       previousPointerRef.current = { x: event.clientX, y: event.clientY };
     };
 
@@ -165,15 +232,15 @@ const Personalizacion3D = ({ colorInterior = "#ffffff", colorBase = "#ffffff", c
     renderer.domElement.addEventListener("pointerup", onPointerUp);
     renderer.domElement.addEventListener("pointerleave", onPointerUp);
 
-    // Animación
     const animate = () => {
       requestAnimationFrame(animate);
-      cupGroup.rotation.y += 0.01;
+      if (!isDraggingRef.current) {
+        modelGroup.rotation.y += 0.004;
+      }
       renderer.render(scene, camera);
     };
     animate();
 
-    // Cleanup
     return () => {
       window.removeEventListener("resize", resizeScene);
       document.removeEventListener("fullscreenchange", resizeScene);
@@ -185,11 +252,14 @@ const Personalizacion3D = ({ colorInterior = "#ffffff", colorBase = "#ffffff", c
       renderer.domElement.removeEventListener("pointermove", onPointerMove);
       renderer.domElement.removeEventListener("pointerup", onPointerUp);
       renderer.domElement.removeEventListener("pointerleave", onPointerUp);
+      if (modelGroup.userData.disposeSprites) {
+        modelGroup.userData.disposeSprites();
+      }
       if (mountRef.current && renderer.domElement && mountRef.current.contains(renderer.domElement)) {
         mountRef.current.removeChild(renderer.domElement);
       }
     };
-  }, [colorInterior, colorBase, colorExterior, colorAsa, texture, zoom]);
+  }, [modelo, colorInterior, colorBase, colorExterior, colorAsa, texture, zoom]);
 
   return <div className="personalizacion-3d-canvas" ref={mountRef}></div>;
 };

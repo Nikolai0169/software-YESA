@@ -4,20 +4,58 @@ import { guardarDiseno, cotizarProducto } from "../services/api";
 import carritoService from "../services/carritoService";
 
 const PersonalizacionPage = () => {
-  const [colorInterior, setColorInterior] = useState("#ffffff");
-  const [colorBase, setColorBase] = useState("#ffffff");
-  const [colorExterior, setColorExterior] = useState("#ffffff");
-  const [colorAsa, setColorAsa] = useState("#ffffff");
-  const [texture, setTexture] = useState(null);
+  const defaultColors = {
+    taza: { interior: "#ffffff", base: "#ffffff", exterior: "#ffffff", asa: "#ffffff" },
+    anillo: { interior: "#ffffff", base: "#ffffff", exterior: "#ffffff", asa: "#ffffff" },
+    "plato-hondo": { interior: "#ffffff", base: "#ffffff", exterior: "#ffffff", asa: "#ffffff" },
+    "plato-llano": { interior: "#ffffff", base: "#ffffff", exterior: "#ffffff", asa: "#ffffff" },
+  };
+
+  const defaultTexts = {
+    taza: { interior: "", exterior: "" },
+    anillo: { interior: "", exterior: "" },
+    "plato-hondo": { interior: "", exterior: "" },
+    "plato-llano": { interior: "", exterior: "" },
+  };
+
+  const [colorsByModel, setColorsByModel] = useState(defaultColors);
+  const [texturesByModel, setTexturesByModel] = useState({
+    taza: null,
+    anillo: null,
+    "plato-hondo": null,
+    "plato-llano": null,
+  });
+  const [textsByModel, setTextsByModel] = useState(defaultTexts);
+  const [modelo3D, setModelo3D] = useState("taza");
   const [zoomLevel, setZoomLevel] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const previewRef = useRef(null);
   const fileInputRef = useRef(null);
 
+  const modelOptions = [
+    { id: "taza", label: "Taza", description: "Modelo actual con asa y base redonda." },
+    { id: "anillo", label: "Anillo", description: "Forma de anillo elegante." },
+    { id: "plato-hondo", label: "Plato hondo", description: "Plato con borde alto y forma curva." },
+    { id: "plato-llano", label: "Plato llano", description: "Plato plano con borde sutil." },
+  ];
+
   const handleFileSelect = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
+  };
+
+  const handleClearModel = () => {
+    setTexturesByModel((prev) => ({ ...prev, [modelo3D]: null }));
+    setColorsByModel((prev) => ({ ...prev, [modelo3D]: { ...defaultColors[modelo3D] } }));
+    setTextsByModel((prev) => ({ ...prev, [modelo3D]: { ...defaultTexts[modelo3D] } }));
+  };
+
+  const setModelColor = (field, value) => {
+    setColorsByModel((prev) => ({
+      ...prev,
+      [modelo3D]: { ...prev[modelo3D], [field]: value },
+    }));
   };
 
   const handleFileUpload = (event) => {
@@ -35,7 +73,14 @@ const PersonalizacionPage = () => {
     }
 
     const fileUrl = URL.createObjectURL(file);
-    setTexture(fileUrl);
+    setTexturesByModel((prev) => ({ ...prev, [modelo3D]: fileUrl }));
+  };
+
+  const setModelText = (field, value) => {
+    setTextsByModel((prev) => ({
+      ...prev,
+      [modelo3D]: { ...prev[modelo3D], [field]: value },
+    }));
   };
 
   useEffect(() => {
@@ -78,12 +123,17 @@ const PersonalizacionPage = () => {
 
   const handleCotizar = async () => {
     try {
+      const currentColors = colorsByModel[modelo3D] || {};
+      const currentTexts = textsByModel[modelo3D] || {};
       const disenoData = {
-        colorInterior,
-        colorBase,
-        colorExterior,
-        colorAsa,
-        textureUrl: texture,
+        modelo: modelo3D,
+        colorInterior: currentColors.interior,
+        colorBase: currentColors.base,
+        colorExterior: currentColors.exterior,
+        colorAsa: currentColors.asa,
+        textInterior: currentTexts.interior,
+        textExterior: currentTexts.exterior,
+        textureUrl: texturesByModel[modelo3D] || null,
         zoom: zoomLevel,
       };
       const result = await cotizarProducto(disenoData);
@@ -96,12 +146,17 @@ const PersonalizacionPage = () => {
 
   const handleAgregarCarrito = async () => {
     try {
+      const currentColors = colorsByModel[modelo3D] || {};
+      const currentTexts = textsByModel[modelo3D] || {};
       const disenoData = {
-        colorInterior,
-        colorBase,
-        colorExterior,
-        colorAsa,
-        textureUrl: texture,
+        modelo: modelo3D,
+        colorInterior: currentColors.interior,
+        colorBase: currentColors.base,
+        colorExterior: currentColors.exterior,
+        colorAsa: currentColors.asa,
+        textInterior: currentTexts.interior,
+        textExterior: currentTexts.exterior,
+        textureUrl: texturesByModel[modelo3D] || null,
         zoom: zoomLevel,
         nombre: "Producto Personalizado",
         precio: 0,
@@ -121,12 +176,17 @@ const PersonalizacionPage = () => {
 
   const handleGuardarDiseno = async () => {
     try {
+      const currentColors = colorsByModel[modelo3D] || {};
+      const currentTexts = textsByModel[modelo3D] || {};
       const disenoData = {
-        colorInterior,
-        colorBase,
-        colorExterior,
-        colorAsa,
-        textureUrl: texture,
+        modelo: modelo3D,
+        colorInterior: currentColors.interior,
+        colorBase: currentColors.base,
+        colorExterior: currentColors.exterior,
+        colorAsa: currentColors.asa,
+        textInterior: currentTexts.interior,
+        textExterior: currentTexts.exterior,
+        textureUrl: texturesByModel[modelo3D] || null,
         zoom: zoomLevel,
         nombre: `Diseño personalizado - ${new Date().toLocaleDateString()}`,
       };
@@ -154,6 +214,8 @@ const PersonalizacionPage = () => {
     }
   };
 
+  const isRing = modelo3D === "anillo";
+
   return (
     <div className="container py-5 personalizacion-page">
       <div className="personalizacion-card mx-auto">
@@ -165,16 +227,35 @@ const PersonalizacionPage = () => {
                 <p className="text-muted mb-4">
                   Ajusta color, textura y diseños con la misma experiencia visual de las demás pantallas.
                 </p>
+
+                <div className="personalizacion-model-buttons d-flex flex-wrap gap-2 mb-3">
+                  {modelOptions.map((option) => (
+                    <button
+                      key={option.id}
+                      type="button"
+                      className={`btn btn-sm ${modelo3D === option.id ? 'btn-yesa-primary' : 'btn-outline-secondary'}`}
+                      onClick={() => setModelo3D(option.id)}
+                    >
+                      <div className="text-start">
+                        <strong>{option.label}</strong>
+                        <div className="small text-muted">{option.description}</div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div className="personalizacion-preview-fullscreen-wrapper" ref={previewRef}>
                 <div className="personalizacion-preview mt-3">
                   <Personalizacion3D 
-                    colorInterior={colorInterior}
-                    colorBase={colorBase}
-                    colorExterior={colorExterior}
-                    colorAsa={colorAsa}
-                    texture={texture} 
+                    modelo={modelo3D}
+                    colorInterior={(colorsByModel[modelo3D] && colorsByModel[modelo3D].interior) || '#ffffff'}
+                    colorBase={(colorsByModel[modelo3D] && colorsByModel[modelo3D].base) || '#ffffff'}
+                    colorExterior={(colorsByModel[modelo3D] && colorsByModel[modelo3D].exterior) || '#ffffff'}
+                    colorAsa={(colorsByModel[modelo3D] && colorsByModel[modelo3D].asa) || '#ffffff'}
+                    texture={texturesByModel[modelo3D]} 
+                    textInterior={(textsByModel[modelo3D] && textsByModel[modelo3D].interior) || ''}
+                    textExterior={(textsByModel[modelo3D] && textsByModel[modelo3D].exterior) || ''}
                     zoom={zoomLevel} 
                   />
                 </div>
@@ -191,48 +272,92 @@ const PersonalizacionPage = () => {
                   </div>
 
                   <div className="d-flex align-items-center gap-2 flex-wrap">
-                    <label className="d-flex align-items-center gap-2 mb-0">
-                      <span className="small text-dark">Interior</span>
-                      <input
-                        type="color"
-                        value={colorInterior}
-                        onChange={(e) => setColorInterior(e.target.value)}
-                        className="form-control form-control-color"
-                        style={{ width: "44px", height: "44px", padding: 0, border: "1px solid rgba(148, 163, 184, 0.4)", borderRadius: "0.75rem", background: "transparent" }}
-                      />
-                    </label>
-                    <label className="d-flex align-items-center gap-2 mb-0">
-                      <span className="small text-dark">Base</span>
-                      <input
-                        type="color"
-                        value={colorBase}
-                        onChange={(e) => setColorBase(e.target.value)}
-                        className="form-control form-control-color"
-                        style={{ width: "44px", height: "44px", padding: 0, border: "1px solid rgba(148, 163, 184, 0.4)", borderRadius: "0.75rem", background: "transparent" }}
-                      />
-                    </label>
-                    <label className="d-flex align-items-center gap-2 mb-0">
-                      <span className="small text-dark">Exterior</span>
-                      <input
-                        type="color"
-                        value={colorExterior}
-                        onChange={(e) => setColorExterior(e.target.value)}
-                        className="form-control form-control-color"
-                        style={{ width: "44px", height: "44px", padding: 0, border: "1px solid rgba(148, 163, 184, 0.4)", borderRadius: "0.75rem", background: "transparent" }}
-                      />
-                    </label>
-                    <label className="d-flex align-items-center gap-2 mb-0">
-                      <span className="small text-dark">Asa</span>
-                      <input
-                        type="color"
-                        value={colorAsa}
-                        onChange={(e) => setColorAsa(e.target.value)}
-                        className="form-control form-control-color"
-                        style={{ width: "44px", height: "44px", padding: 0, border: "1px solid rgba(148, 163, 184, 0.4)", borderRadius: "0.75rem", background: "transparent" }}
-                      />
-                    </label>
-                    <button type="button" className="btn btn-sm btn-yesa-secondary" onClick={handleFileSelect}>
-                      Elegir archivo
+                    {isRing ? (
+                      <>
+                        <label className="d-flex align-items-center gap-2 mb-0">
+                          <span className="small text-dark">Exterior</span>
+                          <input
+                            type="color"
+                            value={(colorsByModel[modelo3D] && colorsByModel[modelo3D].exterior) || '#3b82f6'}
+                            onChange={(e) => setModelColor('exterior', e.target.value)}
+                            className="form-control form-control-color"
+                            style={{ width: "44px", height: "44px", padding: 0, border: "1px solid rgba(148, 163, 184, 0.4)", borderRadius: "0.75rem", background: "transparent" }}
+                          />
+                        </label>
+                        <label className="d-flex align-items-center gap-2 mb-0">
+                          <span className="small text-dark">Texto interior</span>
+                          <input
+                            type="text"
+                            value={(textsByModel[modelo3D] && textsByModel[modelo3D].interior) || ''}
+                            onChange={(e) => setModelText('interior', e.target.value)}
+                            className="form-control"
+                            style={{ width: "180px", minWidth: "180px" }}
+                            placeholder="Texto interior"
+                          />
+                        </label>
+                        <label className="d-flex align-items-center gap-2 mb-0">
+                          <span className="small text-dark">Texto exterior</span>
+                          <input
+                            type="text"
+                            value={(textsByModel[modelo3D] && textsByModel[modelo3D].exterior) || ''}
+                            onChange={(e) => setModelText('exterior', e.target.value)}
+                            className="form-control"
+                            style={{ width: "180px", minWidth: "180px" }}
+                            placeholder="Texto exterior"
+                          />
+                        </label>
+                      </>
+                    ) : (
+                      <>
+                        <label className="d-flex align-items-center gap-2 mb-0">
+                          <span className="small text-dark">Interior</span>
+                          <input
+                            type="color"
+                            value={(colorsByModel[modelo3D] && colorsByModel[modelo3D].interior) || '#ffffff'}
+                            onChange={(e) => setModelColor('interior', e.target.value)}
+                            className="form-control form-control-color"
+                            style={{ width: "44px", height: "44px", padding: 0, border: "1px solid rgba(148, 163, 184, 0.4)", borderRadius: "0.75rem", background: "transparent" }}
+                          />
+                        </label>
+                        <label className="d-flex align-items-center gap-2 mb-0">
+                          <span className="small text-dark">Base</span>
+                          <input
+                            type="color"
+                            value={(colorsByModel[modelo3D] && colorsByModel[modelo3D].base) || '#ffffff'}
+                            onChange={(e) => setModelColor('base', e.target.value)}
+                            className="form-control form-control-color"
+                            style={{ width: "44px", height: "44px", padding: 0, border: "1px solid rgba(148, 163, 184, 0.4)", borderRadius: "0.75rem", background: "transparent" }}
+                          />
+                        </label>
+                        <label className="d-flex align-items-center gap-2 mb-0">
+                          <span className="small text-dark">Exterior</span>
+                          <input
+                            type="color"
+                            value={(colorsByModel[modelo3D] && colorsByModel[modelo3D].exterior) || '#ffffff'}
+                            onChange={(e) => setModelColor('exterior', e.target.value)}
+                            className="form-control form-control-color"
+                            style={{ width: "44px", height: "44px", padding: 0, border: "1px solid rgba(148, 163, 184, 0.4)", borderRadius: "0.75rem", background: "transparent" }}
+                          />
+                        </label>
+                        <label className="d-flex align-items-center gap-2 mb-0">
+                          <span className="small text-dark">Asa</span>
+                          <input
+                            type="color"
+                            value={(colorsByModel[modelo3D] && colorsByModel[modelo3D].asa) || '#ffffff'}
+                            onChange={(e) => setModelColor('asa', e.target.value)}
+                            className="form-control form-control-color"
+                            style={{ width: "44px", height: "44px", padding: 0, border: "1px solid rgba(148, 163, 184, 0.4)", borderRadius: "0.75rem", background: "transparent" }}
+                          />
+                        </label>
+                      </>
+                    )}
+                    {!isRing && (
+                      <button type="button" className="btn btn-sm btn-yesa-secondary" onClick={handleFileSelect}>
+                        Elegir archivo
+                      </button>
+                    )}
+                    <button type="button" className="btn btn-sm btn-outline-danger" onClick={handleClearModel}>
+                      Limpiar modelo
                     </button>
                     <input
                       ref={fileInputRef}
