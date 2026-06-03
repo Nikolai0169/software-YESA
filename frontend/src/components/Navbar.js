@@ -110,7 +110,7 @@ const NavigationBar = memo(() => {
 
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="me-auto align-items-center">
+          <Nav className="me-auto align-items-center flex-wrap">
             <Nav.Link as={Link} to="/" style={{ color: '#ffffff' }}>Inicio</Nav.Link>
             <Nav.Link as={Link} to="/catalogo" style={{ color: '#ffffff' }}>Catálogo</Nav.Link>
 
@@ -137,8 +137,8 @@ const NavigationBar = memo(() => {
 
           {/* Buscador - filtrado instantáneo */}
           {isCatalogo && (
-            <Form className="d-flex align-items-center me-3" onSubmit={(e) => e.preventDefault()}>
-              <div className="position-relative">
+            <Form className="d-flex align-items-center me-3 my-2 my-lg-0 w-100 w-lg-auto" style={{ minWidth: 0 }} onSubmit={(e) => e.preventDefault()}>
+              <div className="position-relative" style={{ width: '100%', minWidth: 0, maxWidth: '280px' }}>
                 <FormControl
                   type="search"
                   placeholder="Buscar productos..."
@@ -151,7 +151,8 @@ const NavigationBar = memo(() => {
                     borderRadius: '20px',
                     color: '#000000',
                     paddingRight: '2.2rem',
-                    width: '220px',
+                    width: '100%',
+                    minWidth: 0,
                   }}
                 />
                 <i className="bi bi-search" style={{
@@ -187,21 +188,27 @@ const NavigationBar = memo(() => {
             </NavDropdown>
           )}
 
-          <Nav.Link as={Link} to="/personalizacion" className="btn-personalizacion me-2">
-            <div style={{
-              backgroundColor: '#6f42c1',
-              borderRadius: '8px',
-              fontWeight: '500',
-              height: '28px',
-              padding: '0 10px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              color: '#fff',
-            }}>
-              Personalizar <i className="bi bi-pencil-square text-white fs-5"></i>
-            </div>
-          </Nav.Link>
+          {/* Dropdown "Más opciones" que agrupa Personalizar, Diseños guardados y Favoritos */}
+          <NavDropdown 
+            title={<><i className="bi bi-three-dots-vertical"></i> Más opciones</>} 
+            id="more-options-dropdown" 
+            className="me-2"
+          >
+            <NavDropdown.Item as={Link} to="/personalizacion">
+              <i className="bi bi-pencil-square me-2" style={{ color: '#6f42c1' }}></i>Personalizar
+            </NavDropdown.Item>
+            <NavDropdown.Item as={Link} to="/disenos-guardados">
+              <i className="bi bi-save2-fill me-2" style={{ color: '#0d6efd' }}></i>Diseños guardados
+            </NavDropdown.Item>
+            {isAuthenticated && (
+              <>
+                <NavDropdown.Divider />
+                <NavDropdown.Item as={Link} to="/favoritos">
+                  <i className="bi bi-heart-fill me-2" style={{ color: '#dc3545' }}></i>Favoritos
+                </NavDropdown.Item>
+              </>
+            )}
+          </NavDropdown>
 
           <Nav.Link as={Link} to="/carrito" className="btn-carrito me-2">
             <div style={{
@@ -215,32 +222,30 @@ const NavigationBar = memo(() => {
               gap: '6px',
               color: '#ffff',
             }}>
-              Carrito <i className="bi bi-cart3 text-white fs-5"></i>
+              <span className="d-none d-sm-inline">Carrito</span> <i className="bi bi-cart3 text-white fs-5"></i>
             </div>
           </Nav.Link>
 
-          <Nav className="align-items-center">
+          <Nav className="align-items-center flex-wrap" style={{ gap: '0.5rem' }}>
             <Button variant="outline-light" size="sm" className="me-2" onClick={() => setShowFAQ(true)}>
-              <i className="bi bi-question-circle-fill me-1"></i>FAQ
+              <i className="bi bi-question-circle-fill me-1"></i><span className="d-none d-sm-inline">FAQ</span>
             </Button>
-            {isAuthenticated && isCliente && (
-              <Nav.Link as={Link} to="/favoritos" className="me-2" style={{ color: '#fff' }}>
-                <i className="bi bi-heart-fill me-1"></i>Favoritos
-              </Nav.Link>
-            )}
             {isAuthenticated ? (
               <>
                 {isCliente && (
-                  <Button as={Link} to="/mis-pedidos" style={{ 
+                  <Button as={Link} to="/mis-pedidos" size="sm" style={{ 
                     color: '#fff',
                     backgroundColor: 'transparent',
                     borderRadius: '8px',
                     fontWeight: '500',
+                    padding: '0.25rem 0.5rem',
+                    fontSize: '0.85rem',
                   }}>
-                    <i className="bi bi-box-seam me-1"></i>Mis Pedidos
+                    <i className="bi bi-box-seam me-1"></i>
+                    <span className="d-none d-md-inline">Mis Pedidos</span>
                   </Button>
                 )}
-                <NavDropdown title={<><i className="bi bi-person-circle me-1"></i>{user?.nombre}</>} id="user-dropdown" align="end">
+                <NavDropdown title={<><i className="bi bi-person-circle me-1"></i><span className="d-none d-lg-inline">{user?.nombre}</span></>} id="user-dropdown" align="end">
                   <NavDropdown.Item as={Link} to="/perfil">Mi Perfil</NavDropdown.Item>
                   <NavDropdown.Divider />
                   <NavDropdown.Item onClick={handleLogout}>

@@ -1,29 +1,20 @@
 import React, { useState, useRef, useEffect } from "react";
 import Personalizacion3D from "../components/Personalizacion3D";
 import { guardarDiseno, cotizarProducto } from "../services/api";
-import carritoService from "../services/carritoService";
+import { saveDesignLocally } from "../services/personalizationService";
 
 const PersonalizacionPage = () => {
   const defaultColors = {
     taza: { interior: "#ffffff", base: "#ffffff", exterior: "#ffffff", asa: "#ffffff" },
-    anillo: { interior: "#ffffff", base: "#ffffff", exterior: "#ffffff", asa: "#ffffff" },
-    "plato-hondo": { interior: "#ffffff", base: "#ffffff", exterior: "#ffffff", asa: "#ffffff" },
-    "plato-llano": { interior: "#ffffff", base: "#ffffff", exterior: "#ffffff", asa: "#ffffff" },
   };
 
   const defaultTexts = {
     taza: { interior: "", exterior: "" },
-    anillo: { interior: "", exterior: "" },
-    "plato-hondo": { interior: "", exterior: "" },
-    "plato-llano": { interior: "", exterior: "" },
   };
 
   const [colorsByModel, setColorsByModel] = useState(defaultColors);
   const [texturesByModel, setTexturesByModel] = useState({
     taza: null,
-    anillo: null,
-    "plato-hondo": null,
-    "plato-llano": null,
   });
   const [textsByModel, setTextsByModel] = useState(defaultTexts);
   const [modelo3D, setModelo3D] = useState("taza");
@@ -34,9 +25,6 @@ const PersonalizacionPage = () => {
 
   const modelOptions = [
     { id: "taza", label: "Taza", description: "Modelo actual con asa y base redonda." },
-    { id: "anillo", label: "Anillo", description: "Forma de anillo elegante." },
-    { id: "plato-hondo", label: "Plato hondo", description: "Plato con borde alto y forma curva." },
-    { id: "plato-llano", label: "Plato llano", description: "Plato plano con borde sutil." },
   ];
 
   const handleFileSelect = () => {
@@ -112,12 +100,30 @@ const PersonalizacionPage = () => {
     const el = previewRef.current;
     if (!el) return;
 
-    if (el.requestFullscreen) {
-      await el.requestFullscreen();
-    } else if (el.webkitRequestFullscreen) {
-      await el.webkitRequestFullscreen();
-    } else if (el.msRequestFullscreen) {
-      await el.msRequestFullscreen();
+    const isFullscreenElement =
+      document.fullscreenElement ||
+      document.webkitFullscreenElement ||
+      document.mozFullScreenElement ||
+      document.msFullscreenElement;
+
+    if (isFullscreenElement) {
+      if (document.exitFullscreen) {
+        await document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        await document.webkitExitFullscreen();
+      } else if (document.mozCancelFullScreen) {
+        await document.mozCancelFullScreen();
+      } else if (document.msExitFullscreen) {
+        await document.msExitFullscreen();
+      }
+    } else {
+      if (el.requestFullscreen) {
+        await el.requestFullscreen();
+      } else if (el.webkitRequestFullscreen) {
+        await el.webkitRequestFullscreen();
+      } else if (el.msRequestFullscreen) {
+        await el.msRequestFullscreen();
+      }
     }
   };
 
@@ -144,36 +150,6 @@ const PersonalizacionPage = () => {
     }
   };
 
-  const handleAgregarCarrito = async () => {
-    try {
-      const currentColors = colorsByModel[modelo3D] || {};
-      const currentTexts = textsByModel[modelo3D] || {};
-      const disenoData = {
-        modelo: modelo3D,
-        colorInterior: currentColors.interior,
-        colorBase: currentColors.base,
-        colorExterior: currentColors.exterior,
-        colorAsa: currentColors.asa,
-        textInterior: currentTexts.interior,
-        textExterior: currentTexts.exterior,
-        textureUrl: texturesByModel[modelo3D] || null,
-        zoom: zoomLevel,
-        nombre: "Producto Personalizado",
-        precio: 0,
-        imagen: null,
-      };
-      const result = await carritoService.agregarAlCarrito("personalizacion_" + Date.now(), 1, disenoData);
-      if (result.success) {
-        alert("Producto agregado al carrito");
-      } else {
-        alert(result.message || "Error al agregar al carrito");
-      }
-    } catch (error) {
-      console.error("Error al agregar al carrito:", error);
-      alert(error?.message || "Error al agregar al carrito");
-    }
-  };
-
   const handleGuardarDiseno = async () => {
     try {
       const currentColors = colorsByModel[modelo3D] || {};
@@ -190,8 +166,19 @@ const PersonalizacionPage = () => {
         zoom: zoomLevel,
         nombre: `Diseño personalizado - ${new Date().toLocaleDateString()}`,
       };
-      const result = await guardarDiseno(disenoData);
-      alert(`Diseño guardado con ID: ${result.id || result._id}`);
+      const savedDesign = saveDesignLocally({
+        id: `diseno_${Date.now()}`,
+        ...disenoData,
+        savedAt: new Date().toISOString(),
+      });
+
+      try {
+        const result = await guardarDiseno(disenoData);
+        alert(`Diseño guardado${result?.mensaje ? ' en servidor y localmente' : ''}${result?.id || result?._id ? ` con ID: ${result.id || result._id}` : ''}`);
+      } catch (error) {
+        console.error("Error al guardar diseño en servidor:", error);
+        alert("Diseño guardado localmente");
+      }
     } catch (error) {
       console.error("Error al guardar diseño:", error);
       alert("Error al guardar el diseño");
@@ -234,7 +221,8 @@ const PersonalizacionPage = () => {
                       key={option.id}
                       type="button"
                       className={`btn btn-sm ${modelo3D === option.id ? 'btn-yesa-primary' : 'btn-outline-secondary'}`}
-                      onClick={() => setModelo3D(option.id)}
+                      disabled={option.id === 'taza'}
+                      onClick={() => option.id !== 'taza' && setModelo3D(option.id)}
                     >
                       <div className="text-start">
                         <strong>{option.label}</strong>
@@ -246,7 +234,7 @@ const PersonalizacionPage = () => {
               </div>
 
               <div className="personalizacion-preview-fullscreen-wrapper" ref={previewRef}>
-                <div className="personalizacion-preview mt-3">
+                <div className="personalizacion-preview mt-3 position-relative">
                   <Personalizacion3D 
                     modelo={modelo3D}
                     colorInterior={(colorsByModel[modelo3D] && colorsByModel[modelo3D].interior) || '#ffffff'}
@@ -258,19 +246,21 @@ const PersonalizacionPage = () => {
                     textExterior={(textsByModel[modelo3D] && textsByModel[modelo3D].exterior) || ''}
                     zoom={zoomLevel} 
                   />
-                </div>
-
-                <div className="personalizacion-preview-controls d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3">
-                  <div className="d-flex align-items-center gap-2">
+                  <div className="personalizacion-preview-overlay d-flex align-items-center gap-2">
                     <button type="button" className="btn btn-sm btn-yesa-secondary" onClick={handleZoomOut}>
                       -
                     </button>
-                    <span className="text-dark small">Zoom: {Math.round(zoomLevel * 100)}%</span>
+                    <span className="text-dark small">{Math.round(zoomLevel * 100)}%</span>
                     <button type="button" className="btn btn-sm btn-yesa-secondary" onClick={handleZoomIn}>
                       +
                     </button>
+                    <button type="button" className="btn btn-sm btn-yesa-secondary" onClick={handleFullscreen} title={isFullscreen ? "Salir de pantalla completa" : "Entrar a pantalla completa"}>
+                      <i className={isFullscreen ? "bi bi-fullscreen-exit" : "bi bi-arrows-fullscreen"}></i>
+                    </button>
                   </div>
+                </div>
 
+                <div className="personalizacion-preview-controls d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3">
                   <div className="d-flex align-items-center gap-2 flex-wrap">
                     {isRing ? (
                       <>
@@ -340,7 +330,7 @@ const PersonalizacionPage = () => {
                           />
                         </label>
                         <label className="d-flex align-items-center gap-2 mb-0">
-                          <span className="small text-dark">Asa</span>
+                          <span className="small text-dark">Oreja</span>
                           <input
                             type="color"
                             value={(colorsByModel[modelo3D] && colorsByModel[modelo3D].asa) || '#ffffff'}
@@ -357,7 +347,7 @@ const PersonalizacionPage = () => {
                       </button>
                     )}
                     <button type="button" className="btn btn-sm btn-outline-danger" onClick={handleClearModel}>
-                      Limpiar modelo
+                      Limpiar
                     </button>
                     <input
                       ref={fileInputRef}
@@ -366,9 +356,6 @@ const PersonalizacionPage = () => {
                       onChange={handleFileUpload}
                       style={{ display: "none" }}
                     />
-                    <button type="button" className="btn btn-sm btn-yesa-primary" onClick={handleFullscreen}>
-                      Pantalla completa
-                    </button>
                   </div>
                 </div>
 
@@ -377,13 +364,10 @@ const PersonalizacionPage = () => {
                     <button type="button" className="btn btn-yesa-primary" onClick={handleCotizar}>
                       Cotizar producto
                     </button>
-                    <button type="button" className="btn btn-yesa-secondary" onClick={handleAgregarCarrito}>
-                      Agregar al carrito
-                    </button>
-                    <button type="button" className="btn btn-outline-secondary" onClick={handleGuardarDiseno}>
+                    <button type="button" className="btn btn-yesa-gold" onClick={handleGuardarDiseno}>
                       Guardar diseño
                     </button>
-                    <button type="button" className="btn btn-outline-secondary" onClick={handleCompartir}>
+                    <button type="button" className="btn btn-yesa-tertiary" onClick={handleCompartir}>
                       Compartir
                     </button>
                   </div>

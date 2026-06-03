@@ -166,9 +166,13 @@ code {
   font-weight: 500;
 }
 
+.btn-carrito,
+.btn-personalizacion {
+  border: none !important;
+}
+
 .btn-carrito {
   background-color: #E91E63 !important;
-  border: none !important;
 }
 
 .btn-carrito:hover,
@@ -177,5 +181,18 @@ code {
 .btn-carrito:focus-visible,
 .btn-carrito:focus-within {
   background-color: #c2185b !important;
+  border: none !important;
+}
+
+.btn-personalizacion {
+  background-color: #6f42c1 !important;
+}
+
+.btn-personalizacion:hover,
+.btn-personalizacion:focus,
+.btn-personalizacion:active,
+.btn-personalizacion:focus-visible,
+.btn-personalizacion:focus-within {
+  background-color: #5d3ac7 !important;
   border: none !important;
 }

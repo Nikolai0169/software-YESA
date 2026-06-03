@@ -67,6 +67,9 @@ const ProductCard = memo(({ producto, onAddToCart, showActions = true }) => {
       const data = await response.json();
       if (data.success) {
         setIsFavorite(!isFavorite);
+        if (!isFavorite) {
+          alert('Producto agregado a favoritos');
+        }
       } else {
         alert(data.message || 'Ocurrió un error al actualizar favoritos.');
       }

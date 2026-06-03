@@ -140,6 +140,30 @@ router.delete('/cliente/carrito/:id', verificarAuth, carritoController.eliminarI
 router.delete('/cliente/carrito', verificarAuth, carritoController.vaciarCarrito);
 
 // ============================================
+// RUTAS DE FAVORITOS (/api/cliente/favoritos)
+// ============================================
+// Todas requieren autenticación → solo usuarios logueados pueden tener favoritos
+
+// GET /api/cliente/favoritos → Obtiene la lista de productos favoritos del usuario autenticado
+// verificarAuth → verifica token
+// Controlador: getFavoritos → busca favoritos WHERE usuarioId = req.usuario.id
+// Retorna la lista de productos marcados como favoritos con sus datos (nombre, precio, imagen, etc.)
+router.get('/cliente/favoritos', verificarAuth, favoritosController.getFavoritos);
+
+// POST /api/cliente/favoritos → Agrega un producto a la lista de favoritos
+// verificarAuth → verifica token
+// Body esperado: { productoId: 1 }
+// Controlador: agregarAFavoritos → crea un registro en la tabla 'favoritos'
+// Si el producto ya está en favoritos, retorna el favorito existente
+router.post('/cliente/favoritos', verificarAuth, favoritosController.agregarAFavoritos);
+
+// DELETE /api/cliente/favoritos/:productoId → Elimina un producto de la lista de favoritos
+// :productoId es el ID del producto a eliminar de favoritos
+// verificarAuth → verifica token
+// Controlador: eliminarFavorito → elimina el registro de la tabla 'favoritos' donde usuarioId y productoId coincidan
+router.delete('/cliente/favoritos/:productoId', verificarAuth, favoritosController.eliminarFavorito);
+
+// ============================================
 // RUTAS DE PEDIDOS - CLIENTE (/api/cliente/pedidos)
 // ============================================
 // Todas requieren autenticación → solo usuarios logueados pueden hacer pedidos

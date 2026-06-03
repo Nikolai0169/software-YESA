@@ -107,7 +107,7 @@ const ProductDetailPage = () => {
       const data = await response.json();
       if (data.success) {
         setIsFavorite(!isFavorite);
-        setMensaje({ tipo: 'success', texto: isFavorite ? 'Producto removido de favoritos' : 'Producto agregado a favoritos' });
+        setMensaje({ tipo: 'success', texto: isFavorite ? 'Producto eliminado de favoritos' : 'Producto agregado a favoritos' });
         setTimeout(() => setMensaje({ tipo: '', texto: '' }), 2000);
       } else {
         setMensaje({ tipo: 'danger', texto: data.message || 'Error al actualizar favoritos' });
@@ -139,11 +139,17 @@ const ProductDetailPage = () => {
     );
   }
 
-  const productImages = producto?.imagenes && producto.imagenes.length > 0
-    ? producto.imagenes
-    : producto?.imagen
-      ? [producto.imagen]
-      : [];
+  const normalizeImages = (images) => {
+    if (Array.isArray(images)) return images.filter(Boolean);
+    if (typeof images === 'string') return [images];
+    if (images && typeof images === 'object') return Object.values(images).filter(Boolean);
+    return [];
+  };
+
+  const productImages = normalizeImages(producto.imagenes);
+  if (productImages.length === 0 && producto?.imagen) {
+    productImages.push(producto.imagen);
+  }
 
   return (
     <Container className="py-5">

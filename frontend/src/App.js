@@ -20,6 +20,7 @@ import CatalogoPage from './pages/CatalogoPage';
 import ProductDetailPage from './pages/ProductDetailPage';
 import FavoritesPage from './pages/FavoritesPage';
 import PersonalizacionPage from './pages/personalizacion';
+import SavedDesignsPage from './pages/SavedDesignsPage';
 import CarritoPage from './pages/CarritoPage';
 import CheckoutPage from './pages/CheckoutPage';
 import PedidoConfirmadoPage from './pages/PedidoConfirmadoPage';
@@ -58,6 +59,7 @@ function App() {
                 </ProtectedRoute>
               } />
               <Route path="/personalizacion" element={<PersonalizacionPage />} />
+              <Route path="/disenos-guardados" element={<SavedDesignsPage />} />
               <Route path="/carrito" element={<CarritoPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/pedido-confirmado/:id" element={<PedidoConfirmadoPage />} />
