@@ -23,9 +23,10 @@ const PersonalizacionPage = () => {
   const previewRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  const modelOptions = [
-    { id: "taza", label: "Taza", description: "Modelo actual con asa y base redonda." },
-  ];
+  const modelOptions = [];
+  // const modelOptions = [
+  //   { id: "taza", label: "Taza", description: "Modelo actual con asa y base redonda." },
+  // ];
 
   const handleFileSelect = () => {
     if (fileInputRef.current) {

@@ -27,12 +27,18 @@ const createTextSprite = (text) => {
 
 const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBase = "#ffffff", colorExterior = "#ffffff", colorAsa = "#ffffff", texture, textInterior = "", textExterior = "", zoom = 1 }) => {
   const mountRef = useRef(null);
+  const sceneRef = useRef(null);
+  const cameraRef = useRef(null);
+  const rendererRef = useRef(null);
+  const modelGroupRef = useRef(null);
+  const isRingRef = useRef(false);
 
   useEffect(() => {
     // Escena
     const scene = new THREE.Scene();
-    const isRing = modelo === "anillo";
-    scene.background = new THREE.Color(isRing ? 0x111111 : 0x000000);
+    sceneRef.current = scene;
+    isRingRef.current = modelo === "anillo";
+    scene.background = new THREE.Color(isRingRef.current ? 0x111111 : 0x000000);
 
     // Cámara
     const camera = new THREE.PerspectiveCamera(
@@ -41,10 +47,12 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
       0.1,
       1000
     );
-    camera.position.z = isRing ? 4 / zoom : 5 / zoom;
+    camera.position.z = isRingRef.current ? 4 : 5;
+    cameraRef.current = camera;
 
     // Renderizador
     const renderer = new THREE.WebGLRenderer({ antialias: true });
+    rendererRef.current = renderer;
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight, false);
     renderer.domElement.style.width = "100%";
@@ -81,9 +89,10 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
     scene.add(directionalLight);
 
     const modelGroup = new THREE.Group();
+    modelGroupRef.current = modelGroup;
     scene.add(modelGroup);
 
-    if (isRing) {
+    if (isRingRef.current) {
       const ringMaterial = new THREE.MeshStandardMaterial({
         color: new THREE.Color(colorExterior || "#ffffff"),
         roughness: 0.2,
@@ -259,7 +268,17 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
         mountRef.current.removeChild(renderer.domElement);
       }
     };
-  }, [modelo, colorInterior, colorBase, colorExterior, colorAsa, texture, zoom]);
+  }, [modelo, colorInterior, colorBase, colorExterior, colorAsa, texture, textInterior, textExterior]);
+
+  // Manejo separado de zoom para evitar parpadeos
+  useEffect(() => {
+    if (!cameraRef.current) return;
+    
+    // Actualizar zoom de la cámara
+    const baseZ = isRingRef.current ? 4 : 5;
+    cameraRef.current.position.z = baseZ / zoom;
+    cameraRef.current.updateProjectionMatrix();
+  }, [zoom]);
 
   return <div className="personalizacion-3d-canvas" ref={mountRef}></div>;
 };
