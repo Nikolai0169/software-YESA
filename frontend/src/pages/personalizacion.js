@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Personalizacion3D from "../components/Personalizacion3D";
 import { guardarDiseno, cotizarProducto } from "../services/api";
-import { saveDesignLocally } from "../services/personalizationService";
+import { saveDesignLocally, getDesignToEdit, clearDesignToEdit } from "../services/personalizationService";
 
 const PersonalizacionPage = () => {
   const defaultColors = {
@@ -19,6 +19,18 @@ const PersonalizacionPage = () => {
   const [textsByModel, setTextsByModel] = useState(defaultTexts);
   const [modelo3D, setModelo3D] = useState("taza");
   const [zoomLevel, setZoomLevel] = useState(1);
+  const [currentDesignId, setCurrentDesignId] = useState(null);
+  const [currentDesignName, setCurrentDesignName] = useState("");
+  const [overlayTextByModel, setOverlayTextByModel] = useState({ taza: "" });
+  const [overlayTextSettingsByModel, setOverlayTextSettingsByModel] = useState({
+    taza: { fontFamily: "sans-serif", fontSize: 24, color: "#000000" },
+  });
+  const [composedTextureUrl, setComposedTextureUrl] = useState(null);
+  const [textEditorOpen, setTextEditorOpen] = useState(false);
+  const [textEditorContent, setTextEditorContent] = useState("");
+  const [textEditorFontFamily, setTextEditorFontFamily] = useState("sans-serif");
+  const [textEditorFontSize, setTextEditorFontSize] = useState(24);
+  const [textEditorColor, setTextEditorColor] = useState("#000000");
   const [isFullscreen, setIsFullscreen] = useState(false);
   const previewRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -61,8 +73,11 @@ const PersonalizacionPage = () => {
       return;
     }
 
-    const fileUrl = URL.createObjectURL(file);
-    setTexturesByModel((prev) => ({ ...prev, [modelo3D]: fileUrl }));
+    const reader = new FileReader();
+    reader.onload = () => {
+      setTexturesByModel((prev) => ({ ...prev, [modelo3D]: reader.result }));
+    };
+    reader.readAsDataURL(file);
   };
 
   const setModelText = (field, value) => {
@@ -71,6 +86,112 @@ const PersonalizacionPage = () => {
       [modelo3D]: { ...prev[modelo3D], [field]: value },
     }));
   };
+
+  useEffect(() => {
+    const designToEdit = getDesignToEdit();
+    if (designToEdit) {
+      const model = designToEdit.modelo || 'taza';
+      setCurrentDesignId(designToEdit.id || null);
+      setCurrentDesignName(
+        designToEdit.nombre || `Diseño personalizado - ${new Date().toLocaleDateString()}`
+      );
+      setModelo3D(model);
+      setColorsByModel((prev) => ({
+        ...prev,
+        [model]: {
+          interior: designToEdit.colorInterior || '#ffffff',
+          base: designToEdit.colorBase || '#ffffff',
+          exterior: designToEdit.colorExterior || '#ffffff',
+          asa: designToEdit.colorAsa || '#ffffff',
+        },
+      }));
+      setTexturesByModel((prev) => ({
+        ...prev,
+        [model]: designToEdit.textureUrl || designToEdit.texture || null,
+      }));
+      setTextsByModel((prev) => ({
+        ...prev,
+        [model]: {
+          interior: designToEdit.textInterior || '',
+          exterior: designToEdit.textExterior || '',
+        },
+      }));
+      setOverlayTextByModel((prev) => ({
+        ...prev,
+        [model]: designToEdit.overlayText || '',
+      }));
+      setOverlayTextSettingsByModel((prev) => ({
+        ...prev,
+        [model]: {
+          fontFamily: designToEdit.overlayTextFontFamily || 'sans-serif',
+          fontSize: designToEdit.overlayTextFontSize || 24,
+          color: designToEdit.overlayTextColor || '#ffffff',
+        },
+      }));
+      setZoomLevel(designToEdit.zoom || 1);
+      clearDesignToEdit();
+    }
+  }, []);
+
+  useEffect(() => {
+    const currentTextureUrl = texturesByModel[modelo3D] || null;
+    const currentOverlayText = overlayTextByModel[modelo3D] || '';
+    const currentSettings = overlayTextSettingsByModel[modelo3D] || {
+      fontFamily: 'sans-serif',
+      fontSize: 24,
+      color: '#000000',
+    };
+
+    if (!currentOverlayText) {
+      setComposedTextureUrl(currentTextureUrl);
+      return;
+    }
+
+    const canvas = document.createElement('canvas');
+    const size = 1024;
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+
+    const drawOverlayText = () => {
+      ctx.fillStyle = currentSettings.color;
+      ctx.font = `bold ${currentSettings.fontSize}px ${currentSettings.fontFamily}`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const lines = currentOverlayText.split('\n');
+      const lineHeight = currentSettings.fontSize + 10;
+      lines.forEach((line, index) => {
+        ctx.fillText(
+          line,
+          size / 2,
+          size / 2 + (index - (lines.length - 1) / 2) * lineHeight
+        );
+      });
+      setComposedTextureUrl(canvas.toDataURL('image/png'));
+    };
+
+    if (currentTextureUrl) {
+      const image = new Image();
+      image.crossOrigin = 'anonymous';
+      image.onload = () => {
+        ctx.clearRect(0, 0, size, size);
+        ctx.drawImage(image, 0, 0, size, size);
+        drawOverlayText();
+      };
+      image.onerror = () => {
+        ctx.clearRect(0, 0, size, size);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, size, size);
+        drawOverlayText();
+      };
+      image.src = currentTextureUrl;
+    } else {
+      ctx.clearRect(0, 0, size, size);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, size, size);
+      drawOverlayText();
+    }
+  }, [modelo3D, overlayTextByModel, overlayTextSettingsByModel, texturesByModel]);
 
   useEffect(() => {
     const updateFullscreen = () => {
@@ -156,6 +277,7 @@ const PersonalizacionPage = () => {
       const currentColors = colorsByModel[modelo3D] || {};
       const currentTexts = textsByModel[modelo3D] || {};
       const disenoData = {
+        id: currentDesignId || `diseno_${Date.now()}`,
         modelo: modelo3D,
         colorInterior: currentColors.interior,
         colorBase: currentColors.base,
@@ -164,14 +286,20 @@ const PersonalizacionPage = () => {
         textInterior: currentTexts.interior,
         textExterior: currentTexts.exterior,
         textureUrl: texturesByModel[modelo3D] || null,
+        overlayText: overlayTextByModel[modelo3D] || '',
+        overlayTextFontFamily: (overlayTextSettingsByModel[modelo3D] && overlayTextSettingsByModel[modelo3D].fontFamily) || 'sans-serif',
+        overlayTextFontSize: (overlayTextSettingsByModel[modelo3D] && overlayTextSettingsByModel[modelo3D].fontSize) || 24,
+        overlayTextColor: (overlayTextSettingsByModel[modelo3D] && overlayTextSettingsByModel[modelo3D].color) || '#ffffff',
         zoom: zoomLevel,
-        nombre: `Diseño personalizado - ${new Date().toLocaleDateString()}`,
+        nombre:
+          currentDesignName || `Diseño personalizado - ${new Date().toLocaleDateString()}`,
       };
       const savedDesign = saveDesignLocally({
-        id: `diseno_${Date.now()}`,
         ...disenoData,
         savedAt: new Date().toISOString(),
       });
+      setCurrentDesignId(savedDesign.id);
+      setCurrentDesignName(savedDesign.nombre);
 
       try {
         const result = await guardarDiseno(disenoData);
@@ -242,7 +370,11 @@ const PersonalizacionPage = () => {
                     colorBase={(colorsByModel[modelo3D] && colorsByModel[modelo3D].base) || '#ffffff'}
                     colorExterior={(colorsByModel[modelo3D] && colorsByModel[modelo3D].exterior) || '#ffffff'}
                     colorAsa={(colorsByModel[modelo3D] && colorsByModel[modelo3D].asa) || '#ffffff'}
-                    texture={texturesByModel[modelo3D]} 
+                    texture={composedTextureUrl}
+                    overlayText={overlayTextByModel[modelo3D] || ''}
+                    overlayTextFontFamily={(overlayTextSettingsByModel[modelo3D] && overlayTextSettingsByModel[modelo3D].fontFamily) || 'sans-serif'}
+                    overlayTextFontSize={(overlayTextSettingsByModel[modelo3D] && overlayTextSettingsByModel[modelo3D].fontSize) || 24}
+                    overlayTextColor={(overlayTextSettingsByModel[modelo3D] && overlayTextSettingsByModel[modelo3D].color) || '#ffffff'}
                     textInterior={(textsByModel[modelo3D] && textsByModel[modelo3D].interior) || ''}
                     textExterior={(textsByModel[modelo3D] && textsByModel[modelo3D].exterior) || ''}
                     zoom={zoomLevel} 
@@ -343,9 +475,29 @@ const PersonalizacionPage = () => {
                       </>
                     )}
                     {!isRing && (
-                      <button type="button" className="btn btn-sm btn-yesa-secondary" onClick={handleFileSelect}>
-                        Elegir archivo
-                      </button>
+                      <>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-yesa-secondary"
+                          onClick={() => {
+                            setTextEditorContent(overlayTextByModel[modelo3D] || '');
+                            const currentSettings = overlayTextSettingsByModel[modelo3D] || {
+                              fontFamily: 'sans-serif',
+                              fontSize: 24,
+                              color: '#ffffff',
+                            };
+                            setTextEditorFontFamily(currentSettings.fontFamily);
+                            setTextEditorFontSize(currentSettings.fontSize);
+                            setTextEditorColor(currentSettings.color || '#000000');
+                            setTextEditorOpen(true);
+                          }}
+                        >
+                          Agregar texto
+                        </button>
+                        <button type="button" className="btn btn-sm btn-yesa-secondary" onClick={handleFileSelect}>
+                          Elegir archivo
+                        </button>
+                      </>
                     )}
                     <button type="button" className="btn btn-sm btn-outline-danger" onClick={handleClearModel}>
                       Limpiar
@@ -359,6 +511,100 @@ const PersonalizacionPage = () => {
                     />
                   </div>
                 </div>
+
+                {textEditorOpen && (
+                  <div className="text-editor-modal">
+                    <div className="text-editor-dialog">
+                      <div className="text-editor-header d-flex justify-content-between align-items-center">
+                        <div>
+                          <h5 className="mb-1">Editor de texto</h5>
+                          <p className="text-muted mb-0">Selecciona tipografía, tamaño y color para el texto del modelo.</p>
+                        </div>
+                        <button type="button" className="btn-close" aria-label="Cerrar" onClick={() => setTextEditorOpen(false)} />
+                      </div>
+                      <div className="text-editor-toolbar d-flex flex-wrap align-items-center gap-2 mt-3">
+                        <label className="mb-0 small text-muted">Fuente</label>
+                        <select
+                          className="form-select form-select-sm"
+                          value={textEditorFontFamily}
+                          onChange={(e) => setTextEditorFontFamily(e.target.value)}
+                          style={{ minWidth: '150px' }}
+                        >
+                          <option value="sans-serif">Sans serif</option>
+                          <option value="serif">Serif</option>
+                          <option value="monospace">Monospace</option>
+                          <option value="cursive">Cursiva</option>
+                        </select>
+                        <label className="mb-0 small text-muted">Tamaño</label>
+                        <select
+                          className="form-select form-select-sm"
+                          value={textEditorFontSize}
+                          onChange={(e) => setTextEditorFontSize(Number(e.target.value))}
+                          style={{ minWidth: '110px' }}
+                        >
+                          <option value={14}>14px</option>
+                          <option value={16}>16px</option>
+                          <option value={18}>18px</option>
+                          <option value={20}>20px</option>
+                          <option value={22}>22px</option>
+                          <option value={24}>24px</option>
+                          <option value={28}>28px</option>
+                          <option value={32}>32px</option>
+                          <option value={36}>36px</option>
+                          <option value={40}>40px</option>
+                          <option value={48}>48px</option>
+                        </select>
+                        <label className="mb-0 small text-muted">Color</label>
+                        <input
+                          type="color"
+                          value={textEditorColor}
+                          onChange={(e) => setTextEditorColor(e.target.value)}
+                          style={{ width: '44px', height: '44px', padding: 0, borderRadius: '0.75rem', border: '1px solid rgba(148, 163, 184, 0.4)' }}
+                        />
+                      </div>
+                      <div className="text-editor-body mt-3">
+                        <textarea
+                          rows={4}
+                          value={textEditorContent}
+                          onChange={(e) => {
+                            setTextEditorContent(e.target.value);
+                            e.target.style.height = 'auto';
+                            e.target.style.height = `${e.target.scrollHeight}px`;
+                          }}
+                          className="form-control"
+                          placeholder="Escribe el texto que quieras aplicar al modelo"
+                          style={{ fontFamily: textEditorFontFamily, fontSize: `${textEditorFontSize}px`, color: '#000000', minHeight: '120px', overflow: 'hidden' }}
+                        />
+                      </div>
+                      <div className="text-editor-actions d-flex justify-content-end gap-2 mt-3">
+                        <button type="button" className="btn btn-outline-secondary" onClick={() => setTextEditorOpen(false)}>
+                          Cancelar
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-yesa-primary"
+                          onClick={() => {
+                            setOverlayTextByModel((prev) => ({
+                              ...prev,
+                              [modelo3D]: textEditorContent,
+                            }));
+                            setOverlayTextSettingsByModel((prev) => ({
+                              ...prev,
+                              [modelo3D]: {
+                                fontFamily: textEditorFontFamily,
+                                fontSize: textEditorFontSize,
+                                color: textEditorColor,
+                              },
+                            }));
+                            setTextEditorOpen(false);
+                          }}
+                        >
+                          Aplicar texto
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {!isFullscreen && (
                   <div className="personalizacion-actions d-flex flex-wrap justify-content-center gap-2 mt-4">

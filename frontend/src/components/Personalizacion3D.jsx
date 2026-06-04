@@ -1,9 +1,9 @@
 ﻿import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
 
-const createTextSprite = (text) => {
-  const width = 512;
-  const height = 128;
+const createTextSprite = (text, fontFamily = "sans-serif", fontSize = 24, color = "#ffffff") => {
+  const width = 1024;
+  const height = 256;
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
@@ -11,13 +11,13 @@ const createTextSprite = (text) => {
   ctx.clearRect(0, 0, width, height);
   ctx.fillStyle = "rgba(0, 0, 0, 0)";
   ctx.fillRect(0, 0, width, height);
-  ctx.fillStyle = "#ffffff";
-  ctx.font = "bold 40px sans-serif";
+  ctx.fillStyle = color;
+  ctx.font = `bold ${fontSize}px ${fontFamily}`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   const lines = text ? text.split("\n") : [];
   lines.forEach((line, index) => {
-    ctx.fillText(line, width / 2, height / 2 + (index - (lines.length - 1) / 2) * 45);
+    ctx.fillText(line, width / 2, height / 2 + (index - (lines.length - 1) / 2) * (fontSize + 8));
   });
   const texture = new THREE.CanvasTexture(canvas);
   texture.minFilter = THREE.LinearFilter;
@@ -25,7 +25,65 @@ const createTextSprite = (text) => {
   return texture;
 };
 
-const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBase = "#ffffff", colorExterior = "#ffffff", colorAsa = "#ffffff", texture, textInterior = "", textExterior = "", zoom = 1 }) => {
+const createOverlayTexture = (
+  textureUrl,
+  text,
+  fontFamily = "sans-serif",
+  fontSize = 24,
+  color = "#ffffff",
+  callback
+) => {
+  const size = 1024;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d");
+
+  const drawOverlay = () => {
+    ctx.clearRect(0, 0, size, size);
+    if (!textureUrl) {
+      ctx.clearRect(0, 0, size, size);
+    }
+
+    ctx.fillStyle = color;
+    ctx.font = `bold ${fontSize}px ${fontFamily}`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    const lines = text ? text.split("\n") : [];
+    const lineHeight = fontSize + 10;
+    lines.forEach((line, index) => {
+      ctx.fillText(
+        line,
+        size / 2,
+        size / 2 + (index - (lines.length - 1) / 2) * lineHeight
+      );
+    });
+
+    const canvasTexture = new THREE.CanvasTexture(canvas);
+    canvasTexture.minFilter = THREE.LinearFilter;
+    canvasTexture.needsUpdate = true;
+    callback(canvasTexture);
+  };
+
+  if (!textureUrl) {
+    drawOverlay();
+    return;
+  }
+
+  const image = new Image();
+  image.crossOrigin = "anonymous";
+  image.onload = () => {
+    ctx.clearRect(0, 0, size, size);
+    ctx.drawImage(image, 0, 0, size, size);
+    drawOverlay();
+  };
+  image.onerror = () => {
+    drawOverlay();
+  };
+  image.src = textureUrl;
+};
+
+const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBase = "#ffffff", colorExterior = "#ffffff", colorAsa = "#ffffff", texture, overlayText = "", overlayTextFontFamily = "sans-serif", overlayTextFontSize = 24, overlayTextColor = "#ffffff", textInterior = "", textExterior = "", zoom = 1 }) => {
   const mountRef = useRef(null);
   const sceneRef = useRef(null);
   const cameraRef = useRef(null);
@@ -89,6 +147,18 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
     scene.add(directionalLight);
 
     const modelGroup = new THREE.Group();
+    const sprites = [];
+    const addTextSprite = (text, zOffset, fontFamily = "sans-serif", fontSize = 24, color = "#ffffff") => {
+      if (!text) return;
+      const textTexture = createTextSprite(text, fontFamily, fontSize, color);
+      const spriteMaterial = new THREE.SpriteMaterial({ map: textTexture, transparent: true });
+      const sprite = new THREE.Sprite(spriteMaterial);
+      sprite.scale.set(2.4, 0.75, 1);
+      sprite.position.set(0, 0, zOffset);
+      modelGroup.add(sprite);
+      sprites.push(sprite);
+    };
+
     modelGroupRef.current = modelGroup;
     scene.add(modelGroup);
 
@@ -112,20 +182,9 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
       ring.position.set(0, 0, 0);
       modelGroup.add(ring);
 
-      const sprites = [];
-      const addTextSprite = (text, zOffset) => {
-        if (!text) return;
-        const textTexture = createTextSprite(text);
-        const spriteMaterial = new THREE.SpriteMaterial({ map: textTexture, transparent: true });
-        const sprite = new THREE.Sprite(spriteMaterial);
-        sprite.scale.set(2, 0.5, 1);
-        sprite.position.set(0, 0, zOffset);
-        modelGroup.add(sprite);
-        sprites.push(sprite);
-      };
-
-      addTextSprite(textInterior, -0.75);
-      addTextSprite(textExterior, 0.75);
+      addTextSprite(textInterior, -0.75, overlayTextFontFamily, overlayTextFontSize, overlayTextColor);
+      addTextSprite(textExterior, 0.75, overlayTextFontFamily, overlayTextFontSize, overlayTextColor);
+      addTextSprite(overlayText, 1.1, overlayTextFontFamily, overlayTextFontSize, overlayTextColor);
 
       const disposeSprites = () => {
         sprites.forEach((sprite) => {
@@ -147,7 +206,6 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
 
       const exteriorMaterial = new THREE.MeshStandardMaterial({
         color: new THREE.Color(colorExterior || "#ffffff"),
-        map: texture ? new THREE.TextureLoader().load(texture) : null,
         roughness: 0.3,
         metalness: 0.1,
         side: THREE.FrontSide,
@@ -165,6 +223,43 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
         metalness: 0.1,
         side: THREE.DoubleSide,
       });
+
+      const applyExteriorTexture = () => {
+        if (overlayText) {
+          createOverlayTexture(
+            texture,
+            overlayText,
+            overlayTextFontFamily,
+            overlayTextFontSize,
+            overlayTextColor,
+            (canvasTexture) => {
+              exteriorMaterial.map = canvasTexture;
+              exteriorMaterial.transparent = true;
+              exteriorMaterial.needsUpdate = true;
+            }
+          );
+          return;
+        }
+
+        if (texture) {
+          const loader = new THREE.TextureLoader();
+          loader.load(
+            texture,
+            (loadedTexture) => {
+              loadedTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+              loadedTexture.needsUpdate = true;
+              exteriorMaterial.map = loadedTexture;
+              exteriorMaterial.needsUpdate = true;
+            },
+            undefined,
+            (err) => {
+              console.error('Error cargando textura 3D:', err);
+            }
+          );
+        }
+      };
+
+      applyExteriorTexture();
 
       const cupGroup = new THREE.Group();
 
@@ -209,6 +304,15 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
       cupGroup.add(rimMesh);
 
       modelGroup.add(cupGroup);
+
+      const disposeSprites = () => {
+        sprites.forEach((sprite) => {
+          if (sprite.material.map) sprite.material.map.dispose();
+          sprite.material.dispose();
+          modelGroup.remove(sprite);
+        });
+      };
+      modelGroup.userData.disposeSprites = disposeSprites;
     }
 
     const isDraggingRef = { current: false };

@@ -447,26 +447,47 @@ body {
   border-radius: 1rem;
   background: rgba(248, 250, 252, 0.95);
   color: #111827;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
 }
 
 .personalizacion-preview-controls > .d-flex {
   width: 100%;
   justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
 }
 
 .personalizacion-preview-controls > .d-flex > label {
-  flex: 1 1 180px;
+  flex: 0 0 auto;
   min-width: 140px;
+  margin-bottom: 0;
+}
+
+.personalizacion-preview-controls label {
+  margin-bottom: 0;
 }
 
 .personalizacion-preview-controls .btn {
   min-width: 42px;
+  padding: 0.55rem 0.9rem;
+  white-space: nowrap;
 }
 
 .personalizacion-preview-controls .btn-yesa-primary,
 .personalizacion-preview-controls .btn-yesa-secondary {
   font-size: 0.85rem;
-  padding: 0.55rem 0.9rem;
+}
+
+.personalizacion-preview-controls .form-control-color {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 0.75rem;
 }
 
 .personalizacion-preview-fullscreen-wrapper {
@@ -525,6 +546,12 @@ body {
   padding: 0.35rem 0.7rem;
 }
 
+.saved-design-card {
+  border: 2px solid rgba(125, 33, 129, 0.18);
+  border-radius: 1.75rem;
+  overflow: hidden;
+}
+
 .saved-design-preview {
   min-height: 280px;
   height: 280px;
@@ -544,6 +571,30 @@ body {
   justify-content: center;
   background: #000;
   position: relative;
+}
+
+.saved-designs-color-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 1rem;
+  background: rgba(248, 250, 252, 0.96);
+}
+
+.saved-designs-color-swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45);
+}
+
+.saved-designs-color-label {
+  font-size: 0.85rem;
+  color: #111827;
+  font-weight: 600;
 }
 
 .personalizacion-preview-fullscreen-wrapper:fullscreen .personalizacion-preview,
@@ -577,6 +628,43 @@ body {
 .personalizacion-preview-fullscreen-wrapper:-webkit-full-screen .personalizacion-actions,
 .personalizacion-preview-fullscreen-wrapper:-ms-fullscreen .personalizacion-actions {
   display: none;
+}
+
+.text-editor-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 2000;
+}
+
+.text-editor-dialog {
+  width: min(100%, 720px);
+  background: #ffffff;
+  border-radius: 1.25rem;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.16);
+  padding: 1.5rem;
+}
+
+.text-editor-header {
+  gap: 1rem;
+}
+
+.text-editor-toolbar {
+  gap: 0.75rem;
+}
+
+.text-editor-body textarea {
+  min-height: 220px;
+  border-radius: 0.85rem;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.text-editor-actions .btn {
+  min-width: 120px;
 }
 
 .personalizacion-preview {
