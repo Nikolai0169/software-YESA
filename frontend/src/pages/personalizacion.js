@@ -9,7 +9,7 @@ const PersonalizacionPage = () => {
   };
 
   const defaultTexts = {
-    taza: { interior: "", exterior: "" },
+    taza: { texto: ""},
   };
 
   const [colorsByModel, setColorsByModel] = useState(defaultColors);
@@ -19,6 +19,7 @@ const PersonalizacionPage = () => {
   const [textsByModel, setTextsByModel] = useState(defaultTexts);
   const [modelo3D, setModelo3D] = useState("taza");
   const [zoomLevel, setZoomLevel] = useState(1);
+  const [isRotating, setIsRotating] = useState(true);
   const [currentDesignId, setCurrentDesignId] = useState(null);
   const [currentDesignName, setCurrentDesignName] = useState("");
   const [overlayTextByModel, setOverlayTextByModel] = useState({ taza: "" });
@@ -31,6 +32,8 @@ const PersonalizacionPage = () => {
   const [textEditorFontFamily, setTextEditorFontFamily] = useState("sans-serif");
   const [textEditorFontSize, setTextEditorFontSize] = useState(24);
   const [textEditorColor, setTextEditorColor] = useState("#000000");
+  const [textureOffset, setTextureOffset] = useState({ x: 0, y: 0 });
+  const [textureScale, setTextureScale] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const previewRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -50,6 +53,15 @@ const PersonalizacionPage = () => {
     setTexturesByModel((prev) => ({ ...prev, [modelo3D]: null }));
     setColorsByModel((prev) => ({ ...prev, [modelo3D]: { ...defaultColors[modelo3D] } }));
     setTextsByModel((prev) => ({ ...prev, [modelo3D]: { ...defaultTexts[modelo3D] } }));
+    setOverlayTextByModel((prev) => ({ ...prev, [modelo3D]: '' }));
+    setOverlayTextSettingsByModel((prev) => ({
+      ...prev,
+      [modelo3D]: { fontFamily: 'sans-serif', fontSize: 24, color: '#000000' },
+    }));
+    setTextEditorContent('');
+    setTextEditorFontFamily('sans-serif');
+    setTextEditorFontSize(24);
+    setTextEditorColor('#000000');
   };
 
   const setModelColor = (field, value) => {
@@ -175,7 +187,15 @@ const PersonalizacionPage = () => {
       image.crossOrigin = 'anonymous';
       image.onload = () => {
         ctx.clearRect(0, 0, size, size);
-        ctx.drawImage(image, 0, 0, size, size);
+        const scaledSize = size * textureScale;
+        const centerOffset = (size - scaledSize) / 2;
+        ctx.drawImage(
+          image,
+          centerOffset + textureOffset.x,
+          centerOffset + textureOffset.y,
+          scaledSize,
+          scaledSize
+        );
         drawOverlayText();
       };
       image.onerror = () => {
@@ -191,7 +211,12 @@ const PersonalizacionPage = () => {
       ctx.fillRect(0, 0, size, size);
       drawOverlayText();
     }
-  }, [modelo3D, overlayTextByModel, overlayTextSettingsByModel, texturesByModel]);
+  }, [modelo3D, overlayTextByModel, overlayTextSettingsByModel, texturesByModel, textureOffset, textureScale]);
+
+  useEffect(() => {
+    setTextureOffset({ x: 0, y: 0 });
+    setTextureScale(1);
+  }, [modelo3D]);
 
   useEffect(() => {
     const updateFullscreen = () => {
@@ -216,8 +241,47 @@ const PersonalizacionPage = () => {
     };
   }, []);
 
-  const handleZoomIn = () => setZoomLevel((current) => Math.min(current + 0.2, 2.4));
-  const handleZoomOut = () => setZoomLevel((current) => Math.max(current - 0.2, 0.6));
+  const zoomIntervalRef = useRef(null);
+  const zoomTimeoutRef = useRef(null);
+
+  const moveTexture = (dx, dy) => {
+    setTextureOffset((prev) => ({
+      x: Math.max(Math.min(prev.x + dx, 300), -300),
+      y: Math.max(Math.min(prev.y + dy, 300), -300),
+    }));
+  };
+
+  const changeTextureScale = (delta) => {
+    setTextureScale((current) => Math.max(Math.min(current + delta, 3), 0.4));
+  };
+
+  const handleZoomIn = () => setZoomLevel((current) => Math.min(current + 0.1, 2.0));
+  const handleZoomOut = () => setZoomLevel((current) => Math.max(current - 0.1, 1.0));
+
+  const clearZoomTimers = () => {
+    if (zoomTimeoutRef.current) {
+      clearTimeout(zoomTimeoutRef.current);
+      zoomTimeoutRef.current = null;
+    }
+    if (zoomIntervalRef.current) {
+      clearInterval(zoomIntervalRef.current);
+      zoomIntervalRef.current = null;
+    }
+  };
+
+  const startZoomRepeat = (zoomFn) => {
+    clearZoomTimers();
+    zoomTimeoutRef.current = setTimeout(() => {
+      zoomIntervalRef.current = setInterval(zoomFn, 120);
+    }, 300);
+  };
+
+  useEffect(() => {
+    return () => {
+      clearZoomTimers();
+    };
+  }, []);
+
   const handleFullscreen = async () => {
     const el = previewRef.current;
     if (!el) return;
@@ -377,19 +441,112 @@ const PersonalizacionPage = () => {
                     overlayTextColor={(overlayTextSettingsByModel[modelo3D] && overlayTextSettingsByModel[modelo3D].color) || '#ffffff'}
                     textInterior={(textsByModel[modelo3D] && textsByModel[modelo3D].interior) || ''}
                     textExterior={(textsByModel[modelo3D] && textsByModel[modelo3D].exterior) || ''}
-                    zoom={zoomLevel} 
+                    zoom={zoomLevel}
+                    autoRotate={isRotating}
                   />
+                  <div className="personalizacion-image-scale-widget position-absolute top-50 start-0 translate-middle-y ms-3">
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-yesa-secondary btn-icon"
+                      onClick={() => changeTextureScale(0.1)}
+                      disabled={!texturesByModel[modelo3D]}
+                      title="Aumentar tamaño"
+                    >
+                      <i className="bi bi-plus" />
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-yesa-secondary btn-icon"
+                      onClick={() => changeTextureScale(-0.1)}
+                      disabled={!texturesByModel[modelo3D]}
+                      title="Disminuir tamaño"
+                    >
+                      <i className="bi bi-dash" />
+                    </button>
+                  </div>
                   <div className="personalizacion-preview-overlay d-flex align-items-center gap-2">
-                    <button type="button" className="btn btn-sm btn-yesa-secondary" onClick={handleZoomOut}>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-yesa-secondary"
+                      onClick={handleZoomOut}
+                      onMouseDown={() => startZoomRepeat(handleZoomOut)}
+                      onMouseUp={clearZoomTimers}
+                      onMouseLeave={clearZoomTimers}
+                      onTouchStart={() => startZoomRepeat(handleZoomOut)}
+                      onTouchEnd={clearZoomTimers}
+                    >
                       -
                     </button>
                     <span className="text-dark small">{Math.round(zoomLevel * 100)}%</span>
-                    <button type="button" className="btn btn-sm btn-yesa-secondary" onClick={handleZoomIn}>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-yesa-secondary"
+                      onClick={handleZoomIn}
+                      onMouseDown={() => startZoomRepeat(handleZoomIn)}
+                      onMouseUp={clearZoomTimers}
+                      onMouseLeave={clearZoomTimers}
+                      onTouchStart={() => startZoomRepeat(handleZoomIn)}
+                      onTouchEnd={clearZoomTimers}
+                    >
                       +
+                    </button>
+                    <button
+                      type="button"
+                      className={`btn btn-sm ${isRotating ? 'btn-rotate-active' : 'btn-rotate-paused'} btn-icon`}
+                      onClick={() => setIsRotating((prev) => !prev)}
+                      title={isRotating ? 'Detener rotación' : 'Rotar modelo'}
+                    >
+                      <i className="bi bi-arrow-clockwise" />
                     </button>
                     <button type="button" className="btn btn-sm btn-yesa-secondary" onClick={handleFullscreen} title={isFullscreen ? "Salir de pantalla completa" : "Entrar a pantalla completa"}>
                       <i className={isFullscreen ? "bi bi-fullscreen-exit" : "bi bi-arrows-fullscreen"}></i>
                     </button>
+                  </div>
+                  <div className="personalizacion-image-position-widget position-absolute start-0 bottom-0 m-3">
+                    <div className="d-flex align-items-center gap-2 mb-2">
+                      <i className="bi bi-image fs-5" />
+                      <span className="small fw-semibold">Ajustar</span>
+                    </div>
+                    <div className="image-position-grid">
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-yesa-secondary btn-icon"
+                        onClick={() => moveTexture(0, -64)}
+                        disabled={!texturesByModel[modelo3D]}
+                        title="Mover arriba"
+                      >
+                        <i className="bi bi-arrow-up" />
+                      </button>
+                      <div className="d-flex justify-content-between gap-1">
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-yesa-secondary btn-icon"
+                          onClick={() => moveTexture(-64, 0)}
+                          disabled={!texturesByModel[modelo3D]}
+                          title="Mover izquierda"
+                        >
+                          <i className="bi bi-arrow-left" />
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-yesa-secondary btn-icon"
+                          onClick={() => moveTexture(64, 0)}
+                          disabled={!texturesByModel[modelo3D]}
+                          title="Mover derecha"
+                        >
+                          <i className="bi bi-arrow-right" />
+                        </button>
+                      </div>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-yesa-secondary btn-icon"
+                        onClick={() => moveTexture(0, 64)}
+                        disabled={!texturesByModel[modelo3D]}
+                        title="Mover abajo"
+                      >
+                        <i className="bi bi-arrow-down" />
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -528,12 +685,21 @@ const PersonalizacionPage = () => {
                           className="form-select form-select-sm"
                           value={textEditorFontFamily}
                           onChange={(e) => setTextEditorFontFamily(e.target.value)}
-                          style={{ minWidth: '150px' }}
+                          style={{ minWidth: '170px' }}
                         >
                           <option value="sans-serif">Sans serif</option>
+                          <option value="Arial, Helvetica, sans-serif">Arial</option>
+                          <option value="Segoe UI, Tahoma, Geneva, Verdana, sans-serif">Segoe UI</option>
+                          <option value="Tahoma, Geneva, Verdana, sans-serif">Tahoma</option>
                           <option value="serif">Serif</option>
+                          <option value="Georgia, serif">Georgia</option>
+                          <option value="Times New Roman, Times, serif">Times New Roman</option>
                           <option value="monospace">Monospace</option>
+                          <option value="Courier New, Courier, monospace">Courier New</option>
+                          <option value="Lucida Console, Monaco, monospace">Lucida Console</option>
                           <option value="cursive">Cursiva</option>
+                          <option value="Brush Script MT, cursive">Brush Script</option>
+                          <option value="Comic Sans MS, cursive, sans-serif">Comic Sans</option>
                         </select>
                         <label className="mb-0 small text-muted">Tamaño</label>
                         <select

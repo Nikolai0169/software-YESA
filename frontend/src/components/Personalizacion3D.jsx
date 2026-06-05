@@ -31,7 +31,8 @@ const createOverlayTexture = (
   fontFamily = "sans-serif",
   fontSize = 24,
   color = "#ffffff",
-  callback
+  callback,
+  backgroundColor = null
 ) => {
   const size = 1024;
   const canvas = document.createElement("canvas");
@@ -39,10 +40,15 @@ const createOverlayTexture = (
   canvas.height = size;
   const ctx = canvas.getContext("2d");
 
-  const drawOverlay = () => {
+  const drawOverlay = (image) => {
     ctx.clearRect(0, 0, size, size);
-    if (!textureUrl) {
-      ctx.clearRect(0, 0, size, size);
+    if (backgroundColor) {
+      ctx.fillStyle = backgroundColor;
+      ctx.fillRect(0, 0, size, size);
+    }
+
+    if (image) {
+      ctx.drawImage(image, 0, 0, size, size);
     }
 
     ctx.fillStyle = color;
@@ -66,28 +72,27 @@ const createOverlayTexture = (
   };
 
   if (!textureUrl) {
-    drawOverlay();
+    drawOverlay(null);
     return;
   }
 
   const image = new Image();
   image.crossOrigin = "anonymous";
   image.onload = () => {
-    ctx.clearRect(0, 0, size, size);
-    ctx.drawImage(image, 0, 0, size, size);
-    drawOverlay();
+    drawOverlay(image);
   };
   image.onerror = () => {
-    drawOverlay();
+    drawOverlay(null);
   };
   image.src = textureUrl;
 };
 
-const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBase = "#ffffff", colorExterior = "#ffffff", colorAsa = "#ffffff", texture, overlayText = "", overlayTextFontFamily = "sans-serif", overlayTextFontSize = 24, overlayTextColor = "#ffffff", textInterior = "", textExterior = "", zoom = 1 }) => {
+const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBase = "#ffffff", colorExterior = "#ffffff", colorAsa = "#ffffff", texture, overlayText = "", overlayTextFontFamily = "sans-serif", overlayTextFontSize = 24, overlayTextColor = "#ffffff", textInterior = "", textExterior = "", zoom = 1, autoRotate = true }) => {
   const mountRef = useRef(null);
   const sceneRef = useRef(null);
   const cameraRef = useRef(null);
   const rendererRef = useRef(null);
+  const autoRotateRef = useRef(autoRotate);
   const modelGroupRef = useRef(null);
   const isRingRef = useRef(false);
 
@@ -96,7 +101,7 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
     const scene = new THREE.Scene();
     sceneRef.current = scene;
     isRingRef.current = modelo === "anillo";
-    scene.background = new THREE.Color(isRingRef.current ? 0x111111 : 0x000000);
+    scene.background = new THREE.Color(0x333333);
 
     // Cámara
     const camera = new THREE.PerspectiveCamera(
@@ -109,12 +114,14 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
     cameraRef.current = camera;
 
     // Renderizador
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
     rendererRef.current = renderer;
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight, false);
+    renderer.setClearColor(0xffffff, 1);
     renderer.domElement.style.width = "100%";
     renderer.domElement.style.height = "100%";
+    renderer.domElement.style.backgroundColor = "#ffffff";
     mountRef.current.appendChild(renderer.domElement);
 
     const resizeScene = () => {
@@ -234,9 +241,11 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
             overlayTextColor,
             (canvasTexture) => {
               exteriorMaterial.map = canvasTexture;
-              exteriorMaterial.transparent = true;
+              exteriorMaterial.transparent = false;
+              exteriorMaterial.alphaTest = 0;
               exteriorMaterial.needsUpdate = true;
-            }
+            },
+            colorExterior || "#ffffff"
           );
           return;
         }
@@ -347,7 +356,7 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
 
     const animate = () => {
       requestAnimationFrame(animate);
-      if (!isDraggingRef.current) {
+      if (!isDraggingRef.current && autoRotateRef.current) {
         modelGroup.rotation.y += 0.004;
       }
       renderer.render(scene, camera);
@@ -373,6 +382,10 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
       }
     };
   }, [modelo, colorInterior, colorBase, colorExterior, colorAsa, texture, textInterior, textExterior]);
+
+  useEffect(() => {
+    autoRotateRef.current = autoRotate;
+  }, [autoRotate]);
 
   // Manejo separado de zoom para evitar parpadeos
   useEffect(() => {

@@ -12,17 +12,23 @@ import { cotizarProducto } from '../services/api';
 
 const formatDate = (dateString) => {
   try {
-    return new Date(dateString).toLocaleString('es-CO', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) return dateString;
+
+    const pad = (value) => String(value).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
   } catch {
     return dateString;
   }
 };
+
+const capitalizeFirst = (text) => {
+  if (!text || typeof text !== 'string') return text;
+  return text.charAt(0).toUpperCase() + text.slice(1);
+};
+
+const isDefaultDesignName = (name) =>
+  name && name.toLowerCase().startsWith('diseño personalizado');
 
 const SavedDesignsPage = () => {
   const [designs, setDesigns] = useState([]);
@@ -142,19 +148,21 @@ const SavedDesignsPage = () => {
           ) : (
             <Row className="g-4">
               {designs.map((design) => {
-                const previewZoom = Math.min(design.zoom || 1, 0.8);
+                const previewZoom = 1.3;
                 return (
                   <Col key={design.id} xs={12} md={6} lg={4}>
                     <Card className="h-100 shadow-sm saved-design-card">
                       <Card.Body className="d-flex flex-column">
-                        <div className="d-flex justify-content-between align-items-start mb-3">
+                        <div className="d-flex justify-content-between align-items-center mb-3 gap-3">
                           <div>
-                            <Card.Title>{design.nombre || 'Diseño personalizado'}</Card.Title>
+                            {!isDefaultDesignName(design.nombre) && (
+                              <Card.Title>{design.nombre}</Card.Title>
+                            )}
                             <Badge bg="secondary" className="saved-designs-badge">
-                              {design.modelo || 'Modelo 3D'}
+                              {capitalizeFirst(design.modelo || 'Taza')}
                             </Badge>
                           </div>
-                          <div className="d-flex align-items-center gap-2 flex-wrap">
+                          <div className="d-flex align-items-center gap-2 justify-content-end flex-nowrap">
                             <div className="form-check mb-0">
                               <input
                                 className="form-check-input"
@@ -170,15 +178,16 @@ const SavedDesignsPage = () => {
                             <Button
                               variant="outline-primary"
                               size="sm"
-                              className="px-3"
+                              className="btn-icon"
                               onClick={() => handleEdit(design)}
+                              aria-label="Editar diseño"
                             >
-                              Editar
+                              <i className="bi bi-pencil-square" />
                             </Button>
                             <Button
                               variant="outline-danger"
                               size="sm"
-                              className="px-2"
+                              className="btn-icon"
                               onClick={() => handleDelete(design.id)}
                               aria-label="Eliminar diseño"
                             >
@@ -222,10 +231,26 @@ const SavedDesignsPage = () => {
                               </div>
                             ))}
                           </div>
-                          <p className="mb-1"><strong>Texto:</strong></p>
-                          <div className="d-flex flex-wrap gap-2">
-                            <span className="badge bg-light text-dark">Interior: {design.textInterior || '---'}</span>
-                            <span className="badge bg-light text-dark">Exterior: {design.textExterior || '---'}</span>
+                          <p className="mb-1"><strong>Texto aplicado:</strong></p>
+                          <div className="d-flex flex-wrap gap-2 mb-2 align-items-center">
+                            <span
+                              className="badge bg-light text-dark text-wrap text-start"
+                              style={{
+                                maxWidth: '100%',
+                                fontFamily: design.overlayTextFontFamily || 'sans-serif',
+                                fontSize: '0.95rem',
+                                lineHeight: '1.4',
+                              }}
+                            >
+                              {design.overlayText || 'Sin texto aplicado'}
+                            </span>
+                            <div className="saved-designs-color-item" title={design.overlayTextColor || '#000000'}>
+                              <span
+                                className="saved-designs-color-swatch"
+                                style={{ backgroundColor: design.overlayTextColor || '#000000' }}
+                              />
+                              <span className="saved-designs-color-label">Color</span>
+                            </div>
                           </div>
                         </div>
 
