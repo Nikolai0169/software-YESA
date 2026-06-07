@@ -1,275 +1,204 @@
- /**
- * este archivo y pantalla de detalle de un pedido especifico para el administrador
- * recibe el parametro dinamico id desde la url 
- * consulta el backend para traer los datos del pedido
- * muestra los datos del cliente estado actual total fecha y lista de productos
- * permite cambiar el estado del pedido pendiente -> enviado-> entregado o cancelar si esta en pendiente 
- */
- 
+import React, { useEffect, useState } from 'react';
+import {
+  ScrollView,
+  View,
+  Text,
+  ActivityIndicator,
+  StyleSheet,
+  Alert,
+} from 'react-native';
+import { useLocalSearchParams, Link } from 'expo-router';
+import { getPedido } from '../../../src/services/adminService';
 
-//manejo de variables de estado local
-import {useState, useEffect} from 'react';
-//importar componentes
-//dimensions obtiene el ancho y alto de la pantalla para hacer diseños responsivos
-//flatilist lista optimizada con virtualizacion para mostras grandes cantidades de datos 
-//modal mostrar detalles de contenido en ventana emergente
-import {ActivityIndicator, Pressable, ScrollView, StyleSheet, TextInput, View, Alert, FlatList} from 'react-native';
-
-//lee los parametros de la url para obtener el id del pedido
-import {useLocalSearchParams} from 'expo-router';
-//themedText : texto que aplica colores del tema del dispositivo de manera automatica claro u oscuro
-import {ThemedText} from '../../../components/themed-text';
-//cliente http axios con JWT 
-import apiClient from '../../../src/api/apiClient';
-
-/**
- * tipos
- * representa un item de la lista de productos del pedido
- * todos los campos son opcionales porque el backend puede enviarlos todos
- */
-type Detalle = {
-    producto?: {nombre?: string}; //solo de los productos comprados
-    cantidad?: number;
-    precio?: number; //precio unitario del producto
+const getStatusColor = (estado: string) => {
+  switch (estado) {
+    case 'pendiente':
+      return '#f59e0b';
+    case 'pagado':
+      return '#06b6d4';
+    case 'enviado':
+      return '#3b82f6';
+    case 'entregado':
+      return '#10b981';
+    case 'cancelado':
+      return '#ef4444';
+    default:
+      return '#6b7280';
+  }
 };
 
-//representa el pedido completo tal como lo devuelve el backend 
-type Pedido = {
-    id: string;
-    estado?: string;
-    total?: number;
-    createdAt?: string;
-    usuario?: {
-        nombre?: string;
-        apellido?: string;
-        email?: string;
-    };
-    detalles?: Detalle[];//arreglo de productos incluidos en el pedido 
+type PedidoDetalle = {
+  total?: number;
+  monto?: number;
+  estado?: string;
+  createdAt?: string;
+  fecha?: string;
+  items?: { nombre?: string; title?: string; cantidad?: number; quantity?: number }[];
+  detalle?: { nombre?: string; title?: string; cantidad?: number; quantity?: number }[];
+  usuario?: { nombre?: string; email?: string };
+  cliente?: { nombre?: string; email?: string };
 };
 
-/**
- * componente principal 
- */
+export default function PedidoDetalleAdmin() {
+  const { id } = useLocalSearchParams();
+  const [pedido, setPedido] = useState<PedidoDetalle | null>(null);
+  const [loading, setLoading] = useState(true);
 
-export default function AdminPedidoDetalleScreen() {
-    /**
-     * parametros de ruta
-     * useLocalSearchParams lee los segmentos dinamicos de la url
-     * como el archivo se llama [id].tsx el parametro se llama id es decir si un pedido se llam 38 el id es 38
-     */
+  useEffect(() => {
+    if (id) {
+      loadPedido();
+    }
+  }, [id]);
 
-    const {id} = useLocalSearchParams<{id:string}>();
+  async function loadPedido() {
+    setLoading(true);
+    try {
+      const data = await getPedido(id);
+      setPedido((data as PedidoDetalle) || null);
+    } catch (error: unknown) {
+      const err = error as Error;
+      console.error('Error cargando el pedido:', err.message || error);
+      Alert.alert('Error', 'No se pudo cargar el pedido.');
+    } finally {
+      setLoading(false);
+    }
+  }
 
-    //estado local 
-    const [pedido, setPedido] = useState<Pedido | null>(null); //datos del pedido null = aun no cargados 
-    const [loading, setLoading] = useState(true);//activo mientras hace la peticion api
-    const [errorMessage, setErrorMessage] = useState('');// mensaje de error si falla la carga 
-    const [cambiando, setCambiando] = useState(false);//true mientras se esta cambiando el estado evita el doble click
-
-    /**
-     * funcion fetchPedido
-     * llama el endpoint get/admin/pedidos/:id y guarda el resultado en estado
-     * se usa tanto en el montaje inicial useEffect como despues de cambiar el estado 
-     */
-
-    const fetchPedido = async() => {
-        setLoading(true); //muestra el spinner de carga 
-        setErrorMessage('');
-        try {
-            //peticion get autenticada el token JWT lo agrega el apiClient automaticamente
-            const res = await apiClient.get(`/admin/pedidos/${id}`);
-            //la respuesta tiene estructura {data: data : {pedido...}}
-            //el operador ? evita errores si algun nivel es undefined 
-            setPedido(res.data?.data?.pedido || null);
-        }catch (error: unknown) {
-            //si la peticion falla guarda el mensaje de error para mostrarlo en pantalla 
-            setErrorMessage((error as {message?:string})?.message || 'No se pudo cargar el pedido');
-        }finally {
-            setLoading(false); //oculta el spinner siempre que haya un error o no 
-        }
-    };
-
-    /**
-     * efecto carga inicial 
-     * se ejecuta cada vez que cambie el parametro id de la url 
-     * en la practica solo se ejecuta al montar porque no se navega entre ids diferentes
-     */
-
-    useEffect(() => {
-        fetchPedido();
-        /**
-         * eslint-disable-next-line react-hooks/exhaustive-deps
-         * fetchPedido no se incluye en el array de dependencias para evitar bucles infinitos
-         * el lint warning se suprime con el comentario de arriba 
-         */
-    }, [id]);
-
-    /**
-     * funcion cambiar estado 
-     * envia un PATCH al backend para actualizar el estado del pedido
-     * parametro: nuevoEstado el estado al que requiere transicionar 
-     * enviado, entregado o cancelado 
-     */
-    const cambiarEstado = async(nuevoEstado: string) => {
-        setCambiando(true); //bloquea los botones para evitar clicks multiples
-        try {
-            //put /admin/pedidos/:id/estado con el nuevo estado en el body (backend espera PUT)
-            const res = await apiClient.put(`/admin/pedidos/${id}/estado`, { estado: nuevoEstado });
-            //refresca el pedido para mostrar el nuevo estado
-            await fetchPedido();
-            //muestra mensaje de exito si el backend lo incluye
-            const msg = res.data?.message || 'Estado actualizado';
-            Alert.alert('Éxito', msg);
-          } catch (error: unknown) {
-            const msg = (error as {message?:string})?.message || 'No se pudo cambiar el estado';
-            Alert.alert('Error', msg);
-          } finally {
-            setCambiando(false); //desbloquea los botones 
-          }
-    };
-
-    // ── RENDERIZADO CONDICIONAL: cargando ─────────────────────────────────────
-  // Mientras la petición está en curso, muestra un spinner y un texto.
   if (loading) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" />
-        <ThemedText>Cargando pedido...</ThemedText>
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#7d2181" />
       </View>
     );
   }
 
-  // ── RENDERIZADO CONDICIONAL: error ────────────────────────────────────────
-  // Si la petición falló, muestra el mensaje de error en rojo.
-  if (errorMessage) {
-    return (
-      <View style={styles.centered}>
-        <ThemedText style={styles.error}>{errorMessage}</ThemedText>
-      </View>
-    );
-  }
-
-  // ── RENDERIZADO CONDICIONAL: pedido no encontrado ─────────────────────────
-  // Si la petición tuvo éxito pero el servidor no devolvió datos del pedido.
   if (!pedido) {
     return (
-      <View style={styles.centered}>
-        <ThemedText>No se encontró el pedido.</ThemedText>
+      <View style={styles.container}>
+        <Text style={styles.title}>Pedido no encontrado</Text>
+        <Link href="/admin/pedidos" style={styles.link}>
+          Volver a pedidos
+        </Link>
       </View>
     );
   }
 
-  // ── RENDERIZADO PRINCIPAL ─────────────────────────────────────────────────
-  // Se muestra solo cuando el pedido se cargó correctamente.
+  const total = pedido.total || pedido.monto || 0;
+  const cliente = pedido.usuario || pedido.cliente || {};
+  const estado = pedido.estado || 'desconocido';
+  const fecha = pedido.createdAt || pedido.fecha || '';
+  const items = Array.isArray(pedido.items) ? pedido.items : pedido.detalle || [];
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-
-      {/* Título: número de pedido. Se usa _id (MongoDB) o id como fallback. */}
-      <ThemedText type="title">Pedido #{pedido.id || pedido.id}</ThemedText>
-
-      {/* Datos del cliente que realizó el pedido */}
-      <ThemedText>Cliente: {pedido.usuario?.nombre} {pedido.usuario?.apellido}</ThemedText>
-      <ThemedText>Email: {pedido.usuario?.email}</ThemedText>
-
-      {/* Estado actual del pedido (pendiente / enviado / entregado / cancelado) */}
-      <ThemedText>Estado: {pedido.estado}</ThemedText>
-
-      {/* Total formateado como moneda colombiana: ej. "$ 45.000" */}
-      <ThemedText>Total: ${Number(pedido.total || 0).toLocaleString('es-CO')}</ThemedText>
-
-      {/* Fecha de creación. Si no existe, muestra '-' como valor por defecto. */}
-      <ThemedText>Fecha: {pedido.createdAt ? new Date(pedido.createdAt).toLocaleString('es-CO') : '-'}</ThemedText>
-
-      {/* Encabezado de la sección de productos */}
-      <ThemedText style={styles.sectionTitle}>Productos:</ThemedText>
-
-      {/* Lista de ítems del pedido. Cada ítem muestra nombre, cantidad y precio. */}
-      {pedido.detalles?.map((det: Detalle, idx: number) => (
-        // key={idx} usa el índice porque los detalles no siempre tienen ID propio.
-        <View key={idx} style={styles.detalleRow}>
-          {/* Nombre del producto y cantidad comprada */}
-          <ThemedText>{det.producto?.nombre} x{det.cantidad}</ThemedText>
-          {/* Precio del ítem formateado en COP */}
-          <ThemedText>${Number(det.precio || 0).toLocaleString('es-CO')}</ThemedText>
-        </View>
-      ))}
-
-      {/* ── BOTONES DE ACCIÓN ─────────────────────────────────────────────── */}
-      {/* Los botones se muestran condicionalmente según el estado actual del pedido. */}
-      <View style={styles.actionsRow}>
-
-        {/* Si el pedido está 'pendiente', se puede marcar como 'enviado' */}
-        {pedido.estado === 'pendiente' && (
-          <Pressable
-            style={styles.actionBtn}
-            onPress={() => cambiarEstado('enviado')}
-            disabled={cambiando} // Deshabilitado mientras se procesa el cambio.
-          >
-            <ThemedText style={styles.actionBtnText}>Marcar como Enviado</ThemedText>
-          </Pressable>
-        )}
-
-        {/* Si el pedido está 'enviado', se puede marcar como 'entregado' */}
-        {pedido.estado === 'enviado' && (
-          <Pressable
-            style={styles.actionBtn}
-            onPress={() => cambiarEstado('entregado')}
-            disabled={cambiando}
-          >
-            <ThemedText style={styles.actionBtnText}>Marcar como Entregado</ThemedText>
-          </Pressable>
-        )}
-
-        {/* Si el pedido está 'pendiente', también se puede cancelar (botón rojo) */}
-        {pedido.estado === 'pendiente' && (
-          <Pressable
-            style={[styles.actionBtn, styles.btnDanger]} // Combina el estilo base + el rojo de peligro.
-            onPress={() => cambiarEstado('cancelado')}
-            disabled={cambiando}
-          >
-            <ThemedText style={styles.actionBtnText}>Cancelar pedido</ThemedText>
-          </Pressable>
-        )}
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <Text style={styles.title}>Pedido #{id}</Text>
+      <View style={styles.metaBox}>
+        <Text style={styles.metaLabel}>Cliente</Text>
+        <Text style={styles.metaValue}>{cliente.nombre || cliente.email || 'Desconocido'}</Text>
       </View>
+      <View style={styles.metaBox}>
+        <Text style={styles.metaLabel}>Estado</Text>
+        <Text style={[styles.metaValue, { color: getStatusColor(estado) }]}>{estado}</Text>
+      </View>
+      <View style={styles.metaBox}>
+        <Text style={styles.metaLabel}>Total</Text>
+        <Text style={styles.metaValue}>{Number(total).toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 })}</Text>
+      </View>
+      <View style={styles.metaBox}>
+        <Text style={styles.metaLabel}>Fecha</Text>
+        <Text style={styles.metaValue}>{fecha ? new Date(fecha).toLocaleString('es-CO') : '-'}</Text>
+      </View>
+
+      <Text style={styles.sectionTitle}>Artículos</Text>
+      {items.length === 0 ? (
+        <Text style={styles.emptyText}>No hay artículos registrados en este pedido.</Text>
+      ) : (
+        items.map((item: { nombre?: string; title?: string; cantidad?: number; quantity?: number }, index: number) => (
+          <View key={index} style={styles.itemRow}>
+            <Text style={styles.itemName}>{item.nombre || item.title || `Artículo ${index + 1}`}</Text>
+            <Text style={styles.itemQuantity}>x{item.cantidad || item.quantity || 1}</Text>
+          </View>
+        ))
+      )}
+
+      <Link href="/admin/pedidos" style={styles.link}>
+        Volver a pedidos
+      </Link>
     </ScrollView>
   );
 }
 
-// ── ESTILOS ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  // Contenedor principal del ScrollView: padding interior y fondo blanco.
-  // flexGrow: 1 permite que el contenido ocupe toda la pantalla aunque sea corto.
-  container: { padding: 20, backgroundColor: '#fff', flexGrow: 1 },
-
-  // Centrado vertical y horizontal para las pantallas de carga, error y "no encontrado".
-  centered: { alignItems: 'center', gap: 10, marginVertical: 20 },
-
-  // Color rojo oscuro para mensajes de error.
-  error: { color: '#b93a32' },
-
-  // Encabezado "Productos:" con margen superior y negrita.
-  sectionTitle: { marginTop: 10, fontWeight: 'bold' },
-
-  // Fila de un ítem de detalle: nombre a la izquierda, precio a la derecha.
-  detalleRow: { flexDirection: 'row', justifyContent: 'space-between', marginVertical: 2 },
-
-  // Columna de botones de acción con separación entre ellos.
-  actionsRow: { flexDirection: 'column', gap: 10, marginTop: 20 },
-
-  // Botón de acción principal: color primario, bordes redondeados, texto centrado.
-  actionBtn: {
-    backgroundColor: '#7d2181',
-    borderRadius: 10,
-    paddingVertical: 12,
-    alignItems: 'center',
-    marginBottom: 8,
+  container: {
+    flex: 1,
+    backgroundColor: '#f8f7fb',
   },
-
-  // Sobreescribe el color del botón a rojo cuando la acción es peligrosa (cancelar).
-  btnDanger: { backgroundColor: '#b93a32' },
-
-  // Texto de los botones: blanco y negrita.
-  actionBtnText: { color: '#fff', fontWeight: '700' },
+  content: {
+    padding: 18,
+    paddingBottom: 30,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '800',
+    marginBottom: 14,
+    color: '#1f2937',
+  },
+  metaBox: {
+    backgroundColor: '#ffffff',
+    borderRadius: 18,
+    padding: 14,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  metaLabel: {
+    color: '#6b7280',
+    marginBottom: 4,
+    fontSize: 13,
+  },
+  metaValue: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#111827',
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginTop: 16,
+    marginBottom: 12,
+    color: '#111827',
+  },
+  emptyText: {
+    color: '#6b7280',
+    marginBottom: 18,
+  },
+  itemRow: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 10,
+  },
+  itemName: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#111827',
+  },
+  itemQuantity: {
+    color: '#6b7280',
+    marginTop: 6,
+  },
+  link: {
+    color: '#7d2181',
+    marginTop: 22,
+    fontSize: 16,
+    fontWeight: '700',
+  },
 });
-
-

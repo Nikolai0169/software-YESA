@@ -11,9 +11,9 @@ import {createContext, useCallback, useContext, useEffect, useMemo, useRef, useS
 import {useAuth} from './authContext';
 import carritoService from '../services/carritoService';
 
-const carritoContext = createContext(null);
+const carritoContext = createContext(/** @type {any} */ (null));
 
-export function CarritoProvider({children}) {
+export function CarritoProvider({ children }) {
     //lee isAuthenticated e isLoadingSession contexto de autenticacion 
     const {isAuthenticated, isLoadingSession} = useAuth();
 
@@ -23,7 +23,7 @@ export function CarritoProvider({children}) {
     const [total, setTotal] = useState(0);//precio total
     const [loading, setLoading] = useState(true);//true mientras se carga el carrito
 
-    //rastrea si el usuario estaba autenticado en el render anterio para detectar en el momento exacto de inicio de sesion
+//rastrea si el usuario estaba autenticado en el render anterior para detectar en el momento exacto del inicio de sesion
     const prevAuthenticated = useRef(false);
 
     /**
@@ -45,10 +45,10 @@ export function CarritoProvider({children}) {
          */
 
         if (isAuthenticated && !prevAuthenticated.current) {
-            try{
+            try {
                 await carritoService.mergeLocalToBackend();
-            }catch{
-                //si la fusion falla continua sin bloquear 
+            } catch {
+                // si la fusión falla, continúa sin bloquear
             }
         }
 
@@ -83,7 +83,7 @@ export function CarritoProvider({children}) {
      */
 
     const agregarProducto = useCallback(async(producto,cantidad=1) => {
-        await carritoService.addToCarrito({isAuthenticated, producto, cantidad});
+        await carritoService.addToCarrito({isAuthenticated, producto, cantidad,});
         await hydrate();
     }, [isAuthenticated, hydrate]);
 
@@ -146,3 +146,4 @@ export function CarritoProvider({children}) {
         }
         return context;
     }
+

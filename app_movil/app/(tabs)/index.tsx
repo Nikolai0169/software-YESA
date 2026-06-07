@@ -1,961 +1,514 @@
-/**
- * pantalla principal tienda muestra el catalogo de productos
- * con un banner hero tarjetas de caracteristicas buscador de texto
- * chips de categorias lista de productos a 2 columnas paginacion y un modal de detalle de producto
- */
+import { useEffect, useMemo, useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  ActivityIndicator,
+  TouchableOpacity,
+  ScrollView,
+  TextInput,
+  Dimensions,
+  Modal,
+  Image,
+  Pressable,
+} from 'react-native';
+import { Link, useRouter } from 'expo-router';
+import { useCarrito } from '../../src/context/carritoContext';
+import catalogoService from '../../src/services/catalogoService';
+import ProductCard from '../../src/components/ProductCard';
 
-/**
- * importar componentes de react native para construir la pantalla
- * hooks de react:
- * useEffect ejecuta el codigo al montar el componente o cuando camboian las dependencias
- * useMemo memoriza valores calculados para evitar recalculos innecesarios
- * useState maneja variables de estado local 
- */
-//manejo de variables de estado local
-import {useState, useEffect, useMemo} from 'react';
-//importar componentes
-//dimensions obtiene el ancho y alto de la pantalla para hacer diseños responsivos
-//flatilist lista optimizada con virtualizacion para mostras grandes cantidades de datos 
-//modal mostrar detalles de contenido en ventana emergente
-import {ActivityIndicator, Pressable, ScrollView, StyleSheet, TextInput, View, Alert, Dimensions, FlatList, Image, RefreshControl, Modal} from 'react-native';
-
-//ionicons libreria de iconos vectoriales para react native
-import {Ionicons} from '@expo/vector-icons';
-//catalogoService servicio que hace las llamadas http (api) del backend para productos y categorias
-import catalogoService  from '../../src/services/catalogoService'
-//themedText : texto que aplica colores del tema del dispositivo de manera automatica claro u oscuro
-import {ThemedText} from '../../components/themed-text';
-//themedView : color de fondo automatico segun el tema del dispositivo
-import {ThemedView} from '../../components/themed-view';
-//useCarrito hook del contexto del carrito para agregar prdouctos 
-import {useCarrito} from '../../src/context/carritoContext';
-//theme colors y esquema claro/oscuro
-import { Colors } from '../../constants/theme';
-import { useColorScheme } from '../../hooks/use-color-scheme';
-
-/**
- * tipo carrito ctx 
- * descrtibe los campos que usan de uyseCarrito en pantalla 
- */
-
-type CarritoCtx = {
-    //agregarProducto: agrega producto al carrito con la cantidad indicada
-    agregarProducto: (producto: unknown, cantidad: number) => Promise<void>; 
-    //totalItems numero total de items en el carrito
-    totalItems: number;
-};
-
-/**
- * constantes globales 
- * se calculan una sola vez al cargar el modulo 
- */
-
-//SCREEN_WIDTH ancho del dispositivo en dp (density independent pixels) para diseños responsivos
-const {width: SCREEN_WIDTH} = Dimensions.get('window');
-//card_gap espacio horizontal entre las 2 columnas de la tarjeta de producto
-const CARD_GAP = 10;
-//CARD_WIDTH ancho de cada tarjeta calculado para que quepan exactamente 2 por fila en dos columnas 
-const CARD_WIDTH = (SCREEN_WIDTH - 32 - CARD_GAP) /2;
-//ITEMS_POR_PAGINA numero de productos por pagina usando paginacion
-const ITEMS_POR_PAGINA = 15;
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const ITEMS_PER_PAGE = 12;
 
 const FEATURES = [
-  { icon: 'cube-outline', title: 'Envío Rápido', desc: 'Recibe en tu hogar', color: '#7d2181', bg: '#f8f2ff' },
-  { icon: 'shield-checkmark', title: 'Compra Segura', desc: 'Datos protegidos', color: '#10b981', bg: '#d1fae5' },
-  { icon: 'headset', title: 'Atención 24/7', desc: 'Siempre disponibles', color: '#06b6d4', bg: '#cffafe' },
-] as const;
+  { icon: '📦', title: 'Envío rápido', subtitle: 'Recibe tu pedido cuanto antes' },
+  { icon: '🔒', title: 'Compra segura', subtitle: 'Pago protegido y confiable' },
+  { icon: '📞', title: 'Soporte 24/7', subtitle: 'Atención disponible siempre' },
+];
 
+export default function Index() {
+  const router = useRouter();
+  const { agregarProducto, totalItems } = useCarrito();
+  const [productos, setProductos] = useState<any[]>([]);
+  const [categorias, setCategorias] = useState<any[]>([]);
+  const [selectedCategoria, setSelectedCategoria] = useState<string>('');
+  const [buscar, setBuscar] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [paginaActual, setPaginaActual] = useState(1);
 
-/**
- * componente principal HOME SCREEN
- */
+  useEffect(() => {
+    loadCatalogo();
+  }, []);
 
-export default function HomeScreen() {
-    //extrae las funciones del carrito necesarias para la pantalla
-    const {agregarProducto, totalItems} = useCarrito() as CarritoCtx;
-    const theme = Colors[useColorScheme() ?? 'light'];
+  useEffect(() => {
+    setPaginaActual(1);
+  }, [buscar, selectedCategoria]);
 
-    /**
-     * estado de datos 
-     * productos lista completa de productos traida del backend
-     */
-    const [productos, setProductos] = useState<any[]>([]);
-    //categoria lista de categorias traida del backend
-    const [categorias, setCategorias] = useState<any[]>([]);
-
-    //estados de UI
-    //loading true mientras cargan los datos por primera vez
-    const [loading, setLoading] = useState(true);
-    //refreshing true mientras el usuario hace pull to refresh
-    const [refreshing, setRefreshing] = useState(true);
-    //errorMessage mensaje de error si falla la carga
-    const [errorMessage, setErrorMessage] = useState('');
-    //busqueda texto de campo de busqueda filtra productos en tiempo real
-    const [busqueda, setBusqueda] = useState('');
-    //categoriaActiva id de la categoria seleccionada o all para ver todas 
-    const [categoriaActiva, setCategoriaActiva] = useState<any>('all');
-    //productoDetalle prdoucto seleccionado para ver el modal 
-    const [productoDetalle, setProductoDetalle] = useState<any>(null);
-    //paginaActual numero de pagina actual para paginacion empieza en 1
-    const [paginaActual, setPaginaActual] = useState(1);
-    //ITEMS_POR_PAGINA numero de productos por pagina 
-    const ITEMS_POR_PAGINA = 15;
-
-    /**
-     * funcion handleAgregarAlCarrito
-     * agrega el producto al carrito y muestra una alerta de confirmacion o error 
-     */
-
-    const handleAgregarAlCarrito = async(producto:any) => {
-        try {
-            await agregarProducto(producto, 1);//agrega 1 unidad del producto al carrito
-            Alert.alert('Carrito', `${producto.nombre} agregado correctamente.`);
-        }catch(error: unknown) {
-            const msg = (error as {message?: string})?.message;
-            Alert.alert('Error', msg || 'No se pudo agregar al carrito');
-        }
-    };
-
-    /**
-     * funcion loadCatalogo
-     * carga los productos y categorias desde el backend en paralelo con promise.all 
-     * isRefresh: true cuando es pull to refresh 
-     */
-
-    const loadCatalogo = async({isRefresh=false} = {}) => {
-        if(!isRefresh) setRefreshing(true); //pull-to-refresh activa indicador de refresco
-        else setLoading(true); //carga inicial activa el spinner grande
-        setErrorMessage(''); 
-        try{
-            /**
-             * llama todos los endpoints al mismo tiempo para mayor velocidad
-             * getProductos con limite de 200 trae todos los productos de una vez
-             */
-            const [productosData, categoriasData] = await Promise.all([
-                catalogoService.getProductos({pagina:1, limite:200}),
-                catalogoService.getCategorias(),
-            ]);
-            //guarda los datos solo si son arrays
-            setProductos(Array.isArray(productosData) ? productosData : []);
-            setCategorias(Array.isArray(categoriasData) ? categoriasData:[]);
-        }catch (error: unknown) {
-            const msg = (error as {message?: string})?.message;
-            setErrorMessage(msg || 'No fue posible cargar el catalogo');
-        }finally {
-            //siempre desactiva los indicadores al terminar sea exitoso o error
-            setLoading(false);
-            setRefreshing(false);
-        }
-    };
-
-    /**
-     * efecto carga inicial 
-     * como dependencias se ejecuta una sola vez al montar el componente 
-     */
-
-    useEffect(() => {
-        loadCatalogo();
-    }, []);
-
-    /**
-     * efecto resetear pagina al cambiar filtros
-     * cuando el usuario escribe en el buscardor o cambia de categoria
-     * siempre vuelve a la pagina 1 para no quedar en una pagina vacia 
-     */
-
-    useEffect(() => {
-        setPaginaActual(1);
-    }, [busqueda, categoriaActiva]);
-
-    /**
-     * datos derivados (useMemo)
-     * useMemos recalcula solo cuando cambian las dependencias indicadas evitando filtrar/clacular en cada renderizado
-     */
-
-    //productos filtrados subconjunto de productos que coincidens con la busqueda y categoria
-    const productosFiltrados = useMemo(() => {
-        const termino = busqueda.trim().toLowerCase(); //normaliza el texto
-        return productos.filter((p: any) => {
-            //coincideTexto el producto tiene el termino en su nombre descripcion 7
-            const coincideTexto =
-            termino === '' ||
-            //sin busqueda pasa toda la informacion de los productos 
-            p.nombre?.toLowerCase().includes(termino) || 
-            p.descripcion?.toLowerCase().includes(termino);
-            //coincideCategoria 
-            //
-            const coincideCategoria = 
-            categoriaActiva === 'all' ||
-            //pasa todo
-            String(p.categoriaId || p.caategoria?.id) === categoriaActiva;
-            return coincideTexto && coincideCategoria;
-        });
-    }, [busqueda, categoriaActiva, productos]); //recalcula cuando cambia la busqueda categoria o datos 
-
-    /**
-     * hasproductos: true si hay al menos un productoi filtrado evita mostrar la vista vacia 
-     */
-
-    const hasProductos = useMemo(() => productosFiltrados.length > 0, [productosFiltrados]);
-
-    //total paginas numero total de paginas segun los productos filtradps 
-    const totalPaginas = useMemo(() => Math.ceil(productosFiltrados.length / ITEMS_POR_PAGINA), [productosFiltrados, ITEMS_POR_PAGINA]);
-
-    //Productos visibles subconjunto de productos de la pagina actual eje pagina 1 1-15 pagina 2 16-30 ...
-    const productosVisibles = useMemo(() => productosFiltrados.slice((paginaActual- 1)* ITEMS_POR_PAGINA , paginaActual * ITEMS_POR_PAGINA), 
-    [productosFiltrados, paginaActual, ITEMS_POR_PAGINA]);
-
-    // ── SUBCOMPONENTE: ListHeader ────────────────────────────────────────────
-  // Se renderiza UNA SOLA VEZ como cabecera fija del FlatList (encima de los productos).
-  // Contiene: Hero, Features, Buscador, Chips, Encabezado de sección y estados de carga/error.
-  const ListHeader = () => (
-    <>
-      {/* ── HERO BANNER ─────────────────────────────────────────────────── */}
-      {/* Tarjeta índigo con título, subtítulo y 3 estadísticas en tiempo real */}
-      <View style={styles.hero}>
-        {/* Etiqueta superior en mayúsculas pequeñas */}
-        <ThemedText style={styles.heroLabel}>YESA</ThemedText>
-        {/* Título principal con salto de línea usando {'\n'} */}
-        <ThemedText style={styles.heroTitle}>YESA - Orfebrería{"\n"}y Cerámica</ThemedText>
-        <ThemedText style={styles.heroSubtitle}>
-          YESA es un ecommerce de orfebrería y cerámica artesanal con productos hechos a mano y una experiencia de compra exclusiva.
-        </ThemedText>
-        {/* Fila de 3 estadísticas dinámicas */}
-        <View style={styles.heroStatsRow}>
-          {/* Stat 1: total de productos en el catálogo */}
-          <View style={styles.heroStat}>
-            <ThemedText style={styles.heroStatValue}>{productos.length}</ThemedText>
-            <ThemedText style={styles.heroStatLabel}>Productos</ThemedText>
-          </View>
-          {/* Stat 2: número de categorías disponibles */}
-          <View style={styles.heroStat}>
-            <ThemedText style={styles.heroStatValue}>{categorias.length}</ThemedText>
-            <ThemedText style={styles.heroStatLabel}>Categorías</ThemedText>
-          </View>
-          {/* Stat 3: ítems en el carrito del usuario */}
-          <View style={styles.heroStat}>
-            <ThemedText style={styles.heroStatValue}>{totalItems}</ThemedText>
-            <ThemedText style={styles.heroStatLabel}>En carrito</ThemedText>
-          </View>
-        </View>
-      </View>
-
-      {/* ── TARJETAS DE CARACTERÍSTICAS ─────────────────────────────────── */}
-      {/* ScrollView horizontal: permite deslizar las tarjetas sin ocultar otras */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false} // Oculta la barra de scroll horizontal.
-        contentContainerStyle={styles.featuresRow}>
-        {/* Genera una tarjeta por cada entrada en FEATURES */}
-        {FEATURES.map((f) => (
-          <View
-            key={f.title}
-            style={[
-              styles.featureCard,
-              { backgroundColor: theme.surface, borderColor: theme.border, shadowColor: theme.shadow },
-            ]}>
-            {/* Círculo de color con el ícono de la característica */}
-            <View style={[styles.featureIconCircle, { backgroundColor: f.bg }]}>
-              <Ionicons name={f.icon as any} size={22} color={f.color} />
-            </View>
-            <ThemedText style={[styles.featureTitle, { color: theme.text }]}>{f.title}</ThemedText>
-            <ThemedText style={[styles.featureDesc, { color: theme.icon }]}>{f.desc}</ThemedText>
-          </View>
-        ))}
-      </ScrollView>
-
-      {/* ── BUSCADOR ────────────────────────────────────────────────────── */}
-      <View style={[styles.searchContainer, { backgroundColor: theme.surface, borderColor: theme.border, shadowColor: theme.shadow }]}> 
-        <Ionicons name="search" size={18} color={theme.icon} />
-        <TextInput
-          placeholder="Buscar productos..."
-          value={busqueda}
-          onChangeText={setBusqueda}       // Actualiza busqueda en cada keystroke.
-          style={[styles.searchInput, { color: theme.text }]}
-          placeholderTextColor={theme.icon}
-        />
-        {/* Botón "X" para limpiar la búsqueda, solo visible cuando hay texto */}
-        {busqueda.length > 0 && (
-          <Pressable onPress={() => setBusqueda('')}>
-            <Ionicons name="close-circle" size={18} color={theme.icon} />
-          </Pressable>
-        )}
-      </View>
-
-      {/* ── CHIPS DE CATEGORÍAS ─────────────────────────────────────────── */}
-      {/* Scroll horizontal de pastillas para filtrar por categoría */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.chipsRow}>
-        {/* Chip "Todas": selecciona categoriaActiva = 'all' */}
-        <Pressable
-          onPress={() => setCategoriaActiva('all')}
-          style={[
-            styles.chip,
-            { backgroundColor: theme.surface, borderColor: theme.border },
-            categoriaActiva === 'all' && { backgroundColor: theme.primary, borderColor: theme.primary },
-          ]}>
-          <ThemedText style={[
-            styles.chipText,
-            { color: theme.text },
-            categoriaActiva === 'all' && { color: theme.surface },
-          ]}>
-            Todas
-          </ThemedText>
-        </Pressable>
-        {/* Un chip por cada categoría del backend */}
-        {categorias.map((cat: any) => (
-          <Pressable
-            key={cat.id}
-            onPress={() => setCategoriaActiva(String(cat.id))} // Guarda el ID como string.
-            style={[
-              styles.chip,
-              { backgroundColor: theme.surface, borderColor: theme.border },
-              categoriaActiva === String(cat.id) && { backgroundColor: theme.primary, borderColor: theme.primary },
-            ]}>
-            <ThemedText style={[
-              styles.chipText,
-              { color: theme.text },
-              categoriaActiva === String(cat.id) && { color: theme.surface },
-            ]}>
-              {cat.nombre}
-            </ThemedText>
-          </Pressable>
-        ))}
-      </ScrollView>
-      <View style={styles.sectionHeader}>
-        <ThemedText style={[styles.sectionTitle, { color: theme.text }]}>Productos Disponibles</ThemedText>
-        {/* Contador de resultados filtrados */}
-        <ThemedText style={[styles.sectionCount, { color: theme.icon }]}>{productosFiltrados.length} encontrados</ThemedText>
-      </View>
-
-      {/* ── ESTADO: CARGANDO ────────────────────────────────────────────── */}
-      {loading && (
-          <View style={styles.centered}>
-          <ActivityIndicator size="large" color={theme.primary} />
-          <ThemedText style={styles.loadingText}>Cargando catálogo...</ThemedText>
-        </View>
-      )}
-      {/* ── ESTADO: ERROR DE CARGA ───────────────────────────────────────── */}
-      {!loading && errorMessage ? (
-        <ThemedText style={styles.errorText}>{errorMessage}</ThemedText>
-      ) : null}
-      {/* ── ESTADO: SIN RESULTADOS ───────────────────────────────────────── */}
-      {!loading && !errorMessage && !hasProductos ? (
-        <ThemedText style={styles.emptyText}>No hay productos para mostrar.</ThemedText>
-      ) : null}
-    </>
-  );
-
-  // ── SUBCOMPONENTE: ListFooter ─────────────────────────────────────────────
-  // Se renderiza al final del FlatList. Muestra la paginación si hay más de 1 página.
-  // Si solo hay 1 página, agrega un espacio vacío para que el último producto no quede
-  // pegado al borde inferior de la pantalla.
-  const ListFooter = () =>
-    !loading && hasProductos && totalPaginas > 1 ? (
-      <View style={styles.paginacionRow}>
-        {/* Botón "Anterior": desactivado en la primera página */}
-        <Pressable
-          style={[styles.pagBtn, { borderColor: theme.primary }, paginaActual === 1 && { borderColor: theme.border }]}
-          onPress={() => setPaginaActual((p) => Math.max(1, p - 1))} // No baja de la página 1.
-          disabled={paginaActual === 1}>
-          <Ionicons name="chevron-back" size={15} color={paginaActual === 1 ? theme.border : theme.primary} />
-          <ThemedText style={[styles.pagBtnText, { color: theme.primary }, paginaActual === 1 && styles.pagBtnTextDisabled]}>
-            Anterior
-          </ThemedText>
-        </Pressable>
-        {/* Indicador de página actual / total de páginas */}
-        <ThemedText style={[styles.pagInfo, { color: theme.text }]}> 
-          {paginaActual} / {totalPaginas}
-        </ThemedText>
-        {/* Botón "Siguiente": desactivado en la última página */}
-        <Pressable
-          style={[styles.pagBtn, { borderColor: theme.primary }, paginaActual === totalPaginas && { borderColor: theme.border }]}
-          onPress={() => setPaginaActual((p) => Math.min(totalPaginas, p + 1))} // No supera el total.
-          disabled={paginaActual === totalPaginas}>
-          <ThemedText style={[styles.pagBtnText, { color: theme.primary }, paginaActual === totalPaginas && styles.pagBtnTextDisabled]}>
-            Siguiente
-          </ThemedText>
-          <Ionicons name="chevron-forward" size={15} color={paginaActual === totalPaginas ? theme.border : theme.primary} />
-        </Pressable>
-      </View>
-    ) : (
-      // Sin paginación: espacio vacío al final de la lista.
-      <View style={{ height: 24 }} />
-    );
-
-  // ── FUNCIÓN: renderProducto ───────────────────────────────────────────────
-  // FlatList llama esta función por cada ítem de productosVisibles.
-  // Recibe { item: producto, index } y devuelve el JSX de la tarjeta.
-  const openDetalle = (producto: any) => {
+  const loadCatalogo = async () => {
+    setLoading(true);
+    setError('');
     try {
-      console.log('[producto] abrir detalle', producto);
-    } catch (e) {
-      console.warn('[producto] error al loguear detalle', e);
+      const [listaProductos, listaCategorias] = await Promise.all([
+        catalogoService.getProductos(),
+        catalogoService.getCategorias(),
+      ]);
+      setProductos(Array.isArray(listaProductos) ? listaProductos : []);
+      setCategorias(Array.isArray(listaCategorias) ? listaCategorias : []);
+    } catch (err) {
+      setError('No se pudo cargar el catálogo.');
+      setProductos([]);
+      setCategorias([]);
+    } finally {
+      setLoading(false);
     }
-    setProductoDetalle(producto);
   };
 
-  const renderProducto = ({ item: producto, index }: { item: any; index: number }) => (
-    <View
-      style={[
-        styles.card,
-        { backgroundColor: theme.surface, borderColor: theme.border, shadowColor: theme.shadow },
-        // Aplica margen para separar columnas:
-        //   columna izquierda (índice par) → margen derecho
-        //   columna derecha (índice impar) → margen izquierdo
-        index % 2 === 0 ? { marginRight: CARD_GAP / 2 } : { marginLeft: CARD_GAP / 2 },
-      ]}>
-      {/* Imagen del producto: buildImageUrl construye la URL completa */}
-      <Image
-        source={{ uri: catalogoService.buildImageUrl(producto.imagen) }}
-        style={styles.cardImage}
-        resizeMode="cover" // Recorta la imagen para que llene el espacio sin deformarse.
-      />
-      {/* Badge de categoría superpuesto sobre la imagen (position: absolute) */}
-      <View style={styles.cardBadge}>
-        <ThemedText style={styles.cardBadgeText} numberOfLines={1}>
-          {producto.Categoria?.nombre || producto.categoria?.nombre || 'Sin categoría'}
-        </ThemedText>
-      </View>
-      {/* Cuerpo de la tarjeta: nombre, precio y botones */}
-      <View style={styles.cardBody}>
-        {/* numberOfLines={2}: el nombre se trunca a 2 líneas máximo */}
-        <ThemedText style={[styles.cardNombre, { color: theme.text }]} numberOfLines={2}>
-          {producto.nombre}
-        </ThemedText>
-        {/* Precio formateado en pesos colombianos */}
-        <ThemedText style={[styles.cardPrecio, { color: theme.primary }]}> 
-          ${Number(producto.precio || 0).toLocaleString('es-CO')}
-        </ThemedText>
-        {/* Fila de botones: "Ver" (detalle) y carrito */}
-        <View style={styles.cardActions}>
-          {/* Botón "Ver": abre el modal de detalle con este producto */}
-          <Pressable style={[styles.outlineBtn, { borderColor: theme.primary }]} onPress={() => openDetalle(producto)}>
-            <ThemedText style={[styles.outlineBtnText, { color: theme.primary }]}>Ver</ThemedText>
-          </Pressable>
-          {/* Botón del carrito: agrega directamente 1 unidad */}
-          <Pressable style={[styles.cartBtn, { backgroundColor: theme.primary }]} onPress={() => handleAgregarAlCarrito(producto)}>
-            <Ionicons name="cart" size={16} color={theme.surface} />
-          </Pressable>
+  const productosFiltrados = useMemo(() => {
+    const termino = buscar.trim().toLowerCase();
+    return productos.filter((producto) => {
+      const nombre = String(producto.nombre || producto.titulo || producto.descripcion || '').toLowerCase();
+      const descripcion = String(producto.descripcion || '').toLowerCase();
+      const coincideTexto = termino === '' || nombre.includes(termino) || descripcion.includes(termino);
+      const categoriaId = String(producto.categoriaId || producto.categoria?.id || producto.categoria?.idCategoria || '');
+      const coincideCategoria = selectedCategoria === '' || selectedCategoria === 'all' || categoriaId === selectedCategoria;
+      return coincideTexto && coincideCategoria;
+    });
+  }, [buscar, productos, selectedCategoria]);
+
+  const productosVisibles = useMemo(() => {
+    const start = (paginaActual - 1) * ITEMS_PER_PAGE;
+    return productosFiltrados.slice(start, start + ITEMS_PER_PAGE);
+  }, [paginaActual, productosFiltrados]);
+
+  const totalPaginas = Math.max(1, Math.ceil(productosFiltrados.length / ITEMS_PER_PAGE));
+
+  const handlePressProducto = (producto: any) => {
+    setSelectedProduct(producto);
+  };
+
+  const handleOpenProducto = (id: string) => {
+    router.push({ pathname: '/producto/[id]', params: { id } });
+  };
+
+  const renderCategoria = (categoria: any) => {
+    const categoryId = String(categoria.id || categoria._id || categoria.idCategoria || categoria._idCategoria || '');
+    const isSelected = selectedCategoria === categoryId;
+
+    return (
+      <TouchableOpacity
+        key={categoryId || `cat-${Math.random()}`}
+        style={[styles.categoryButton, isSelected && styles.categoryButtonSelected]}
+        onPress={() => setSelectedCategoria(isSelected ? '' : categoryId)}
+      >
+        <Text style={[styles.categoryText, isSelected && styles.categoryTextSelected]}>{categoria.nombre || categoria.nombreCategoria || 'Categoría'}</Text>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderHeader = () => (
+    <View>
+      <View style={styles.heroCard}>
+        <Text style={styles.heroLabel}>TIENDA OFICIAL</Text>
+        <Text style={styles.heroTitle}>Bienvenido a YESA</Text>
+        <Text style={styles.heroSubtitle}>Explora productos reales, encuentra ofertas y compra con seguridad desde tu móvil.</Text>
+        <View style={styles.heroStats}>
+          <View style={styles.heroStat}>
+            <Text style={styles.heroStatValue}>{productos.length}</Text>
+            <Text style={styles.heroStatLabel}>Productos</Text>
+          </View>
+          <View style={styles.heroStat}>
+            <Text style={styles.heroStatValue}>{categorias.length}</Text>
+            <Text style={styles.heroStatLabel}>Categorías</Text>
+          </View>
+          <View style={styles.heroStat}>
+            <Text style={styles.heroStatValue}>{totalItems}</Text>
+            <Text style={styles.heroStatLabel}>Items carrito</Text>
+          </View>
         </View>
       </View>
+
+      <View style={styles.featuresRow}>
+        {FEATURES.map((feature) => (
+          <View key={feature.title} style={styles.featureCard}>
+            <Text style={styles.featureIcon}>{feature.icon}</Text>
+            <Text style={styles.featureTitle}>{feature.title}</Text>
+            <Text style={styles.featureSubtitle}>{feature.subtitle}</Text>
+          </View>
+        ))}
+      </View>
+
+      <Text style={styles.sectionTitle}>Busca tu producto</Text>
     </View>
   );
 
-  // ── RENDERIZADO PRINCIPAL ────────────────────────────────────────────────
   return (
-    // Fragment (<>) para envolver FlatList + Modal sin agregar un View extra.
-    <>
-      {/* ── FLATLIST: LISTA PRINCIPAL DE PRODUCTOS ─────────────────────── */}
-      <FlatList
-        style={{ backgroundColor: theme.background }}
-        // data: cuando está cargando o no hay productos, pasa array vacío para no
-        //       renderizar ítems, pero sí muestra ListHeader (con el spinner).
-        data={loading || !hasProductos ? [] : productosVisibles}
-        // keyExtractor: identificador único por ítem, necesario para que React
-        //               pueda optimizar el renderizado de la lista.
-        keyExtractor={(item: any) => String(item.id)}
-        // numColumns: muestra los productos en 2 columnas.
-        numColumns={2}
-        // renderItem: función que genera el JSX de cada producto.
-        renderItem={renderProducto}
-        // ListHeaderComponent: componente fijo al inicio de la lista (hero, buscador, etc.).
-        ListHeaderComponent={<ListHeader />}
-        // ListFooterComponent: componente fijo al final de la lista (paginación).
-        ListFooterComponent={<ListFooter />}
-        // contentContainerStyle: padding horizontal y padding inferior de toda la lista.
-        contentContainerStyle={styles.content}
-        // refreshControl: habilita el "pull to refresh" (tirar hacia abajo para actualizar).
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={() => loadCatalogo({ isRefresh: true })}
-            colors={[theme.primary]}     // Color del spinner en Android.
-            tintColor={theme.primary}      // Color del spinner en iOS.
-          />
-        }
-      />
+    <View style={styles.container}>
+      <ScrollView horizontal style={styles.quickActions} contentContainerStyle={styles.quickActionList} showsHorizontalScrollIndicator={false}>
+        <Link href="/modal" asChild>
+          <TouchableOpacity style={styles.quickButton}>
+            <Text style={styles.quickButtonText}>Modelos 3D</Text>
+          </TouchableOpacity>
+        </Link>
+        <Link href="/carrito" asChild>
+          <TouchableOpacity style={styles.quickButton}>
+            <Text style={styles.quickButtonText}>Carrito</Text>
+          </TouchableOpacity>
+        </Link>
+        <Link href="/mis-pedidos" asChild>
+          <TouchableOpacity style={styles.quickButton}>
+            <Text style={styles.quickButtonText}>Pedidos</Text>
+          </TouchableOpacity>
+        </Link>
+      </ScrollView>
 
-      {/* ── MODAL: DETALLE DEL PRODUCTO ─────────────────────────────────── */}
-      {/* visible: true cuando productoDetalle tiene datos (Boolean convierte a boolean). */}
-      {/* animationType="slide": el modal sube desde la parte inferior de la pantalla. */}
-      <Modal
-        visible={Boolean(productoDetalle)}
-        transparent                          // El fondo semitransparente se ve detrás.
-        animationType="slide"
-        onRequestClose={() => setProductoDetalle(null)}> {/* Cierra con el botón "atrás" de Android */}
-        {/* Fondo semitransparente negro que cubre toda la pantalla */}
+      <View style={styles.searchRow}>
+        <TextInput
+          placeholder="Buscar producto, categoría o palabra clave"
+          style={styles.searchInput}
+          value={buscar}
+          onChangeText={setBuscar}
+          returnKeyType="search"
+        />
+      </View>
+
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesScroll} contentContainerStyle={styles.categoriesContainer}>
+        <TouchableOpacity
+          style={[styles.categoryButton, !selectedCategoria && styles.categoryButtonSelected]}
+          onPress={() => setSelectedCategoria('')}
+        >
+          <Text style={[styles.categoryText, !selectedCategoria && styles.categoryTextSelected]}>Todas</Text>
+        </TouchableOpacity>
+        {categorias.map(renderCategoria)}
+      </ScrollView>
+
+      {loading ? (
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color="#7c3aed" />
+        </View>
+      ) : error ? (
+        <View style={styles.centered}>
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={productosVisibles}
+          keyExtractor={(item) => String(item.id || item._id || item._idProducto || item.idProducto)}
+          renderItem={({ item }) => (
+            <ProductCard
+              producto={item}
+              onPress={() => handlePressProducto(item)}
+              onAddToCart={() => agregarProducto(item, 1)}
+            />
+          )}
+          contentContainerStyle={styles.list}
+          showsVerticalScrollIndicator={false}
+          ListHeaderComponent={renderHeader}
+          ListEmptyComponent={() => (
+            <View style={styles.centered}>
+              <Text style={styles.emptyText}>No hay productos que coincidan.</Text>
+            </View>
+          )}
+        />
+      )}
+
+      <View style={styles.paginationRow}>
+        <TouchableOpacity
+          style={[styles.pageButton, paginaActual === 1 && styles.pageButtonDisabled]}
+          disabled={paginaActual === 1}
+          onPress={() => setPaginaActual(Math.max(1, paginaActual - 1))}
+        >
+          <Text style={styles.pageButtonText}>Anterior</Text>
+        </TouchableOpacity>
+        <Text style={styles.paginationInfo}>{paginaActual} / {totalPaginas}</Text>
+        <TouchableOpacity
+          style={[styles.pageButton, paginaActual === totalPaginas && styles.pageButtonDisabled]}
+          disabled={paginaActual === totalPaginas}
+          onPress={() => setPaginaActual(Math.min(totalPaginas, paginaActual + 1))}
+        >
+          <Text style={styles.pageButtonText}>Siguiente</Text>
+        </TouchableOpacity>
+      </View>
+
+      <Modal visible={Boolean(selectedProduct)} animationType="slide" transparent>
         <View style={styles.modalBackdrop}>
-          {/* Tarjeta blanca con esquinas superiores redondeadas */}
-          <ThemedView style={[styles.modalCard, { backgroundColor: theme.surface, borderColor: theme.border, shadowColor: theme.shadow }]}> 
-            {/* Solo renderiza el contenido si productoDetalle tiene datos */}
-            {productoDetalle ? (
-              <>
-                {/* Imagen grande del producto */}
-                <Image
-                  source={{ uri: catalogoService.buildImageUrl(productoDetalle.imagen) }}
-                  style={styles.modalImage}
-                  resizeMode="cover"
-                />
-                {/* Categoría del producto en texto pequeño índigo */}
-                <ThemedText style={[styles.modalCategoria, { color: theme.primary }]}> 
-                  {productoDetalle.Categoria?.nombre || productoDetalle.categoria?.nombre || 'Sin categoría'}
-                </ThemedText>
-                {/* Nombre del producto en grande */}
-                <ThemedText style={[styles.modalTitle, { color: theme.text }]}>{productoDetalle.nombre}</ThemedText>
-                {/* Descripción o texto fallback si no hay descripción */}
-                <ThemedText style={[styles.modalDesc, { color: theme.icon }]}> 
-                  {productoDetalle.descripcion || 'Sin descripción disponible.'}
-                </ThemedText>
-                {/* Precio formateado en pesos colombianos */}
-                <ThemedText style={[styles.modalPrecio, { color: theme.primary }]}> 
-                  ${Number(productoDetalle.precio || 0).toLocaleString('es-CO')}
-                </ThemedText>
-                {/* Fila de stock disponible con ícono */}
-                <View style={styles.modalStock}>
-                  <Ionicons name="cube-outline" size={14} color={theme.icon} />
-                  <ThemedText style={[styles.modalStockText, { color: theme.icon }]}> 
-                    {/* ?? 'N/A': muestra N/A si stock es null o undefined */}
-                    Stock disponible: {productoDetalle.stock ?? 'N/A'} unidades
-                  </ThemedText>
-                </View>
-                {/* Fila de botones del modal */}
-                <View style={styles.modalActions}>
-                  {/* Botón "Cerrar": cierra el modal limpiando productoDetalle */}
-                  <Pressable
-                    style={[styles.outlineBtn, { flex: 1, paddingVertical: 12, borderColor: theme.primary }]}
-                    onPress={() => setProductoDetalle(null)}>
-                    <ThemedText style={[styles.outlineBtnText, { color: theme.primary }]}>Cerrar</ThemedText>
-                  </Pressable>
-                  {/* Botón "Agregar al carrito": agrega y cierra el modal */}
-                  <Pressable
-                    style={[styles.primaryBtn, { flex: 2, paddingVertical: 12, backgroundColor: theme.primary }]}
-                    onPress={async () => {
-                      await handleAgregarAlCarrito(productoDetalle); // Agrega al carrito.
-                      setProductoDetalle(null);                      // Cierra el modal.
-                    }}>
-                    <Ionicons name="cart" size={16} color={theme.surface} />
-                    <ThemedText style={styles.primaryBtnText}>Agregar al carrito</ThemedText>
-                  </Pressable>
-                </View>
-              </>
-            ) : null}
-          </ThemedView>
+          <View style={styles.modalContent}>
+            <ScrollView>
+              <Text style={styles.modalTitle}>{selectedProduct?.nombre || selectedProduct?.titulo || 'Detalle'}</Text>
+              {selectedProduct?.imagen ? (
+                <Image source={{ uri: catalogoService.buildImageUrl(selectedProduct.imagen) }} style={styles.modalImage} />
+              ) : null}
+              <Text style={styles.modalDescription}>{selectedProduct?.descripcion || 'Sin descripción disponible.'}</Text>
+              <Text style={styles.modalPrice}>${selectedProduct?.precio || selectedProduct?.precioVenta || '0'}</Text>
+            </ScrollView>
+            <View style={styles.modalActions}>
+              <TouchableOpacity style={styles.modalButton} onPress={() => handleOpenProducto(String(selectedProduct?.id || selectedProduct?._id || selectedProduct?.idProducto || selectedProduct?._idProducto))}>
+                <Text style={styles.modalButtonText}>Ver detalles</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.modalClose} onPress={() => setSelectedProduct(null)}>
+                <Text style={styles.modalCloseText}>Cerrar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
       </Modal>
-    </>
+    </View>
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ESTILOS
-// ─────────────────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  // Padding horizontal del FlatList + padding inferior para que el último producto
-  // no quede pegado al borde de la pantalla.
-  content: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
+  container: {
+    flex: 1,
+    backgroundColor: '#f8f5ff',
   },
-
-  // ── HERO ──────────────────────────────────────────
-  // Tarjeta índigo con bordes muy redondeados que actúa como banner principal.
-  hero: {
-    borderRadius: 24,
-    padding: 22,
-    backgroundColor: '#7d2181', // Primary.
-    marginTop: 16,
+  quickActions: {
+    paddingHorizontal: 20,
     marginBottom: 16,
-    gap: 10,                    // Espacio entre cada hijo directo.
   },
-  // Etiqueta pequeña en mayúsculas con espaciado de letras (tracking).
+  quickActionList: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  quickButton: {
+    backgroundColor: '#7c3aed',
+    borderRadius: 999,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    marginRight: 10,
+  },
+  quickButtonText: {
+    color: '#fff',
+    fontWeight: '700',
+  },
+  searchRow: {
+    marginHorizontal: 20,
+    marginBottom: 12,
+  },
+  searchInput: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+  },
+  categoriesScroll: {
+    maxHeight: 56,
+    marginBottom: 8,
+  },
+  categoriesContainer: {
+    paddingHorizontal: 20,
+    alignItems: 'center',
+  },
+  categoryButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: '#eef2ff',
+    borderRadius: 999,
+    marginRight: 10,
+  },
+  categoryButtonSelected: {
+    backgroundColor: '#7c3aed',
+  },
+  categoryText: {
+    color: '#374151',
+    fontWeight: '600',
+  },
+  categoryTextSelected: {
+    color: '#fff',
+  },
+  heroCard: {
+    marginHorizontal: 20,
+    marginBottom: 16,
+    backgroundColor: '#eef2ff',
+    borderRadius: 24,
+    padding: 24,
+  },
   heroLabel: {
-    color: '#f3dffb',           // Primary light.
-    letterSpacing: 1.4,
-    fontSize: 11,
+    color: '#7c3aed',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 8,
     fontWeight: '700',
   },
   heroTitle: {
-    color: '#fff',
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: '800',
-    lineHeight: 34,             // Interlineado para texto de 2 líneas.
-  },
-  heroSubtitle: {
-    color: '#ffeef8',           // Light on primary.
-    fontSize: 14,
-    lineHeight: 21,
-  },
-  // Fila horizontal de las 3 estadísticas.
-  heroStatsRow: {
-    flexDirection: 'row',
-    gap: 10,
-    marginTop: 8,
-  },
-  // Caja individual de estadística: fondo blanco semitransparente.
-  heroStat: {
-    flex: 1,                                         // Cada stat ocupa el mismo ancho.
-    borderRadius: 14,
-    padding: 12,
-    backgroundColor: 'rgba(255,255,255,0.15)',        // Blanco al 15% de opacidad.
-    alignItems: 'center',
-    gap: 2,
-  },
-  heroStatValue: {
-    color: '#fff',
-    fontWeight: '800',
-    fontSize: 20,
-  },
-  heroStatLabel: {
-    color: '#c7d2fe',
-    fontSize: 11,
-  },
-
-  // ── CARACTERÍSTICAS ───────────────────────────────
-  // Contenedor del scroll horizontal de tarjetas de características.
-  featuresRow: {
-    gap: 10,
-    paddingBottom: 4,
-    marginBottom: 16,
-  },
-  // Cada tarjeta de característica: ancho fijo, sombra sutil.
-  featureCard: {
-    width: 128,
-    borderRadius: 16,
-    padding: 14,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#f3f4f6',
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,               // Sombra en Android.
-    gap: 6,
-  },
-  // Círculo de color que contiene el ícono de la característica.
-  // El color de fondo se aplica inline con el campo 'bg' de FEATURES.
-  featureIconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,           // Mitad del ancho/alto = círculo perfecto.
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  featureTitle: {
-    fontWeight: '700',
-    fontSize: 13,
+    marginBottom: 10,
     color: '#111827',
   },
-  featureDesc: {
-    fontSize: 11,
-    color: '#6b7280',           // Gris apagado.
-  },
-
-  // ── BUSCADOR ──────────────────────────────────────
-  // Contenedor del campo de búsqueda: fila con ícono + input + botón limpiar.
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    marginBottom: 12,
-    gap: 8,
-    shadowColor: '#000',
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1,
-  },
-  // El input ocupa todo el ancho disponible (flex:1) entre los íconos.
-  searchInput: {
-    flex: 1,
-    fontSize: 15,
-    color: '#111',
-    padding: 0,                 // Elimina el padding por defecto en Android.
-  },
-
-  // ── CHIPS ─────────────────────────────────────────
-  // Contenedor del scroll horizontal de chips de categorías.
-  chipsRow: {
-    gap: 8,
-    paddingVertical: 4,
-    marginBottom: 16,
-  },
-  // Chip inactivo: borde gris, fondo blanco.
-  chip: {
-    borderRadius: 999,          // Cápsula perfecta (border-radius muy alto).
-    borderWidth: 1.5,
-    borderColor: '#d1d5db',
-    paddingVertical: 7,
-    paddingHorizontal: 14,
-    backgroundColor: '#fff',
-  },
-  // Chip activo: fondo y borde índigo (se aplica junto a 'chip').
-  chipActive: {
-    backgroundColor: '#6366f1',
-    borderColor: '#7d2181',
-  },
-  chipText: {
+  heroSubtitle: {
     color: '#374151',
-    fontWeight: '600',
-    fontSize: 13,
+    fontSize: 15,
+    lineHeight: 22,
+    marginBottom: 20,
   },
-  chipTextActive: {
-    color: '#fff',              // Texto blanco cuando el chip está activo.
-  },
-
-  // ── ENCABEZADO SECCIÓN ────────────────────────────
-  // Fila "Productos Disponibles" + contador de resultados.
-  sectionHeader: {
+  heroStats: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  heroStat: {
+    flex: 1,
+    padding: 14,
+    borderRadius: 18,
+    backgroundColor: '#fff',
+    marginHorizontal: 4,
     alignItems: 'center',
-    marginBottom: 12,
+  },
+  heroStatValue: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#111827',
+  },
+  heroStatLabel: {
+    color: '#6b7280',
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  featuresRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginHorizontal: 20,
+    marginBottom: 16,
+  },
+  featureCard: {
+    flex: 1,
+    backgroundColor: '#fff',
+    borderRadius: 18,
+    padding: 14,
+    marginHorizontal: 4,
+    alignItems: 'center',
+  },
+  featureIcon: {
+    fontSize: 24,
+    marginBottom: 8,
+  },
+  featureTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#111827',
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  featureSubtitle: {
+    fontSize: 12,
+    color: '#6b7280',
+    textAlign: 'center',
   },
   sectionTitle: {
+    marginHorizontal: 20,
+    marginBottom: 12,
     fontSize: 18,
     fontWeight: '700',
     color: '#111827',
   },
-  sectionCount: {
-    fontSize: 12,
-    color: '#6b7280',
+  list: {
+    paddingHorizontal: 20,
+    paddingBottom: 28,
   },
-
-  // ── TARJETA PRODUCTO ──────────────────────────────
-  // Tarjeta individual de producto con ancho calculado para 2 columnas.
-  card: {
-    width: CARD_WIDTH,
-    borderRadius: 14,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#f3f4f6',
-    shadowColor: '#7d2181',     // Sombra levemente primaria.
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 3,
-    marginBottom: 10,
-    overflow: 'hidden',         // El badge y la imagen respetan los bordes redondeados.
-  },
-  // Imagen de portada del producto (ocupa todo el ancho de la tarjeta).
-  cardImage: {
-    width: '100%',
-    height: 130,
-  },
-  // Badge de categoría superpuesto en la esquina superior izquierda de la imagen.
-  cardBadge: {
-    position: 'absolute',       // Se posiciona sobre la imagen.
-    top: 8,
-    left: 8,
-    backgroundColor: 'rgba(125,33,129,0.85)', // Primary semitransparente.
-    borderRadius: 6,
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-  },
-  cardBadgeText: {
-    color: '#fff',
-    fontSize: 9,
-    fontWeight: '700',
-    textTransform: 'uppercase', // Texto en mayúsculas.
-    letterSpacing: 0.3,
-  },
-  // Área de texto de la tarjeta (debajo de la imagen).
-  cardBody: {
-    padding: 10,
-    gap: 4,
-  },
-  cardNombre: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#111827',
-    lineHeight: 18,
-  },
-  cardPrecio: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#7d2181',
-    marginTop: 2,
-  },
-  // Fila de botones: "Ver" y carrito.
-  cardActions: {
-    flexDirection: 'row',
-    gap: 6,
-    marginTop: 8,
-  },
-
-  // ── BOTONES ───────────────────────────────────────
-  // Botón outline: solo borde, sin relleno.
-  outlineBtn: {
-    borderRadius: 8,
-    borderWidth: 1.5,
-    borderColor: '#7d2181',
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  outlineBtnText: {
-    color: '#7d2181',
-    fontWeight: '700',
-    fontSize: 12,
-  },
-  // Botón del carrito: relleno índigo, ocupa el espacio restante (flex:1).
-  cartBtn: {
-    flex: 1,
-    borderRadius: 8,
-    backgroundColor: '#7d2181',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 7,
-  },
-  // Botón primario relleno con ícono + texto en fila.
-  primaryBtn: {
-    borderRadius: 8,
-    backgroundColor: '#7d2181',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingHorizontal: 14,
-  },
-  primaryBtnText: {
-    color: '#fff',
-    fontWeight: '700',
-    fontSize: 13,
-  },
-
-  // ── ESTADOS ───────────────────────────────────────
-  // Centrado para spinner de carga (dentro del ListHeader).
   centered: {
-    paddingVertical: 32,
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    gap: 12,
-  },
-  loadingText: {
-    color: '#6b7280',
-    fontSize: 14,
+    padding: 20,
   },
   errorText: {
-    color: '#ef4444',           // Rojo para mensajes de error.
+    color: '#b91c1c',
+    fontSize: 16,
     textAlign: 'center',
-    marginVertical: 16,
   },
   emptyText: {
-    textAlign: 'center',
-    color: '#9ca3af',           // Gris para estado vacío.
-    marginVertical: 24,
-    fontSize: 14,
+    color: '#6b7280',
+    fontSize: 16,
   },
-
-  // ── PAGINACIÓN ────────────────────────────────────
-  // Fila de botones Anterior / Página / Siguiente.
-  paginacionRow: {
+  paginationRow: {
     flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 16,
-    marginBottom: 8,
-    paddingHorizontal: 4,
+    marginHorizontal: 20,
+    marginVertical: 16,
+    gap: 12,
   },
-  // Botón de paginación activo: borde índigo.
-  pagBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: '#6366f1',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+  pageButton: {
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: '#7c3aed',
   },
-  // Sobreescribe el borde cuando el botón está deshabilitado.
-  pagBtnDisabled: {
-    borderColor: '#d1d5db',     // Gris cuando está deshabilitado.
+  pageButtonDisabled: {
+    backgroundColor: '#c7d2fe',
   },
-  pagBtnText: {
-    color: '#7d2181',
-    fontWeight: '600',
-    fontSize: 13,
-  },
-  pagBtnTextDisabled: {
-    color: '#9ca3af',           // Gris cuando está deshabilitado.
-  },
-  pagInfo: {
-    color: '#374151',
+  pageButtonText: {
+    color: '#fff',
     fontWeight: '700',
-    fontSize: 14,
   },
-
-  // ── MODAL ─────────────────────────────────────────
-  // Fondo semitransparente oscuro que cubre toda la pantalla.
-  // justifyContent: 'flex-end' posiciona la tarjeta en la parte inferior.
+  paginationInfo: {
+    color: '#374151',
+    fontWeight: '600',
+  },
   modalBackdrop: {
     flex: 1,
     justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0,0,0,0.45)',
+    backgroundColor: 'rgba(0,0,0,0.4)',
   },
-  // Tarjeta blanca del modal con bordes superiores redondeados (sheet style).
-  modalCard: {
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    padding: 20,
-    gap: 10,
+  modalContent: {
     backgroundColor: '#fff',
-  },
-  // Imagen grande del producto en el modal.
-  modalImage: {
-    width: '100%',
-    height: 220,
-    borderRadius: 16,
-  },
-  // Nombre de la categoría en pequeño sobre el título.
-  modalCategoria: {
-    fontSize: 11,
-    color: '#7d2181',
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-    marginTop: 4,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: '80%',
+    padding: 20,
   },
   modalTitle: {
     fontSize: 22,
     fontWeight: '800',
-    color: '#111827',
-    lineHeight: 28,
+    marginBottom: 14,
   },
-  modalDesc: {
-    fontSize: 14,
-    color: '#6b7280',
-    lineHeight: 21,
+  modalImage: {
+    width: '100%',
+    height: SCREEN_WIDTH * 0.5,
+    borderRadius: 18,
+    marginBottom: 14,
   },
-  // Precio grande índigo en el modal.
-  modalPrecio: {
-    fontSize: 24,
+  modalDescription: {
+    color: '#374151',
+    fontSize: 15,
+    marginBottom: 14,
+  },
+  modalPrice: {
+    fontSize: 20,
     fontWeight: '800',
-    color: '#7d2181',
+    color: '#111827',
+    marginBottom: 20,
   },
-  // Fila de stock: ícono + texto.
-  modalStock: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  modalStockText: {
-    fontSize: 13,
-    color: '#6b7280',
-  },
-  // Fila de botones del modal: Cerrar + Agregar al carrito.
   modalActions: {
     flexDirection: 'row',
-    gap: 10,
-    marginTop: 6,
-    marginBottom: 8,
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  modalButton: {
+    flex: 1,
+    backgroundColor: '#7c3aed',
+    paddingVertical: 14,
+    borderRadius: 14,
+    alignItems: 'center',
+  },
+  modalButtonText: {
+    color: '#fff',
+    fontWeight: '700',
+  },
+  modalClose: {
+    flex: 1,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#7c3aed',
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  modalCloseText: {
+    color: '#7c3aed',
+    fontWeight: '700',
   },
 });

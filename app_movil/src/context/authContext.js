@@ -9,14 +9,14 @@ import {createContext, useCallback, useEffect, useContext, useMemo, useState} fr
 import authService from '../services/authService';
 
 //valor inicial null; useAuth() valida que esta dentro del provider
-const authContext = createContext(null);
+const authContext = createContext(/** @type {any} */ (null));
 
-export function AuthProvider({children}) {
+export function AuthProvider({ children }) {
     //usuario autenticado objeto con id, nombre, rol o null
     const [user, setUser] = useState(null);
-    //JWT recibido del backend}; su presencia indica que el usuario esta logueado
+    //JWT recibido del backend; su presencia indica que el usuario esta logueado
     const [token, setToken] = useState(null);
-    //true mientrras se lee asyncStorage al iniciar la app; evita redirigir antes de tiempo
+    //true mientras se lee asyncStorage al iniciar la app; evita redirigir antes de tiempo
     const [isLoading, setLoading] = useState(true);
 
     /**
@@ -30,9 +30,9 @@ export function AuthProvider({children}) {
             const session = await authService.getSession();
             setToken(session?.token || null);
             setUser(session?.user || null);
-        } finally {
-            //siempre marca la carga como terminada, aunque falle la lectura
-            setLoading(false);
+        }finally {
+            //siemnpr marca la carga como terminada, aunque falle la lectura
+            setIsLoading(false);
         }
     }, []);
 
@@ -48,14 +48,12 @@ export function AuthProvider({children}) {
 
     const login = useCallback (async (email, password) => {
         const response = await authService.login(email,password);
-        // el servicio authService.login retorna el payload (data) o la respuesta
-        const payload = response.data || response;
+        //el backend puede devoler el payload dento de response.data o directo
+        const payload = response.data || response; 
 
         setToken(payload?.token || null);
-        // el backend puede devolver el usuario en `usuario` o `user`
-        const usuario = payload?.usuario || payload?.user || null;
-        setUser(usuario);
-
+        setUser(payload?.user || null);
+        
         return payload;
     }, []);
 
@@ -65,7 +63,10 @@ export function AuthProvider({children}) {
      */
 
     const register = useCallback(async (data) => {
-        return authService.register(data);
+        const payload = await authService.register(data);
+        setToken(payload?.token || null);
+        setUser(payload?.usuario || null);
+        return payload;
     }, []);
 
     /**
@@ -85,10 +86,9 @@ export function AuthProvider({children}) {
      */
 
     const updatePerfil = useCallback(async (data) => {
-        const resp = await authService.updatePerfil(data);
-        const usuario = resp?.data?.usuario || resp?.usuario || resp?.user || null;
-        if (usuario) setUser(usuario);
-        return resp;
+        const usuario = await authService.updatePerfil(data);
+        if(usuario) setUser(usuario)
+        return usuario;
     }, []);
 
     /**
@@ -96,17 +96,17 @@ export function AuthProvider({children}) {
      * usememo evita recrar el objeto en cada render solo cambia si algguna de las dependencias cambia
      */
     
-    const value = useMemo( () => ({
+    const value = useMemo(() => ({
         user, //objeto del usuario autenticado o null
         token, //JWT o null
-        isAuthenticated: Boolean(token),//booleano derivado del token
+        isAuthenticated: Boolean(token), //booleano derivado del token
         isLoadingSession: isLoading, //true mientras se restaura la sesion al iniciar la app
         login,
         register,
         logout,
         updatePerfil,
         refreshSession: restoreSession, //permite forzar una relectura del storage
-    }),[user, token, isLoading, login, register, logout, updatePerfil, restoreSession]
+    }), [user, token, isLoading, login, register, logout, updatePerfil, restoreSession]
     );
 
     return <authContext.Provider value={value}>{children}</authContext.Provider>;

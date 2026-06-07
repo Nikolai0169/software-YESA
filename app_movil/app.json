@@ -1,28 +1,27 @@
 {
   "expo": {
-    "name": "YESA Ecommerce",
-    "slug": "yesa-ecommerce",
+    "name": "app_movil",
+    "slug": "app_movil",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "appmovil",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "extra": {
+      "apiBaseUrl": "http://172.16.102.197:5000/api"
+    },
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundImage": "./assets/adaptive-icon.png",
-        "monochromeImage": "./assets/adaptive-icon.png"
+        "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "output": "static",
       "favicon": "./assets/favicon.png"
     },
     "plugins": [

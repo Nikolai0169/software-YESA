@@ -1,590 +1,378 @@
-/**
- * pantalla de cuenta pestaña 3 tiene 2 metodos 
- * no autenticado muestra formulario login y registro
- * autenticado muestra perfil de usuario con opciones de editar datos
- * acceder al panel admin/aux ver pedidos segun rol
- */
+import { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  TextInput,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
+import { useAuth } from '../../src/context/authContext';
 
-/**
- * importar componentes de react native para construir la pantalla
- * ActivityIndicator: spinner de carga circular
- * Alert: dialogos emergentes nativos del sistema
- * Image: muestra las imagenes
- * Pressable: area tactil
- * ScrollView: contenedor con scroll vertical
- * StyleSheet: crea los estilos de forma optimizada
- * Text: muestra texto plano en pantalla
- * View: contenedor generico equivale a un div en html y css
- */
-//manejo de variables de estado local
-import {useState} from 'react';
-//importar componentes
-import {ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View} from 'react-native';
+const isValidEmail = (email: string) => /\S+@\S+\.\S+/.test(email);
+const isValidPhone = (phone: string) => /^3\d{9}$/.test(phone);
 
-import {router} from 'expo-router';
-//ionicons libreria de iconos vectoriales para react native
-import {Ionicons} from '@expo/vector-icons';
-import {useAuth} from '../../src/context/authContext';
-//themedText : texto que aplica colores del tema del dispositivo de manera automatica claro u oscuro
-import {ThemedText} from '../../components/themed-text';
-//themedView : color de fondo automatico segun el tema del dispositivo
-import {ThemedView} from '../../components/themed-view';
-import { Colors } from '../../constants/theme';
-import { useColorScheme } from '../../hooks/use-color-scheme';
+export default function Explore() {
+  const { user, isAuthenticated, login, register, logout, isLoadingSession } = useAuth();
+  const [isRegisterMode, setIsRegisterMode] = useState(false);
+  const [nombre, setNombre] = useState('');
+  const [apellido, setApellido] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [telefono, setTelefono] = useState('');
+  const [direccion, setDireccion] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
 
-/**
- * AuthCtx define la forma del objeto devuelto por useAuth es necesario
- * porque authContext.js esta en javascript no typescript y el compilador no los reconoce 
- */
-type AuthCtx = {
-    //user datos del usuario autenticado o null si no inicio sesion
-    user: {nombre?:string, email?: string, rol?: string} | null;
-    //isAuthenticated: tru si hay sesion activa
-    isAuthenticated: boolean;
-    //isLoading: true mientras se verifica si hay sesion guardada a abrir la app
-    isLoadingSession: boolean;
-    //login: funcion que recibe el email y contraseña lanza error si falla
-    login: (email: string, password: string) => Promise<unknown>;
-    //register funcion que registra un nuevo usuario lanza error si falla
-    register: (data: {nombre: string, apellido: string, email: string, password: string, telefono?: string, direccion?: string}) => Promise<unknown>;
-    //logout: funcion de cerrar la sesion del usuario 
-    logout: () => Promise<void>;
-    //updatePerfil: funcion que actualiza los datos del usuario
-    updatePerfil:(data: {nombre?: string, email?: string, password?: string}) => Promise<unknown>;
-};
+  useEffect(() => {
+    setError('');
+    setMessage('');
+  }, [isRegisterMode]);
 
-//routerPush navega apilando la nueva pantalla permite volver atras con la opcion de atras
-//se usa as unknown as para evitar errores de typescript con contextos router
+  const resetForm = () => {
+    setNombre('');
+    setApellido('');
+    setEmail('');
+    setPassword('');
+    setConfirmPassword('');
+    setTelefono('');
+    setDireccion('');
+  };
 
-const routerPush = (path: string) => (router as unknown as {push: (p: string) => void}).push(path);
+  const handleSubmit = async () => {
+    setError('');
+    setMessage('');
 
-//componente principal del tab de cuenta 
+    if (!email.trim() || !password) {
+      setError('Email y contraseña son obligatorios.');
+      return;
+    }
 
-export default function TabTwoScreen() {
-    const {user, isAuthenticated, logout, login, register, isLoadingSession, updatePerfil} = useAuth() as AuthCtx;
-    const theme = Colors[useColorScheme() ?? 'light'];
-    // estado del formulario login y registro
-    //isRegisterMode true mostrar formulario de registro false mostrar login
-    const [isRegisterMode, setIsRegisterMode] = useState(false);
-    //campos del formulario de registro y login
-    const [nombre, setNombre] = useState('');
-    const [apellido, setApellido] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [telefono, setTelefono] = useState('');
-    const [direccion, setDireccion] = useState('');
-    //loadingSubmit true mientras se procesa el login o registro evita el doble envio
-    const [loadingSubmit, setLoadingSubmit] = useState(false);
-    //manejo de retroalimentacion al usuario (error o exito)
-    const [errorMessage, setErrorMessage] = useState('');
-    const [successMessage, setSuccessMessage] = useState('');
+    if (!isValidEmail(email.trim())) {
+      setError('Ingresa un email válido.');
+      return;
+    }
 
-    //estado de edicion de perfil 
-    //editMode true mostrar campos editables false modo lectura
-    const [editMode, setEditMode] = useState(false);
-    //campos editables del perfil
-    const [editNombre, setEditNombre] = useState('');
-    const [editApellido, setEditApellido] = useState('');
-    const [editEmail, setEditEmail] = useState('');
-    const [editPassword, setEditPassword] = useState('');
-    //savingerfil true mientras de guarda el perfil en backend
-    const [savingPerfil, setSavingPerfil] = useState(false);
-    //mensajes del formulario de edicion del perfil
-    const [perfilError, setPerfilError] = useState('');
-    const [perfilSuccess, setPerfilSuccess] = useState('');
+    if (password.length < 6) {
+      setError('La contraseña debe tener al menos 6 caracteres.');
+      return;
+    }
 
-    //function resetFeedBack
-    //limpia los mensajes de error y exito del formulario login y registro
-    const resetFeedback = () => {
-        setErrorMessage('');
-        setSuccessMessage('');
-    };
+    if (isRegisterMode) {
+      if (!nombre || !apellido || !confirmPassword) {
+        setError('Completa todos los campos obligatorios para registrarte.');
+        return;
+      }
 
-    //function: handleLogout
-    //cierra la sesion y resetea todos los campos del formulario para que la pantalla quede limpia cuando el usuario vuelva a ver formulario
-    const handleLogout = async() => {
-        await logout(); //llama el contexto de cerrar sesion
-        setNombre('');
-        setApellido('');
-        setEmail('');
-        setPassword('');
-        setConfirmPassword('');
-        setTelefono('');
-        setDireccion('');
+      if (password !== confirmPassword) {
+        setError('Las contraseñas no coinciden.');
+        return;
+      }
+
+      if (telefono && !isValidPhone(telefono)) {
+        setError('Teléfono inválido. Debe tener 10 dígitos y comenzar con 3.');
+        return;
+      }
+    }
+
+    setLoading(true);
+    try {
+      if (isRegisterMode) {
+        await register({
+          nombre,
+          apellido,
+          email: email.trim(),
+          password,
+          telefono: telefono || undefined,
+          direccion: direccion || undefined,
+        });
+        setMessage('Registro completado. Ahora puedes iniciar sesión.');
         setIsRegisterMode(false);
-    };
+        resetForm();
+      } else {
+        await login(email.trim(), password);
+        setMessage('Inicio de sesión exitoso.');
+        resetForm();
+      }
+    } catch (err) {
+      setError((err as Error)?.message || 'No fue posible completar la acción.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    //function handleSubmit
-    //valida y envia el fromulario de login o registro segun el modo activo
-    const handleSubmit = async() => {
-        resetFeedback();//limpia mensajes anteriores antes de validar
+  const handleLogout = async () => {
+    await logout();
+    resetForm();
+    setIsRegisterMode(false);
+    setError('');
+    setMessage('Has cerrado sesión.');
+  };
 
-        if(isRegisterMode) {
-            //validaciones de registro
-            //todos los campos marcados con * son obligatorios
-            if(!nombre || !apellido || !email || ! password || !confirmPassword) {
-                setErrorMessage('Completa todos los campos obligatorios *.');
-                return;
-            }
-
-            //las contraseñas deben coincidir
-            if(password !== confirmPassword) {
-                setErrorMessage('Las contraseñas no coinciden');
-                return;
-            }
-
-            //la contraseña debe tener minimo 6 caracteres
-            if(password.length < 6) {
-                setErrorMessage('La contraseña debe tener al menos 6 caracteres');
-                return;
-            }
-
-            //telefono si se proporciona debe ser colombiano(10 digitos y debe empezar con 3)
-            if(telefono && !/^3\d{9}$/.test(telefono)) {
-                setErrorMessage('Telefono invalido: 10 digitos iniciando con 3');
-                return;
-            }
-        }else {
-            //validaciones de login 
-            if(!email || !password) {
-                setErrorMessage('Ingresa con tu correo y contraseña');
-                return;
-            }
-        }
-
-        //activa el spinner y bloquea el boton parea evitar multiples envios 
-        setLoadingSubmit(true);
-        try {
-            if(isRegisterMode) {
-                //llama a register() del contexto con los datos del formulario
-                //el operador spread condicional ... solo incluye telefono/direccion si no estan vacios 
-                await register({nombre, apellido, email, password, 
-                    ...(telefono ? {telefono}: {}),
-                    ...(direccion ? {direccion}: {})
-                });
-                setSuccessMessage('Registro exitoso! Ahora inicia sesion');
-                setIsRegisterMode(false); //vuelve al modo login tras el registro exitoso
-                //limpia los campos que no se comparten en el formulario login
-                setPassword('');
-                setConfirmPassword('');
-                setNombre('');
-                setApellido('');
-                setTelefono('');
-                setDireccion('');
-            }else{
-                //llama al login del contexto con el email y la contraseña
-                await login(email, password);
-                setSuccessMessage('Sesion inicada correctamente');
-
-            }
-         }catch(error:unknown) {
-            //si el backend devuewlve error muestra su mensaje si no muestra uno generico
-            setErrorMessage((error as {message?: string})?.message || 'No fue posible completar la acción');
-         }finally{
-            //siempre desactiva el spinner al terminar exito y error
-            setLoadingSubmit(false);
-         }
-    };
-
-    /**
-     * funcion handleGuardarPerfil
-     * valida y envia los cambios al perfil del usuario autenticado 
-     */
-
-    const handleGuardarPerfil = async () => {
-        setPerfilError('');
-        setPerfilSuccess('');
-        //al menos uno de los tres campos debe estar modificado 
-        if(!editNombre.trim() && !editEmail.trim() && !editPassword.trim()) {
-            setPerfilError('Modifica al menos un campo');
-            return;
-        }
-        setSavingPerfil(true);
-        try {
-            //solo envia los campos que tienen valor los vacios se evitan
-            const data : {nombre?: string; email?: string; password?: string} = {};
-
-            if(editNombre.trim()) data.nombre = editNombre.trim();
-            if(editEmail.trim()) data.nombre = editEmail.trim();
-            if(editPassword.trim()) data.nombre = editPassword.trim();
-            await updatePerfil(data); //llamada al contexto que hace put/ usuarios/ perfil
-            setPerfilSuccess('Perfil actualizado correctamente');
-            setEditMode(false); //cierra el formulario de edicion
-            //limpia los campos de edicion 
-            setEditNombre('');
-            setEditEmail('');
-            setEditPassword('');
-        }catch(error: unknown) {
-            setPerfilError((error as {message?: string})?.message || 'No fue posible actualizar el perfil');
-        }finally {
-            setSavingPerfil(false);
-        }
-    };
-
-    // ── PANTALLA DE CARGA DE SESIÓN ──────────────────────────────────────────
-  // Se muestra brevemente al abrir la app mientras se verifica si hay
-  // un token de sesión guardado en el almacenamiento local del dispositivo.
   if (isLoadingSession) {
     return (
-      <ThemedView style={[styles.centered, { backgroundColor: theme.background }]}> 
-        <ActivityIndicator size="large" color={theme.primary} />
-        <ThemedText>Cargando sesion...</ThemedText>
-      </ThemedView>
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color="#7d2181" />
+        <Text style={styles.subtitle}>Verificando sesión...</Text>
+      </View>
     );
   }
 
-  // ── MODO: NO AUTENTICADO → FORMULARIO DE LOGIN / REGISTRO ────────────────
   if (!isAuthenticated) {
     return (
-      // KeyboardAvoidingView: cuando aparece el teclado virtual, mueve el
-      // contenido hacia arriba para que los campos no queden tapados.
-      // En iOS usa 'padding', en Android no es necesario (undefined).
       <KeyboardAvoidingView
-        style={[styles.container, { backgroundColor: theme.background }]}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        {/* ThemedView: aplica el color de fondo del tema (claro/oscuro) */}
-        <ThemedView style={[styles.formCard, { backgroundColor: theme.surface, borderColor: theme.border, shadowColor: theme.shadow }]}> 
-          {/* Título dinámico: "Registro" o "Iniciar sesion" según el modo */}
-          <ThemedText type="title">{isRegisterMode ? 'Registro' : 'Iniciar sesion'}</ThemedText>
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+          <Text style={styles.title}>{isRegisterMode ? 'Crear cuenta' : 'Iniciar sesión'}</Text>
+          <Text style={styles.subtitle}>
+            {isRegisterMode
+              ? 'Regístrate para comprar con tu cuenta YESA y sincronizar tu carrito.'
+              : 'Inicia sesión para acceder a tus pedidos, carrito y administración.'}
+          </Text>
 
-          {/* Campos adicionales SOLO en modo registro */}
-          {isRegisterMode ? (
+          {message ? <Text style={styles.noticeText}>{message}</Text> : null}
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+          {isRegisterMode && (
             <>
-              <TextInput
-                placeholder="Nombre *"
-                value={nombre}
-                onChangeText={setNombre}
-                style={[styles.input, { backgroundColor: theme.surface, borderColor: theme.border, color: theme.text }]}
-              />
-              <TextInput
-                placeholder="Apellido *"
-                value={apellido}
-                onChangeText={setApellido}
-                style={[styles.input, { backgroundColor: theme.surface, borderColor: theme.border, color: theme.text }]}
-              />
+              <TextInput style={styles.input} placeholder="Nombre" value={nombre} onChangeText={setNombre} />
+              <TextInput style={styles.input} placeholder="Apellido" value={apellido} onChangeText={setApellido} />
             </>
-          ) : null}
+          )}
 
-          {/* Campo de correo: compartido entre login y registro */}
           <TextInput
-            placeholder="Correo *"
-            autoCapitalize="none"        // No convierte a mayúsculas el primer caracter.
-            keyboardType="email-address" // Muestra teclado con @ y .com fácilmente.
+            style={styles.input}
+            placeholder="Email"
+            keyboardType="email-address"
+            autoCapitalize="none"
             value={email}
             onChangeText={setEmail}
-            style={[styles.input, { backgroundColor: theme.surface, borderColor: theme.border, color: theme.text }]}
           />
-
-          {/* Campo de contraseña: texto oculto con puntos */}
           <TextInput
-            placeholder="Contrasena *"
-            secureTextEntry               // Oculta el texto ingresado.
+            style={styles.input}
+            placeholder="Contraseña"
+            secureTextEntry
             value={password}
             onChangeText={setPassword}
-            style={[styles.input, { backgroundColor: theme.surface, borderColor: theme.border, color: theme.text }]}
           />
-
-          {/* Campos adicionales SOLO en modo registro */}
-          {isRegisterMode ? (
+          {isRegisterMode && (
             <>
-              {/* Confirmar contraseña: debe coincidir con el campo anterior */}
               <TextInput
-                placeholder="Confirmar contrasena *"
+                style={styles.input}
+                placeholder="Confirmar contraseña"
                 secureTextEntry
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
-                style={[styles.input, { backgroundColor: theme.surface, borderColor: theme.border, color: theme.text }]}
               />
-              {/* Teléfono: opcional, solo números, máximo 10 dígitos */}
               <TextInput
-                placeholder="Telefono (ej: 3001234567)"
+                style={styles.input}
+                placeholder="Teléfono (opcional)"
                 keyboardType="phone-pad"
                 value={telefono}
                 onChangeText={setTelefono}
                 maxLength={10}
-                style={[styles.input, { backgroundColor: theme.surface, borderColor: theme.border, color: theme.text }]}
               />
-              {/* Dirección: opcional */}
               <TextInput
-                placeholder="Direccion"
+                style={styles.input}
+                placeholder="Dirección (opcional)"
                 value={direccion}
                 onChangeText={setDireccion}
-                style={[styles.input, { backgroundColor: theme.surface, borderColor: theme.border, color: theme.text }]}
               />
             </>
-          ) : null}
+          )}
 
-          {/* Mensaje de error (en rojo) si la validación o el backend fallan */}
-          {errorMessage ? <ThemedText style={styles.error}>{errorMessage}</ThemedText> : null}
-          {/* Mensaje de éxito (en verde) tras registro o login exitoso */}
-          {successMessage ? <ThemedText style={styles.success}>{successMessage}</ThemedText> : null}
+          <TouchableOpacity style={styles.button} onPress={handleSubmit} disabled={loading}>
+            {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>{isRegisterMode ? 'Registrarse' : 'Ingresar'}</Text>}
+          </TouchableOpacity>
 
-          {/* Botón principal: "Crear cuenta" o "Entrar" según el modo.
-              disabled durante el proceso para evitar envíos múltiples. */}
-          <Pressable style={[styles.primaryButton, { backgroundColor: theme.primary }]} onPress={handleSubmit} disabled={loadingSubmit}>
-            {loadingSubmit ? (
-              // Spinner mientras se procesa la solicitud.
-              <ActivityIndicator color={theme.surface} />
-            ) : (
-              <Text style={styles.primaryButtonText}>
-                {isRegisterMode ? 'Crear cuenta' : 'Entrar'}
-              </Text>
-            )}
-          </Pressable>
-
-          {/* Enlace para alternar entre login y registro */}
-          <Pressable
-            onPress={() => {
-              resetFeedback();                       // Limpia mensajes al cambiar de modo.
-              setIsRegisterMode((prev) => !prev);    // Alterna el modo.
-            }}>
-            <ThemedText type="link">
-              {isRegisterMode ? 'Ya tengo cuenta, iniciar sesion' : 'No tengo cuenta, registrarme'}
-            </ThemedText>
-          </Pressable>
-        </ThemedView>
+          <View style={styles.footerRow}>
+            <Text style={styles.footerText}>{isRegisterMode ? '¿Ya tienes cuenta?' : '¿Aún no estás registrado?'}</Text>
+            <TouchableOpacity onPress={() => setIsRegisterMode(!isRegisterMode)}>
+              <Text style={styles.footerLink}>{isRegisterMode ? 'Iniciar sesión' : 'Crear cuenta'}</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // FUNCIONES AUXILIARES DEL PERFIL (solo se usan cuando el usuario está autenticado)
-  // Se definen aquí (no al inicio) porque solo se necesitan en el modo autenticado.
-  // ─────────────────────────────────────────────────────────────────────────
-
-  // rolColor: devuelve el color de fondo según el rol del usuario.
-  //   administrador → índigo (#6366f1)
-  //   auxiliar      → cian (#06b6d4)
-  //   cliente       → verde (#10b981)
-  const rolColor = (r?: string) =>
-    r === 'administrador' ? '#6366f1' : r === 'auxiliar' ? '#06b6d4' : '#10b981';
-
-  // rolLabel: devuelve el texto legible del rol.
-  const rolLabel = (r?: string) =>
-    r === 'administrador' ? 'Administrador' : r === 'auxiliar' ? 'Auxiliar' : 'Cliente';
-
-  // rolIcon: devuelve el nombre del ícono Ionicons según el rol.
-  //   keyof typeof Ionicons.glyphMap → tipo correcto para los nombres de íconos.
-  const rolIcon = (r?: string): keyof typeof Ionicons.glyphMap =>
-    r === 'administrador' ? 'shield-checkmark' : r === 'auxiliar' ? 'construct' : 'person';
-
-  // ── MODO: AUTENTICADO → VISTA DE PERFIL ─────────────────────────────────
   return (
-    // ScrollView con espacio de 12dp entre cada sección y padding inferior de 32dp.
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-
-      {/* ── ENCABEZADO DE PERFIL ────────────────────────────────────────── */}
-      {/* El color de fondo cambia dinámicamente según el rol del usuario. */}
-      <View style={[styles.profileHeader, { backgroundColor: rolColor(user?.rol) }]}>
-        {/* Avatar: círculo blanco con el ícono del rol en el color del rol */}
-        <View style={styles.avatarCircle}>
-          <Ionicons name={rolIcon(user?.rol)} size={40} color={rolColor(user?.rol)} />
-        </View>
-        {/* Columna de datos: nombre, email y badge del rol */}
-        <View style={{ flex: 1 }}>
-          {/* Nombre del usuario en blanco negrita */}
-          <Text style={styles.profileName}>{user?.nombre || 'Usuario'}</Text>
-          {/* Email del usuario en blanco semitransparente */}
-          <Text style={styles.profileEmail}>{user?.email || '-'}</Text>
-          {/* Badge (pastilla) con ícono + etiqueta del rol */}
-          <View style={styles.roleBadge}>
-            <Ionicons name={rolIcon(user?.rol)} size={12} color="#fff" />
-            <Text style={styles.roleBadgeText}>{rolLabel(user?.rol)}</Text>
-          </View>
-        </View>
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.title}>Mi perfil</Text>
+      <View style={styles.card}>
+        <Text style={styles.label}>Nombre completo</Text>
+        <Text style={styles.value}>{user?.nombre || `${user?.name || ''} ${user?.apellido || ''}`.trim()}</Text>
+        <Text style={styles.label}>Email</Text>
+        <Text style={styles.value}>{user?.email}</Text>
+        <Text style={styles.label}>Rol</Text>
+        <Text style={styles.value}>{user?.rol || user?.role || 'Cliente'}</Text>
+        {user?.telefono ? (
+          <>
+            <Text style={styles.label}>Teléfono</Text>
+            <Text style={styles.value}>{user.telefono}</Text>
+          </>
+        ) : null}
+        {user?.direccion ? (
+          <>
+            <Text style={styles.label}>Dirección</Text>
+            <Text style={styles.value}>{user.direccion}</Text>
+          </>
+        ) : null}
       </View>
 
-      {/* ── BANNER DE ÉXITO (tras actualizar perfil) ────────────────────── */}
-      {/* Solo visible si perfilSuccess tiene texto */}
-      {perfilSuccess ? (
-        <View style={[styles.successBanner, { backgroundColor: theme.surfaceSoft, borderColor: theme.success }]}> 
-          <Ionicons name="checkmark-circle" size={16} color={theme.success} />
-          <Text style={[styles.successText, { color: theme.success }]}>{perfilSuccess}</Text>
-        </View>
-      ) : null}
+      <TouchableOpacity onPress={() => {}} style={styles.sectionButton} disabled>
+        <Text style={styles.sectionButtonText}>Edición de perfil no disponible en móvil</Text>
+      </TouchableOpacity>
 
-      {/* ── SECCIÓN: EDITAR PERFIL ──────────────────────────────────────── */}
-      {editMode ? (
-        // ── FORMULARIO DE EDICIÓN ──────────────────────────────────────────
-        <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border, shadowColor: theme.shadow }]}> 
-          {/* Cabecera de la tarjeta con ícono de edición + título */}
-          <View style={styles.cardHeader}>
-            <Ionicons name="create-outline" size={18} color={theme.primary} />
-            <Text style={[styles.cardTitle, { color: theme.text }]}>Editar perfil</Text>
-          </View>
-          {/* Campo de nombre: placeholder muestra el valor actual */}
-          <TextInput
-            placeholder={`Nombre actual: ${user?.nombre || ''}`}
-            value={editNombre}
-            onChangeText={setEditNombre}
-            style={[styles.input, { backgroundColor: theme.surface, borderColor: theme.border, color: theme.text }]}
-          />
-          {/* Campo de email: teclado email, sin mayúsculas automáticas */}
-          <TextInput
-            placeholder={`Email actual: ${user?.email || ''}`}
-            value={editEmail}
-            onChangeText={setEditEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            style={[styles.input, { backgroundColor: theme.surface, borderColor: theme.border, color: theme.text }]}
-          />
-          {/* Campo de contraseña: dejar vacío = no cambiar */}
-          <TextInput
-            placeholder="Nueva contrasena (dejar vacio para no cambiar)"
-            value={editPassword}
-            onChangeText={setEditPassword}
-            secureTextEntry
-            style={[styles.input, { backgroundColor: theme.surface, borderColor: theme.border, color: theme.text }]}
-          />
-          {/* Banner de error si la actualización falla */}
-          {perfilError ? (
-            <View style={[styles.errorBanner, { backgroundColor: theme.surfaceSoft, borderColor: theme.danger }]}> 
-              <Ionicons name="alert-circle" size={15} color={theme.danger} />
-              <Text style={[styles.errorText, { color: theme.danger }]}>{perfilError}</Text>
-            </View>
-          ) : null}
-          {/* Fila de botones: "Guardar" (índigo) y "Cancelar" (outline) */}
-          <View style={styles.editActions}>
-            {/* Botón guardar: muestra spinner mientras guarda */}
-            <Pressable style={[styles.btn, styles.btnPrimary, { flex: 1, backgroundColor: theme.primary }]} onPress={handleGuardarPerfil} disabled={savingPerfil}>
-              {savingPerfil ? <ActivityIndicator color={theme.surface} /> : <Text style={styles.btnTextWhite}>Guardar</Text>}
-            </Pressable>
-            {/* Botón cancelar: cierra el formulario sin guardar */}
-            <Pressable style={[styles.btn, styles.btnOutline, { flex: 1, borderColor: theme.primary, backgroundColor: theme.surface }]}
-              onPress={() => { setEditMode(false); setPerfilError(''); }}>
-              <Text style={[styles.btnTextOutline, { color: theme.primary }]}>Cancelar</Text>
-            </Pressable>
-          </View>
-        </View>
-      ) : (
-        // ── BOTÓN PARA ABRIR EL FORMULARIO DE EDICIÓN ─────────────────────
-        <Pressable style={[styles.btn, styles.btnOutline, { borderColor: theme.primary, backgroundColor: theme.surface }]} onPress={() => { setEditMode(true); setPerfilSuccess(''); }}>
-          <Ionicons name="create-outline" size={17} color={theme.primary} />
-          <Text style={[styles.btnTextOutline, { color: theme.primary }]}>Editar perfil</Text>
-        </Pressable>
-      )}
+      <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+        <Text style={styles.logoutText}>Cerrar sesión</Text>
+      </TouchableOpacity>
 
-      {/* ── BOTÓN: PANEL DE ADMINISTRACIÓN (solo admin y auxiliar) ─────── */}
-      {/* La condición evalúa el rol del usuario antes de renderizar */}
-      {user?.rol === 'administrador' || user?.rol === 'auxiliar' ? (
-        <Pressable style={[styles.btn, { backgroundColor: theme.primary }]} onPress={() => routerPush('/admin/dashboard')}>
-          <Ionicons name="speedometer-outline" size={17} color={theme.surface} />
-          <Text style={styles.btnTextWhite}>Panel de Administración</Text>
-        </Pressable>
-      ) : null}
-
-      {/* ── BOTÓN: MIS PEDIDOS (visible para todos los roles) ───────────── */}
-      <Pressable style={[styles.btn, { backgroundColor: theme.primary }]} onPress={() => routerPush('/mis-pedidos')}>
-        <Ionicons name="receipt-outline" size={17} color={theme.surface} />
-        <Text style={styles.btnTextWhite}>Mis Pedidos</Text>
-      </Pressable>
-
-      {/* ── SECCIÓN: AYUDA Y CONTACTO ───────────────────────────────── */}
-      <Pressable style={[styles.btn, { backgroundColor: theme.primary }]} onPress={() => routerPush('/faq')}>
-        <Ionicons name="help-circle-outline" size={17} color={theme.surface} />
-        <Text style={styles.btnTextWhite}>Preguntas Frecuentes</Text>
-      </Pressable>
-
-      <ThemedView style={{ padding: 12, borderRadius: 10, marginTop: 8, backgroundColor: theme.surface }}>
-        <ThemedText type="defaultSemiBold">Atención al Cliente</ThemedText>
-        <ThemedText style={{ color: theme.icon }}>yesa@gmail.com</ThemedText>
-        <ThemedText style={{ color: theme.icon }}>Tel: 01-800-YESA · WhatsApp: +57 300 123 4567</ThemedText>
-      </ThemedView>
-
-      {/* ── BOTÓN: CERRAR SESIÓN ────────────────────────────────────────── */}
-      <Pressable style={[styles.btn, { backgroundColor: theme.danger }]} onPress={handleLogout}>
-        <Ionicons name="log-out-outline" size={17} color={theme.surface} />
-        <Text style={styles.btnTextWhite}>Cerrar sesión</Text>
-      </Pressable>
+      <TouchableOpacity style={styles.button} onPress={() => {}}>
+        <Text style={styles.buttonText}>Mis pedidos</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.buttonSecondary} onPress={() => {}}>
+        <Text style={styles.buttonSecondaryText}>Abrir panel admin</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ESTILOS
-// ─────────────────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  // ── ESTILOS COMPARTIDOS ──────────────────────────────────────────────────
-  scroll: { flex: 1 },              // ScrollView ocupa toda la pantalla.
-  container: { flex: 1 },           // Contenedor del formulario de login/registro.
-  centered: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 }, // Pantalla de carga centrada.
-
-  // ── FORMULARIO DE LOGIN / REGISTRO ───────────────────────────────────────
-  formCard: { borderRadius: 12, padding: 16, gap: 12, margin: 20 }, // Tarjeta con fondo temático.
-  editSection: { borderRadius: 10, padding: 12, gap: 8, borderWidth: 1, borderColor: '#e0eaf3' }, // Sección de edición (no usada actualmente).
-  editActions: { flexDirection: 'row', gap: 8, marginTop: 4 },      // Fila de botones Guardar/Cancelar.
-  editBtn: { borderRadius: 10, borderWidth: 1, borderColor: '#7d2181', paddingVertical: 10, alignItems: 'center' },
-  editBtnText: { color: '#7d2181', fontWeight: '600' },
-  meta: { color: '#666', fontSize: 13 },                             // Texto secundario pequeño.
-  primaryButton: { borderRadius: 10, paddingVertical: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: '#7d2181' }, // Botón "Entrar" / "Crear cuenta".
-  primaryButtonText: { color: '#fff', fontWeight: '700', fontSize: 16 },
-  secondaryButton: { flex: 1, borderRadius: 10, borderWidth: 1, borderColor: '#d5d5d5', paddingVertical: 12, alignItems: 'center', justifyContent: 'center' },
-  logoutButton: { borderRadius: 10, backgroundColor: '#b93a32', paddingVertical: 12, alignItems: 'center', marginTop: 8 },
-  ordersButton: { borderRadius: 10, backgroundColor: '#7d2181', paddingVertical: 12, alignItems: 'center', marginTop: 8 },
-  adminBtn: { borderRadius: 10, backgroundColor: '#04566f', paddingVertical: 12, alignItems: 'center', marginTop: 8 },
-  adminBtnText: { color: '#fff', fontWeight: '700' },
-  ordersText: { color: '#fff', fontWeight: '700' },
-  logoutText: { color: '#fff', fontWeight: '700' },
-
-  // ── PERFIL (usuario autenticado) ─────────────────────────────────────────
-  // Espacio interno del ScrollView: 16dp de padding, 12dp entre hijos, 32dp al fondo.
-  content: { padding: 16, gap: 12, paddingBottom: 32 },
-  // Encabezado de perfil: fila con avatar + datos. El color de fondo es dinámico (inline).
-  profileHeader: {
-    borderRadius: 16, padding: 20, flexDirection: 'row', alignItems: 'center', gap: 16,
+  container: {
+    flexGrow: 1,
+    padding: 20,
+    backgroundColor: '#f8f5ff',
   },
-  // Círculo blanco de 70×70dp que contiene el ícono del rol.
-  avatarCircle: {
-    width: 70, height: 70, borderRadius: 35,
-    backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center',
+  content: {
+    paddingBottom: 40,
   },
-  profileName: { fontSize: 20, fontWeight: '800', color: '#fff' },                    // Nombre del usuario.
-  profileEmail: { fontSize: 13, color: 'rgba(255,255,255,0.85)', marginTop: 2 },      // Email semitransparente.
-  // Badge del rol: pastilla translúcida blanca con ícono + etiqueta.
-  roleBadge: {
-    flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 6,
-    backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 20,
-    paddingHorizontal: 10, paddingVertical: 3, alignSelf: 'flex-start',
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+    marginBottom: 12,
+    color: '#111827',
   },
-  roleBadgeText: { color: '#fff', fontSize: 11, fontWeight: '600' },
-
-  // Tarjeta blanca con borde para el formulario de edición de perfil.
-  card: {
-    backgroundColor: '#fff', borderRadius: 12,
-    borderWidth: 1, borderColor: '#e8e8e8', padding: 14, gap: 10,
+  subtitle: {
+    fontSize: 16,
+    color: '#6b7280',
+    marginBottom: 20,
   },
-  cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }, // Fila: ícono + título de la tarjeta.
-  cardTitle: { fontWeight: '700', fontSize: 15, color: '#222' },
-
-  // Botón base: fila centrada con ícono + texto y bordes redondeados.
-  btn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    borderRadius: 12, paddingVertical: 14,
-  },
-  btnPrimary: { backgroundColor: '#6366f1' },                          // Relleno índigo.
-  btnOutline: { borderWidth: 2, borderColor: '#6366f1', backgroundColor: '#fff' }, // Solo borde índigo.
-  btnTextWhite: { color: '#fff', fontWeight: '700', fontSize: 15 },    // Texto blanco para botones rellenos.
-  btnTextOutline: { color: '#6366f1', fontWeight: '700', fontSize: 15 }, // Texto índigo para botones outline.
-
-  // Banner verde de éxito (perfil actualizado).
-  successBanner: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: '#ecfdf5', borderRadius: 10, padding: 12, borderWidth: 1, borderColor: '#a7f3d0',
-  },
-  successText: { color: '#065f46', fontSize: 13, fontWeight: '500' },
-  // Banner rojo de error (falló la actualización del perfil).
-  errorBanner: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: '#fef2f2', borderRadius: 10, padding: 10, borderWidth: 1, borderColor: '#fca5a5',
-  },
-  errorText: { color: '#b91c1c', fontSize: 13 },
-
-  // Campo de texto genérico: borde gris, fondo blanco, bordes redondeados.
   input: {
-    borderWidth: 1, borderColor: '#d5d5d5', borderRadius: 10,
-    paddingHorizontal: 12, paddingVertical: 10, backgroundColor: '#fff',
+    backgroundColor: '#fff',
+    borderColor: '#d1d5db',
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    marginBottom: 12,
   },
-  error: { color: '#d64545' },   // Color rojo para mensajes de error inline (ThemedText).
-  success: { color: '#218f4c' }, // Color verde para mensajes de éxito inline (ThemedText).
+  button: {
+    backgroundColor: '#7d2181',
+    paddingVertical: 16,
+    borderRadius: 14,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  buttonSecondary: {
+    borderWidth: 1,
+    borderColor: '#7d2181',
+    paddingVertical: 16,
+    borderRadius: 14,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  buttonSecondaryText: {
+    color: '#7d2181',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  footerRow: {
+    marginTop: 20,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  footerText: {
+    color: '#6b7280',
+  },
+  footerLink: {
+    color: '#7d2181',
+    fontWeight: '700',
+  },
+  noticeText: {
+    marginBottom: 12,
+    color: '#065f46',
+  },
+  errorText: {
+    marginBottom: 12,
+    color: '#b91c1c',
+  },
+  message: {
+    fontSize: 16,
+    color: '#6b7280',
+    marginBottom: 24,
+  },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 18,
+    padding: 20,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 2,
+  },
+  label: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginTop: 14,
+  },
+  value: {
+    fontSize: 18,
+    color: '#111827',
+    marginTop: 6,
+  },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  logoutButton: {
+    marginTop: 24,
+    borderRadius: 14,
+    paddingVertical: 16,
+    alignItems: 'center',
+    backgroundColor: '#fee2e2',
+  },
+  logoutText: {
+    color: '#b91c1c',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  sectionButton: {
+    marginBottom: 16,
+    paddingVertical: 14,
+    borderRadius: 14,
+    backgroundColor: '#eef2ff',
+    alignItems: 'center',
+  },
+  sectionButtonText: {
+    color: '#2563eb',
+    fontWeight: '700',
+  },
 });
