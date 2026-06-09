@@ -32,7 +32,7 @@ export function AuthProvider({ children }) {
             setUser(session?.user || null);
         }finally {
             //siemnpr marca la carga como terminada, aunque falle la lectura
-            setIsLoading(false);
+            setLoading(false);
         }
     }, []);
 
