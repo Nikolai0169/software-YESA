@@ -8,6 +8,8 @@ import {
   ActivityIndicator,
   Alert,
   StyleSheet,
+  Modal,
+  FlatList,
 } from 'react-native';
 import { useLocalSearchParams, useRouter, Link } from 'expo-router';
 import useAdminRole from '../../src/hooks/useAdminRole';
@@ -26,7 +28,9 @@ export default function AdminProductoForm() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [categorias, setCategorias] = useState<{ id: number | string; nombre?: string }[]>([]);
-  const [subcategorias, setSubcategorias] = useState<{ id: number | string; nombre?: string }[]>([]);
+  const [subcategorias, setSubcategorias] = useState<{ id: number | string; nombre?: string; categoriaId?: number | string }[]>([]);
+  const [showCategoriaModal, setShowCategoriaModal] = useState(false);
+  const [showSubcategoriaModal, setShowSubcategoriaModal] = useState(false);
   const [form, setForm] = useState<{
     nombre: string;
     descripcion: string;
@@ -128,6 +132,25 @@ export default function AdminProductoForm() {
     }
   }
 
+  // Obtener nombre de categoría seleccionada
+  const getCategoriaNombre = () => {
+    if (!form.categoriaId) return 'Selecciona una categoría';
+    const cat = categorias.find((c) => String(c.id) === form.categoriaId);
+    return cat?.nombre || `Categoría ${form.categoriaId}`;
+  };
+
+  // Obtener nombre de subcategoría seleccionada
+  const getSubcategoriaNombre = () => {
+    if (!form.subcategoriaId) return 'Selecciona una subcategoría';
+    const sub = subcategorias.find((s) => String(s.id) === form.subcategoriaId);
+    return sub?.nombre || `Subcategoría ${form.subcategoriaId}`;
+  };
+
+  // Obtener subcategorías filtradas por categoría seleccionada
+  const subcategoriasFiltradas = form.categoriaId
+    ? subcategorias.filter((s) => String(s.categoriaId) === form.categoriaId)
+    : [];
+
   if (isChecking || loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -176,22 +199,118 @@ export default function AdminProductoForm() {
         placeholderTextColor="#9ca3af"
         keyboardType="numeric"
       />
-      <TextInput
-        style={styles.input}
-        placeholder="ID de categoría"
-        value={form.categoriaId}
-        onChangeText={(value) => setForm((prev) => ({ ...prev, categoriaId: value }))}
-        placeholderTextColor="#9ca3af"
-        keyboardType="numeric"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="ID de subcategoría"
-        value={form.subcategoriaId}
-        onChangeText={(value) => setForm((prev) => ({ ...prev, subcategoriaId: value }))}
-        placeholderTextColor="#9ca3af"
-        keyboardType="numeric"
-      />
+
+      {/* Selector de Categoría */}
+      <TouchableOpacity
+        style={styles.pickerButton}
+        onPress={() => setShowCategoriaModal(true)}
+      >
+        <Text style={styles.pickerButtonText}>{getCategoriaNombre()}</Text>
+        <Text style={styles.pickerArrow}>▼</Text>
+      </TouchableOpacity>
+
+      {/* Selector de Subcategoría */}
+      <TouchableOpacity
+        style={[styles.pickerButton, !form.categoriaId && styles.pickerButtonDisabled]}
+        onPress={() => form.categoriaId && setShowSubcategoriaModal(true)}
+        disabled={!form.categoriaId}
+      >
+        <Text style={[styles.pickerButtonText, !form.categoriaId && styles.pickerButtonTextDisabled]}>
+          {getSubcategoriaNombre()}
+        </Text>
+        <Text style={[styles.pickerArrow, !form.categoriaId && styles.pickerArrowDisabled]}>▼</Text>
+      </TouchableOpacity>
+
+      {!form.categoriaId && (
+        <Text style={styles.helperText}>Selecciona una categoría primero</Text>
+      )}
+
+      {/* Modal de Categorías */}
+      <Modal visible={showCategoriaModal} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Selecciona una categoría</Text>
+              <TouchableOpacity onPress={() => setShowCategoriaModal(false)}>
+                <Text style={styles.modalCloseBtn}>✕</Text>
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              data={categorias}
+              keyExtractor={(item) => String(item.id)}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[
+                    styles.modalItem,
+                    String(item.id) === form.categoriaId && styles.modalItemSelected,
+                  ]}
+                  onPress={() => {
+                    setForm((prev) => ({ ...prev, categoriaId: String(item.id), subcategoriaId: '' }));
+                    setShowCategoriaModal(false);
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.modalItemText,
+                      String(item.id) === form.categoriaId && styles.modalItemTextSelected,
+                    ]}
+                  >
+                    {item.nombre || `Categoría ${item.id}`}
+                  </Text>
+                  {String(item.id) === form.categoriaId && <Text style={styles.checkMark}>✓</Text>}
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal de Subcategorías */}
+      <Modal visible={showSubcategoriaModal} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Selecciona una subcategoría</Text>
+              <TouchableOpacity onPress={() => setShowSubcategoriaModal(false)}>
+                <Text style={styles.modalCloseBtn}>✕</Text>
+              </TouchableOpacity>
+            </View>
+            {subcategoriasFiltradas.length > 0 ? (
+              <FlatList
+                data={subcategoriasFiltradas}
+                keyExtractor={(item) => String(item.id)}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={[
+                      styles.modalItem,
+                      String(item.id) === form.subcategoriaId && styles.modalItemSelected,
+                    ]}
+                    onPress={() => {
+                      setForm((prev) => ({ ...prev, subcategoriaId: String(item.id) }));
+                      setShowSubcategoriaModal(false);
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.modalItemText,
+                        String(item.id) === form.subcategoriaId && styles.modalItemTextSelected,
+                      ]}
+                    >
+                      {item.nombre || `Subcategoría ${item.id}`}
+                    </Text>
+                    {String(item.id) === form.subcategoriaId && (
+                      <Text style={styles.checkMark}>✓</Text>
+                    )}
+                  </TouchableOpacity>
+                )}
+              />
+            ) : (
+              <Text style={styles.emptyText}>No hay subcategorías para esta categoría</Text>
+            )}
+          </View>
+        </View>
+      </Modal>
+
       <View style={styles.checkboxRow}>
         <TouchableOpacity
           style={styles.checkbox}
@@ -247,6 +366,104 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e5e7eb',
     color: '#111827',
+  },
+  pickerButton: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  pickerButtonDisabled: {
+    backgroundColor: '#f3f4f6',
+    borderColor: '#d1d5db',
+  },
+  pickerButtonText: {
+    color: '#111827',
+    fontSize: 16,
+    flex: 1,
+  },
+  pickerButtonTextDisabled: {
+    color: '#9ca3af',
+  },
+  pickerArrow: {
+    color: '#7d2181',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  pickerArrowDisabled: {
+    color: '#d1d5db',
+  },
+  helperText: {
+    color: '#ef4444',
+    fontSize: 12,
+    marginTop: -8,
+    marginBottom: 12,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '80%',
+    paddingTop: 16,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1f2937',
+  },
+  modalCloseBtn: {
+    fontSize: 24,
+    color: '#6b7280',
+  },
+  modalItem: {
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  modalItemSelected: {
+    backgroundColor: '#f3f4f6',
+  },
+  modalItemText: {
+    fontSize: 16,
+    color: '#111827',
+    flex: 1,
+  },
+  modalItemTextSelected: {
+    color: '#7d2181',
+    fontWeight: '700',
+  },
+  checkMark: {
+    fontSize: 18,
+    color: '#7d2181',
+    fontWeight: 'bold',
+  },
+  emptyText: {
+    textAlign: 'center',
+    color: '#6b7280',
+    paddingVertical: 20,
   },
   checkboxRow: {
     marginVertical: 8,
