@@ -87,7 +87,7 @@ const createOverlayTexture = (
   image.src = textureUrl;
 };
 
-const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBase = "#ffffff", colorExterior = "#ffffff", colorAsa = "#ffffff", texture, overlayText = "", overlayTextFontFamily = "sans-serif", overlayTextFontSize = 24, overlayTextColor = "#ffffff", textInterior = "", textExterior = "", zoom = 1, autoRotate = true }) => {
+const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBase = "#ffffff", colorExterior = "#ffffff", colorAsa = "#ffffff", texture, overlayText = "", overlayTextFontFamily = "sans-serif", overlayTextFontSize = 24, overlayTextColor = "#ffffff", textInterior = "", textExterior = "", zoom = 1, autoRotate = true, textureOffset = { x: 0, y: 0 }, textureScale = 1 }) => {
   const mountRef = useRef(null);
   const sceneRef = useRef(null);
   const cameraRef = useRef(null);
@@ -95,6 +95,160 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
   const autoRotateRef = useRef(autoRotate);
   const modelGroupRef = useRef(null);
   const isRingRef = useRef(false);
+  const exteriorMaterialRef = useRef(null);
+  const interiorMaterialRef = useRef(null);
+  const baseMaterialRef = useRef(null);
+  const asaMaterialRef = useRef(null);
+  const textureRef = useRef(null);
+  const ringSpritesRef = useRef([]);
+  const resizeObserverRef = useRef(null);
+
+  const disposeRingSprites = () => {
+    ringSpritesRef.current.forEach((sprite) => {
+      if (sprite.material.map) sprite.material.map.dispose();
+      sprite.material.dispose();
+      if (sprite.parent) sprite.parent.remove(sprite);
+    });
+    ringSpritesRef.current = [];
+  };
+
+  const addTextSprite = (text, zOffset, fontFamily = "sans-serif", fontSize = 24, color = "#ffffff") => {
+    if (!text || !modelGroupRef.current) return;
+    const textTexture = createTextSprite(text, fontFamily, fontSize, color);
+    const spriteMaterial = new THREE.SpriteMaterial({ map: textTexture, transparent: true });
+    const sprite = new THREE.Sprite(spriteMaterial);
+    sprite.scale.set(2.4, 0.75, 1);
+    sprite.position.set(0, 0, zOffset);
+    modelGroupRef.current.add(sprite);
+    ringSpritesRef.current.push(sprite);
+  };
+
+  const updateRingTextSprites = () => {
+    if (!isRingRef.current) return;
+    disposeRingSprites();
+    addTextSprite(textInterior, -0.75, overlayTextFontFamily, overlayTextFontSize, overlayTextColor);
+    addTextSprite(textExterior, 0.75, overlayTextFontFamily, overlayTextFontSize, overlayTextColor);
+    addTextSprite(overlayText, 1.1, overlayTextFontFamily, overlayTextFontSize, overlayTextColor);
+  };
+
+  const createTextureCanvas = (
+    textureUrl,
+    overlayText,
+    fontFamily,
+    fontSize,
+    color,
+    offset,
+    scale,
+    callback,
+    backgroundColor = null
+  ) => {
+    const size = 2048;
+    const canvas = document.createElement("canvas");
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, size, size);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+
+    if (backgroundColor) {
+      ctx.fillStyle = backgroundColor;
+      ctx.fillRect(0, 0, size, size);
+    } else {
+      ctx.fillStyle = "rgba(255, 255, 255, 0)";
+      ctx.fillRect(0, 0, size, size);
+    }
+
+    const drawCanvas = (image) => {
+      if (image) {
+        const scaledSize = size * scale;
+        const centerOffset = (size - scaledSize) / 2;
+        ctx.drawImage(
+          image,
+          centerOffset + offset.x,
+          centerOffset + offset.y,
+          scaledSize,
+          scaledSize
+        );
+      }
+
+      if (overlayText) {
+        ctx.fillStyle = color;
+        ctx.font = `bold ${fontSize}px ${fontFamily}`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        const lines = overlayText.split("\n");
+        const lineHeight = fontSize + 10;
+        lines.forEach((line, index) => {
+          ctx.fillText(
+            line,
+            size / 2,
+            size / 2 + (index - (lines.length - 1) / 2) * lineHeight
+          );
+        });
+      }
+
+      const canvasTexture = new THREE.CanvasTexture(canvas);
+      canvasTexture.minFilter = THREE.LinearFilter;
+      canvasTexture.wrapS = THREE.ClampToEdgeWrapping;
+      canvasTexture.wrapT = THREE.ClampToEdgeWrapping;
+      canvasTexture.needsUpdate = true;
+      callback(canvasTexture);
+    };
+
+    if (!textureUrl) {
+      drawCanvas(null);
+      return;
+    }
+
+    const image = new Image();
+    image.crossOrigin = "anonymous";
+    image.onload = () => drawCanvas(image);
+    image.onerror = () => drawCanvas(null);
+    image.src = textureUrl;
+  };
+
+  const updateExteriorTexture = () => {
+    if (!exteriorMaterialRef.current) return;
+
+    const setMaterialMap = (canvasTexture) => {
+      if (!exteriorMaterialRef.current) {
+        if (canvasTexture) canvasTexture.dispose();
+        return;
+      }
+
+      if (textureRef.current && textureRef.current !== canvasTexture) {
+        textureRef.current.dispose();
+      }
+      textureRef.current = canvasTexture;
+      exteriorMaterialRef.current.map = canvasTexture;
+      exteriorMaterialRef.current.transparent = false;
+      exteriorMaterialRef.current.alphaTest = 0;
+      exteriorMaterialRef.current.needsUpdate = true;
+    };
+
+    if (texture) {
+      createTextureCanvas(
+        texture,
+        overlayText,
+        overlayTextFontFamily,
+        overlayTextFontSize,
+        overlayTextColor,
+        textureOffset,
+        textureScale,
+        setMaterialMap,
+        colorExterior || "#ffffff"
+      );
+      return;
+    }
+
+    if (textureRef.current) {
+      textureRef.current.dispose();
+      textureRef.current = null;
+    }
+    exteriorMaterialRef.current.map = null;
+    exteriorMaterialRef.current.needsUpdate = true;
+  };
 
   useEffect(() => {
     // Escena
@@ -141,6 +295,7 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
     document.addEventListener("MSFullscreenChange", resizeScene);
 
     const resizeObserver = new ResizeObserver(resizeScene);
+    resizeObserverRef.current = resizeObserver;
     resizeObserver.observe(mountRef.current);
 
     resizeScene();
@@ -154,18 +309,6 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
     scene.add(directionalLight);
 
     const modelGroup = new THREE.Group();
-    const sprites = [];
-    const addTextSprite = (text, zOffset, fontFamily = "sans-serif", fontSize = 24, color = "#ffffff") => {
-      if (!text) return;
-      const textTexture = createTextSprite(text, fontFamily, fontSize, color);
-      const spriteMaterial = new THREE.SpriteMaterial({ map: textTexture, transparent: true });
-      const sprite = new THREE.Sprite(spriteMaterial);
-      sprite.scale.set(2.4, 0.75, 1);
-      sprite.position.set(0, 0, zOffset);
-      modelGroup.add(sprite);
-      sprites.push(sprite);
-    };
-
     modelGroupRef.current = modelGroup;
     scene.add(modelGroup);
 
@@ -179,37 +322,29 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
         emissiveIntensity: 0.05,
       });
 
-      // Single centered ring (one circunferencia)
-      const radius = 0.7; // radio principal
-      const tube = 0.11; // grosor del anillo
+      const radius = 0.7;
+      const tube = 0.11;
       const segmentsRadial = 32;
       const segmentsTubular = 200;
-      const ring = new THREE.Mesh(new THREE.TorusGeometry(radius, tube, segmentsRadial, segmentsTubular), ringMaterial);
+      const ring = new THREE.Mesh(
+        new THREE.TorusGeometry(radius, tube, segmentsRadial, segmentsTubular),
+        ringMaterial
+      );
       ring.rotation.x = Math.PI / 2;
       ring.position.set(0, 0, 0);
       modelGroup.add(ring);
 
-      addTextSprite(textInterior, -0.75, overlayTextFontFamily, overlayTextFontSize, overlayTextColor);
-      addTextSprite(textExterior, 0.75, overlayTextFontFamily, overlayTextFontSize, overlayTextColor);
-      addTextSprite(overlayText, 1.1, overlayTextFontFamily, overlayTextFontSize, overlayTextColor);
+      updateRingTextSprites();
 
-      const disposeSprites = () => {
-        sprites.forEach((sprite) => {
-          if (sprite.material.map) sprite.material.map.dispose();
-          sprite.material.dispose();
-          modelGroup.remove(sprite);
-        });
-      };
-
-      modelGroup.userData.disposeSprites = disposeSprites;
+      modelGroup.userData.disposeSprites = disposeRingSprites;
     } else {
-      // Geometría de ejemplo (pocillo con cilindro abierto, fondo y asa)
       const interiorMaterial = new THREE.MeshStandardMaterial({
         color: new THREE.Color(colorInterior || "#ffffff"),
         roughness: 0.3,
         metalness: 0.1,
         side: THREE.BackSide,
       });
+      interiorMaterialRef.current = interiorMaterial;
 
       const exteriorMaterial = new THREE.MeshStandardMaterial({
         color: new THREE.Color(colorExterior || "#ffffff"),
@@ -217,12 +352,14 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
         metalness: 0.1,
         side: THREE.FrontSide,
       });
+      exteriorMaterialRef.current = exteriorMaterial;
 
       const baseMaterial = new THREE.MeshStandardMaterial({
         color: new THREE.Color(colorBase || "#ffffff"),
         roughness: 0.3,
         metalness: 0.1,
       });
+      baseMaterialRef.current = baseMaterial;
 
       const asaMaterial = new THREE.MeshStandardMaterial({
         color: new THREE.Color(colorAsa || "#ffffff"),
@@ -230,45 +367,7 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
         metalness: 0.1,
         side: THREE.DoubleSide,
       });
-
-      const applyExteriorTexture = () => {
-        if (overlayText) {
-          createOverlayTexture(
-            texture,
-            overlayText,
-            overlayTextFontFamily,
-            overlayTextFontSize,
-            overlayTextColor,
-            (canvasTexture) => {
-              exteriorMaterial.map = canvasTexture;
-              exteriorMaterial.transparent = false;
-              exteriorMaterial.alphaTest = 0;
-              exteriorMaterial.needsUpdate = true;
-            },
-            colorExterior || "#ffffff"
-          );
-          return;
-        }
-
-        if (texture) {
-          const loader = new THREE.TextureLoader();
-          loader.load(
-            texture,
-            (loadedTexture) => {
-              loadedTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-              loadedTexture.needsUpdate = true;
-              exteriorMaterial.map = loadedTexture;
-              exteriorMaterial.needsUpdate = true;
-            },
-            undefined,
-            (err) => {
-              console.error('Error cargando textura 3D:', err);
-            }
-          );
-        }
-      };
-
-      applyExteriorTexture();
+      asaMaterialRef.current = asaMaterial;
 
       const cupGroup = new THREE.Group();
 
@@ -314,14 +413,7 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
 
       modelGroup.add(cupGroup);
 
-      const disposeSprites = () => {
-        sprites.forEach((sprite) => {
-          if (sprite.material.map) sprite.material.map.dispose();
-          sprite.material.dispose();
-          modelGroup.remove(sprite);
-        });
-      };
-      modelGroup.userData.disposeSprites = disposeSprites;
+      modelGroup.userData.disposeSprites = disposeRingSprites;
     }
 
     const isDraggingRef = { current: false };
@@ -355,7 +447,7 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
     renderer.domElement.addEventListener("pointerleave", onPointerUp);
 
     const animate = () => {
-      requestAnimationFrame(animate);
+      rendererRef.current && requestAnimationFrame(animate);
       if (!isDraggingRef.current && autoRotateRef.current) {
         modelGroup.rotation.y += 0.004;
       }
@@ -369,11 +461,15 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
       document.removeEventListener("webkitfullscreenchange", resizeScene);
       document.removeEventListener("mozfullscreenchange", resizeScene);
       document.removeEventListener("MSFullscreenChange", resizeScene);
-      resizeObserver.disconnect();
+      resizeObserverRef.current?.disconnect();
       renderer.domElement.removeEventListener("pointerdown", onPointerDown);
       renderer.domElement.removeEventListener("pointermove", onPointerMove);
       renderer.domElement.removeEventListener("pointerup", onPointerUp);
       renderer.domElement.removeEventListener("pointerleave", onPointerUp);
+      if (textureRef.current) {
+        textureRef.current.dispose();
+        textureRef.current = null;
+      }
       if (modelGroup.userData.disposeSprites) {
         modelGroup.userData.disposeSprites();
       }
@@ -381,7 +477,34 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
         mountRef.current.removeChild(renderer.domElement);
       }
     };
-  }, [modelo, colorInterior, colorBase, colorExterior, colorAsa, texture, textInterior, textExterior]);
+  }, [modelo]);
+
+  useEffect(() => {
+    if (interiorMaterialRef.current) {
+      interiorMaterialRef.current.color = new THREE.Color(colorInterior || "#ffffff");
+      interiorMaterialRef.current.needsUpdate = true;
+    }
+    if (baseMaterialRef.current) {
+      baseMaterialRef.current.color = new THREE.Color(colorBase || "#ffffff");
+      baseMaterialRef.current.needsUpdate = true;
+    }
+    if (asaMaterialRef.current) {
+      asaMaterialRef.current.color = new THREE.Color(colorAsa || "#ffffff");
+      asaMaterialRef.current.needsUpdate = true;
+    }
+    if (exteriorMaterialRef.current) {
+      exteriorMaterialRef.current.color = new THREE.Color(colorExterior || "#ffffff");
+      exteriorMaterialRef.current.needsUpdate = true;
+    }
+  }, [colorInterior, colorBase, colorExterior, colorAsa]);
+
+  useEffect(() => {
+    if (isRingRef.current) {
+      updateRingTextSprites();
+    } else {
+      updateExteriorTexture();
+    }
+  }, [texture, overlayText, overlayTextFontFamily, overlayTextFontSize, overlayTextColor, colorExterior, textureOffset, textureScale]);
 
   useEffect(() => {
     autoRotateRef.current = autoRotate;
@@ -391,7 +514,6 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
   useEffect(() => {
     if (!cameraRef.current) return;
     
-    // Actualizar zoom de la cámara
     const baseZ = isRingRef.current ? 4 : 5;
     cameraRef.current.position.z = baseZ / zoom;
     cameraRef.current.updateProjectionMatrix();

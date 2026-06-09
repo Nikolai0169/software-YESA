@@ -37,6 +37,9 @@ const PersonalizacionPage = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const previewRef = useRef(null);
   const fileInputRef = useRef(null);
+  const canvasRef = useRef(null);
+  const blobUrlRef = useRef(null);
+  const CANVAS_SIZE = 2048;
 
   const modelOptions = [];
   // const modelOptions = [
@@ -146,6 +149,16 @@ const PersonalizacionPage = () => {
   }, []);
 
   useEffect(() => {
+    // Inicializar canvas solo una vez
+    if (!canvasRef.current) {
+      canvasRef.current = document.createElement('canvas');
+      canvasRef.current.width = CANVAS_SIZE;
+      canvasRef.current.height = CANVAS_SIZE;
+    }
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const size = CANVAS_SIZE;
     const currentTextureUrl = texturesByModel[modelo3D] || null;
     const currentOverlayText = overlayTextByModel[modelo3D] || '';
     const currentSettings = overlayTextSettingsByModel[modelo3D] || {
@@ -154,63 +167,77 @@ const PersonalizacionPage = () => {
       color: '#000000',
     };
 
-    if (!currentOverlayText) {
-      setComposedTextureUrl(currentTextureUrl);
-      return;
-    }
+    const updateTexture = () => {
+      // Limpiar blob anterior
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+        blobUrlRef.current = null;
+      }
 
-    const canvas = document.createElement('canvas');
-    const size = 1024;
-    canvas.width = size;
-    canvas.height = size;
-    const ctx = canvas.getContext('2d');
-
-    const drawOverlayText = () => {
-      ctx.fillStyle = currentSettings.color;
-      ctx.font = `bold ${currentSettings.fontSize}px ${currentSettings.fontFamily}`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      const lines = currentOverlayText.split('\n');
-      const lineHeight = currentSettings.fontSize + 10;
-      lines.forEach((line, index) => {
-        ctx.fillText(
-          line,
-          size / 2,
-          size / 2 + (index - (lines.length - 1) / 2) * lineHeight
-        );
-      });
-      setComposedTextureUrl(canvas.toDataURL('image/png'));
-    };
-
-    if (currentTextureUrl) {
-      const image = new Image();
-      image.crossOrigin = 'anonymous';
-      image.onload = () => {
-        ctx.clearRect(0, 0, size, size);
-        const scaledSize = size * textureScale;
-        const centerOffset = (size - scaledSize) / 2;
-        ctx.drawImage(
-          image,
-          centerOffset + textureOffset.x,
-          centerOffset + textureOffset.y,
-          scaledSize,
-          scaledSize
-        );
-        drawOverlayText();
-      };
-      image.onerror = () => {
-        ctx.clearRect(0, 0, size, size);
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, size, size);
-        drawOverlayText();
-      };
-      image.src = currentTextureUrl;
-    } else {
-      ctx.clearRect(0, 0, size, size);
+      // Rellenar canvas con blanco (fondo sólido sin transparencia)
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, size, size);
-      drawOverlayText();
-    }
+
+      // Dibujar la imagen si existe
+      if (currentTextureUrl) {
+        const image = new Image();
+        image.crossOrigin = 'anonymous';
+        image.onload = () => {
+          const scaledSize = size * textureScale;
+          const centerOffset = (size - scaledSize) / 2;
+          ctx.drawImage(
+            image,
+            centerOffset + textureOffset.x,
+            centerOffset + textureOffset.y,
+            scaledSize,
+            scaledSize
+          );
+          drawOverlayAndUpdate();
+        };
+        image.onerror = () => {
+          drawOverlayAndUpdate();
+        };
+        image.src = currentTextureUrl;
+      } else {
+        drawOverlayAndUpdate();
+      }
+    };
+
+    const drawOverlayAndUpdate = () => {
+      // Dibujar texto overlay si existe
+      if (currentOverlayText) {
+        ctx.fillStyle = currentSettings.color;
+        ctx.font = `bold ${currentSettings.fontSize}px ${currentSettings.fontFamily}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const lines = currentOverlayText.split('\n');
+        const lineHeight = currentSettings.fontSize + 10;
+        lines.forEach((line, index) => {
+          ctx.fillText(
+            line,
+            size / 2,
+            size / 2 + (index - (lines.length - 1) / 2) * lineHeight
+          );
+        });
+      }
+
+      // Convertir canvas a blob y crear URL
+      canvas.toBlob((blob) => {
+        const url = URL.createObjectURL(blob);
+        blobUrlRef.current = url;
+        setComposedTextureUrl(url);
+      }, 'image/png');
+    };
+
+    updateTexture();
+
+    // Limpiar al desmontar
+    return () => {
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+        blobUrlRef.current = null;
+      }
+    };
   }, [modelo3D, overlayTextByModel, overlayTextSettingsByModel, texturesByModel, textureOffset, textureScale]);
 
   useEffect(() => {
@@ -245,14 +272,15 @@ const PersonalizacionPage = () => {
   const zoomTimeoutRef = useRef(null);
 
   const moveTexture = (dx, dy) => {
+    const maxOffset = CANVAS_SIZE * 0.6;
     setTextureOffset((prev) => ({
-      x: Math.max(Math.min(prev.x + dx, 300), -300),
-      y: Math.max(Math.min(prev.y + dy, 300), -300),
+      x: Math.max(Math.min(prev.x + dx, maxOffset), -maxOffset),
+      y: Math.max(Math.min(prev.y + dy, maxOffset), -maxOffset),
     }));
   };
 
   const changeTextureScale = (delta) => {
-    setTextureScale((current) => Math.max(Math.min(current + delta, 3), 0.4));
+    setTextureScale((current) => Math.max(Math.min(current + delta, 3), 0.1));
   };
 
   const handleZoomIn = () => setZoomLevel((current) => Math.min(current + 0.1, 2.0));
@@ -403,7 +431,7 @@ const PersonalizacionPage = () => {
           <section className="flex-fill personalizacion-section">
             <div className="d-flex flex-column h-100">
               <div>
-                <h1 className="personalizacion-title">Personaliza tu producto</h1>
+                <h1 className="personalizacion-title">Personaliza tu taza</h1>
                 <p className="text-muted mb-4">
                   Ajusta color, textura y diseños con la misma experiencia visual de las demás pantallas.
                 </p>
@@ -434,7 +462,7 @@ const PersonalizacionPage = () => {
                     colorBase={(colorsByModel[modelo3D] && colorsByModel[modelo3D].base) || '#ffffff'}
                     colorExterior={(colorsByModel[modelo3D] && colorsByModel[modelo3D].exterior) || '#ffffff'}
                     colorAsa={(colorsByModel[modelo3D] && colorsByModel[modelo3D].asa) || '#ffffff'}
-                    texture={composedTextureUrl}
+                    texture={texturesByModel[modelo3D] || null}
                     overlayText={overlayTextByModel[modelo3D] || ''}
                     overlayTextFontFamily={(overlayTextSettingsByModel[modelo3D] && overlayTextSettingsByModel[modelo3D].fontFamily) || 'sans-serif'}
                     overlayTextFontSize={(overlayTextSettingsByModel[modelo3D] && overlayTextSettingsByModel[modelo3D].fontSize) || 24}
@@ -443,27 +471,9 @@ const PersonalizacionPage = () => {
                     textExterior={(textsByModel[modelo3D] && textsByModel[modelo3D].exterior) || ''}
                     zoom={zoomLevel}
                     autoRotate={isRotating}
+                    textureOffset={textureOffset}
+                    textureScale={textureScale}
                   />
-                  <div className="personalizacion-image-scale-widget position-absolute top-50 start-0 translate-middle-y ms-3">
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-yesa-secondary btn-icon"
-                      onClick={() => changeTextureScale(0.1)}
-                      disabled={!texturesByModel[modelo3D]}
-                      title="Aumentar tamaño"
-                    >
-                      <i className="bi bi-plus" />
-                    </button>
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-yesa-secondary btn-icon"
-                      onClick={() => changeTextureScale(-0.1)}
-                      disabled={!texturesByModel[modelo3D]}
-                      title="Disminuir tamaño"
-                    >
-                      <i className="bi bi-dash" />
-                    </button>
-                  </div>
                   <div className="personalizacion-preview-overlay d-flex align-items-center gap-2">
                     <button
                       type="button"
@@ -503,49 +513,73 @@ const PersonalizacionPage = () => {
                     </button>
                   </div>
                   <div className="personalizacion-image-position-widget position-absolute start-0 bottom-0 m-3">
-                    <div className="d-flex align-items-center gap-2 mb-2">
-                      <i className="bi bi-image fs-5" />
-                      <span className="small fw-semibold">Ajustar</span>
-                    </div>
-                    <div className="image-position-grid">
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-yesa-secondary btn-icon"
-                        onClick={() => moveTexture(0, -64)}
-                        disabled={!texturesByModel[modelo3D]}
-                        title="Mover arriba"
-                      >
-                        <i className="bi bi-arrow-up" />
-                      </button>
-                      <div className="d-flex justify-content-between gap-1">
+                    <div className="d-flex align-items-center justify-content-between gap-3">
+                      <div>
+                        <div className="d-flex align-items-center gap-2 mb-2">
+                          <i className="bi bi-image fs-5" />
+                          <span className="small fw-semibold">Ajustar</span>
+                        </div>
+                        <div className="image-position-grid">
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-yesa-secondary btn-icon"
+                            onClick={() => moveTexture(0, -64)}
+                            disabled={!texturesByModel[modelo3D]}
+                            title="Mover arriba"
+                          >
+                            <i className="bi bi-arrow-up" />
+                          </button>
+                          <div className="d-flex justify-content-center gap-1">
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-yesa-secondary btn-icon"
+                              onClick={() => moveTexture(-64, 0)}
+                              disabled={!texturesByModel[modelo3D]}
+                              title="Mover izquierda"
+                            >
+                              <i className="bi bi-arrow-left" />
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-yesa-secondary btn-icon"
+                              onClick={() => moveTexture(0, 64)}
+                              disabled={!texturesByModel[modelo3D]}
+                              title="Mover abajo"
+                            >
+                              <i className="bi bi-arrow-down" />
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-yesa-secondary btn-icon"
+                              onClick={() => moveTexture(64, 0)}
+                              disabled={!texturesByModel[modelo3D]}
+                              title="Mover derecha"
+                            >
+                              <i className="bi bi-arrow-right" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="personalizacion-image-scale-widget-inline">
                         <button
                           type="button"
                           className="btn btn-sm btn-yesa-secondary btn-icon"
-                          onClick={() => moveTexture(-64, 0)}
+                          onClick={() => changeTextureScale(0.1)}
                           disabled={!texturesByModel[modelo3D]}
-                          title="Mover izquierda"
+                          title="Aumentar tamaño"
                         >
-                          <i className="bi bi-arrow-left" />
+                          <i className="bi bi-plus" />
                         </button>
                         <button
                           type="button"
                           className="btn btn-sm btn-yesa-secondary btn-icon"
-                          onClick={() => moveTexture(64, 0)}
+                          onClick={() => changeTextureScale(-0.1)}
                           disabled={!texturesByModel[modelo3D]}
-                          title="Mover derecha"
+                          title="Disminuir tamaño"
                         >
-                          <i className="bi bi-arrow-right" />
+                          <i className="bi bi-dash" />
                         </button>
                       </div>
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-yesa-secondary btn-icon"
-                        onClick={() => moveTexture(0, 64)}
-                        disabled={!texturesByModel[modelo3D]}
-                        title="Mover abajo"
-                      >
-                        <i className="bi bi-arrow-down" />
-                      </button>
                     </div>
                   </div>
                 </div>
