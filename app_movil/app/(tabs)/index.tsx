@@ -58,7 +58,10 @@ export default function Index() {
       setProductos(Array.isArray(listaProductos) ? listaProductos : []);
       setCategorias(Array.isArray(listaCategorias) ? listaCategorias : []);
     } catch (err) {
-      setError('No se pudo cargar el catálogo.');
+      // Loguear error detallado para diagnóstico
+      console.error('loadCatalogo error', err);
+      const backendMsg = err?.responseData?.message || err?.message || 'Error desconocido';
+      setError(`No se pudo cargar el catálogo: ${backendMsg}`);
       setProductos([]);
       setCategorias([]);
     } finally {
