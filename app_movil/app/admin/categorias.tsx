@@ -13,12 +13,16 @@ import {
   createCategoria,
   getCategorias,
   toggleCategoria,
+  updateCategoria,
 } from '../../src/services/adminService';
+import useAdminRole from '../../src/hooks/useAdminRole';
 
 export default function CategoriasAdmin() {
+  const { isChecking, isAuthorized } = useAdminRole();
   const [categorias, setCategorias] = useState<{ id: number | string; nombre?: string; titulo?: string; activo?: boolean }[]>([]);
   const [loading, setLoading] = useState(true);
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [editingCategoria, setEditingCategoria] = useState<{ id: number | string; nombre: string } | null>(null);
 
   useEffect(() => {
     loadCategorias();
@@ -55,6 +59,31 @@ export default function CategoriasAdmin() {
     }
   }
 
+  async function handleSaveCategoria() {
+    if (!editingCategoria?.nombre.trim()) {
+      Alert.alert('Validación', 'Debes escribir el nombre de la categoría.');
+      return;
+    }
+
+    try {
+      await updateCategoria(editingCategoria.id, { nombre: editingCategoria.nombre.trim() });
+      setEditingCategoria(null);
+      loadCategorias();
+    } catch (error: unknown) {
+      const err = error as Error;
+      console.error('Error actualizando categoría:', err.message || error);
+      Alert.alert('Error', 'No se pudo actualizar la categoría.');
+    }
+  }
+
+  function handleEditCategoria(categoria: { id: number | string; nombre?: string; titulo?: string }) {
+    setEditingCategoria({ id: categoria.id, nombre: categoria.nombre || categoria.titulo || '' });
+  }
+
+  function cancelEditCategoria() {
+    setEditingCategoria(null);
+  }
+
   function confirmToggle(categoria: { id: number | string; nombre?: string; titulo?: string; activo?: boolean }) {
     const active = categoria.activo !== false;
     const action = active ? 'desactivar' : 'activar';
@@ -89,20 +118,60 @@ export default function CategoriasAdmin() {
           <Text style={styles.itemTitle}>{title}</Text>
           <Text style={styles.itemSubtitle}>{active ? 'Activo' : 'Inactivo'}</Text>
         </View>
-        <TouchableOpacity
-          style={[styles.itemButton, active ? styles.buttonInactive : styles.buttonActive]}
-          onPress={() => confirmToggle(categoria)}
-        >
-          <Text style={styles.itemButtonText}>{active ? 'Desactivar' : 'Activar'}</Text>
-        </TouchableOpacity>
+        <View style={styles.itemActions}>
+          <TouchableOpacity style={[styles.itemButton, styles.editButton]} onPress={() => handleEditCategoria(categoria)}>
+            <Text style={styles.itemButtonText}>Editar</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.itemButton, styles.itemButtonSpacing, active ? styles.buttonInactive : styles.buttonActive]}
+            onPress={() => confirmToggle(categoria)}
+          >
+            <Text style={styles.itemButtonText}>{active ? 'Desactivar' : 'Activar'}</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   };
+
+  if (isChecking) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#7d2181" />
+      </View>
+    );
+  }
+
+  if (!isAuthorized) {
+    return null;
+  }
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>Categorías</Text>
       <Text style={styles.subtitle}>Crea, visualiza y activa/desactiva categorías desde el panel móvil.</Text>
+
+      {editingCategoria ? (
+        <View style={styles.editSection}>
+          <Text style={styles.sectionTitle}>Editar categoría</Text>
+          <View style={styles.formRow}>
+            <TextInput
+              style={styles.input}
+              placeholder="Nombre de categoría"
+              value={editingCategoria.nombre}
+              onChangeText={(text) => setEditingCategoria({ ...editingCategoria, nombre: text })}
+              placeholderTextColor="#9ca3af"
+            />
+          </View>
+          <View style={styles.editButtonsRow}>
+            <TouchableOpacity style={[styles.addButton, styles.saveButton]} onPress={handleSaveCategoria}>
+              <Text style={styles.addButtonText}>Guardar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.addButton, styles.cancelButton]} onPress={cancelEditCategoria}>
+              <Text style={styles.addButtonText}>Cancelar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      ) : null}
 
       <View style={styles.formRow}>
         <TextInput
@@ -136,6 +205,12 @@ const styles = StyleSheet.create({
   content: {
     padding: 18,
     paddingBottom: 30,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f8f7fb',
   },
   title: {
     fontSize: 28,
@@ -213,16 +288,52 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 14,
     borderRadius: 14,
+    minWidth: 88,
+    flexShrink: 0,
+  },
+  itemActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  itemButtonSpacing: {
+    marginLeft: 8,
+  },
+  editButton: {
+    backgroundColor: '#6b7280',
   },
   itemButtonText: {
     color: '#fff',
     fontWeight: '700',
     fontSize: 13,
+    textAlign: 'center',
   },
   buttonActive: {
     backgroundColor: '#10b981',
   },
   buttonInactive: {
     backgroundColor: '#ef4444',
+  },
+  editSection: {
+    backgroundColor: '#ffffff',
+    borderRadius: 18,
+    padding: 16,
+    marginBottom: 18,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 10,
+  },
+  editButtonsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 10,
+  },
+  saveButton: {
+    backgroundColor: '#2563eb',
+  },
+  cancelButton: {
+    backgroundColor: '#6b7280',
   },
 });

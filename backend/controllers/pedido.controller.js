@@ -89,21 +89,45 @@ const crearPedido = async (req, res) => {
       });
     }
     
-    // VALIDACIÓN 3: Obtiene todos los items del carrito del usuario autenticado.
-    // req.usuario.id viene del middleware de autenticación (auth.js) que decodifica el JWT.
-    // transaction: t → esta consulta es parte de la transacción.
-    const itemsCarrito = await Carrito.findAll({
-      where: { usuarioId: req.usuario.id },
-      include: [{
-        model: Producto,
-        as: 'producto',
-        attributes: ['id', 'nombre', 'precio', 'stock', 'activo']
-      }],
-      transaction: t
-    });
-    
-    // Si el carrito está vacío, no se puede crear un pedido
-    if (itemsCarrito.length === 0) {
+    // VALIDACIÓN 3: Obtiene los items del pedido.
+    // Si el frontend envía items en el body, los usa.
+    // Si no, usa el carrito almacenado en el backend.
+    const itemsEnPedido = Array.isArray(req.body.items) && req.body.items.length > 0
+      ? req.body.items.map((item) => ({
+          productoId: Number(item.productoId),
+          cantidad: Number(item.cantidad),
+          precioUnitario: Number(item.precioUnitario || 0),
+        }))
+      : null;
+
+    let itemsCarrito;
+    if (itemsEnPedido) {
+      const productos = await Producto.findAll({
+        where: { id: itemsEnPedido.map((item) => item.productoId) },
+        transaction: t
+      });
+
+      const productosMap = new Map(productos.map((producto) => [producto.id, producto]));
+
+      itemsCarrito = itemsEnPedido.map((item) => ({
+        cantidad: item.cantidad,
+        precioUnitario: item.precioUnitario || productosMap.get(item.productoId)?.precio || 0,
+        producto: productosMap.get(item.productoId) || null,
+      }));
+    } else {
+      itemsCarrito = await Carrito.findAll({
+        where: { usuarioId: req.usuario.id },
+        include: [{
+          model: Producto,
+          as: 'producto',
+          attributes: ['id', 'nombre', 'precio', 'stock', 'activo']
+        }],
+        transaction: t
+      });
+    }
+
+    // Si no hay items en el pedido, no se puede crear un pedido
+    if (!itemsCarrito || itemsCarrito.length === 0) {
       await t.rollback();
       return res.status(400).json({
         success: false,
@@ -119,6 +143,11 @@ const crearPedido = async (req, res) => {
     // Recorre cada item del carrito con un for...of (permite await dentro)
     for (const item of itemsCarrito) {
       const producto = item.producto;     // Producto asociado al item (por el include)
+
+      if (!producto) {
+        erroresValidacion.push(`Producto no encontrado para el item con ID ${item.productoId || 'desconocido'}`);
+        continue;
+      }
       
       // Verifica que el producto siga activo (pudo desactivarse después de agregarlo al carrito)
       if (!producto.activo) {

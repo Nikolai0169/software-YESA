@@ -55,7 +55,11 @@ export default function Index() {
         catalogoService.getProductos(),
         catalogoService.getCategorias(),
       ]);
-      setProductos(Array.isArray(listaProductos) ? listaProductos : []);
+      // Filtrar defensivamente productos inactivos en el cliente
+      const productosActivos = Array.isArray(listaProductos)
+        ? listaProductos.filter((p) => (p.activo !== false) && (Number(p.stock || 0) > 0))
+        : [];
+      setProductos(productosActivos);
       setCategorias(Array.isArray(listaCategorias) ? listaCategorias : []);
     } catch (err) {
       // Loguear error detallado para diagnóstico

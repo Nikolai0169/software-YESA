@@ -9,6 +9,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { Link } from 'expo-router';
+import useAdminRole from '../../src/hooks/useAdminRole';
 import {
   deleteProduct,
   getProductos,
@@ -16,6 +17,7 @@ import {
 } from '../../src/services/adminService';
 
 export default function ProductosAdmin() {
+  const { isChecking, isAuthorized } = useAdminRole();
   const [productos, setProductos] = useState<{ id: number | string; nombre?: string; titulo?: string; precio?: number; price?: number; activo?: boolean }[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -111,6 +113,18 @@ export default function ProductosAdmin() {
     );
   };
 
+  if (isChecking) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#7d2181" />
+      </View>
+    );
+  }
+
+  if (!isAuthorized) {
+    return null;
+  }
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>Productos</Text>
@@ -141,6 +155,12 @@ const styles = StyleSheet.create({
   content: {
     padding: 18,
     paddingBottom: 30,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f8f7fb',
   },
   title: {
     fontSize: 28,

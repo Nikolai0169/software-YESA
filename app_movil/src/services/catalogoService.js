@@ -20,7 +20,9 @@ const catalogoService = {
         const response = await apiClient.get('catalogo/productos', { params });
         const payload = response.data?.data || response.data || {};
         const productos = payload.productos || [];
-        return productos;
+        // Defensa en cliente: filtrar productos que vengan como inactivos o sin stock
+        const filtrados = (productos || []).filter((p) => (p.activo !== false) && (Number(p.stock || 0) > 0));
+        return filtrados;
     },
 
     getProductoById: async (id) => {

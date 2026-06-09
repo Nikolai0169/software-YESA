@@ -10,6 +10,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { useLocalSearchParams, useRouter, Link } from 'expo-router';
+import useAdminRole from '../../src/hooks/useAdminRole';
 import {
   createProduct,
   getCategorias,
@@ -19,6 +20,7 @@ import {
 } from '../../src/services/adminService';
 
 export default function AdminProductoForm() {
+  const { isChecking, isAuthorized } = useAdminRole();
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -126,12 +128,16 @@ export default function AdminProductoForm() {
     }
   }
 
-  if (loading) {
+  if (isChecking || loading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#7d2181" />
       </View>
     );
+  }
+
+  if (!isAuthorized) {
+    return null;
   }
 
   return (

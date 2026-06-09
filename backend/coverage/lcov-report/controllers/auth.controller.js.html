@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">9.3% </span>
+                <span class="strong">8.51% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>8/86</span>
+                <span class='fraction'>8/94</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/48</span>
+                <span class='fraction'>0/56</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">9.75% </span>
+                <span class="strong">8.88% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>8/82</span>
+                <span class='fraction'>8/90</span>
             </div>
         
             
@@ -478,7 +478,23 @@
 <a name='L413'></a><a href='#L413'>413</a>
 <a name='L414'></a><a href='#L414'>414</a>
 <a name='L415'></a><a href='#L415'>415</a>
-<a name='L416'></a><a href='#L416'>416</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L416'></a><a href='#L416'>416</a>
+<a name='L417'></a><a href='#L417'>417</a>
+<a name='L418'></a><a href='#L418'>418</a>
+<a name='L419'></a><a href='#L419'>419</a>
+<a name='L420'></a><a href='#L420'>420</a>
+<a name='L421'></a><a href='#L421'>421</a>
+<a name='L422'></a><a href='#L422'>422</a>
+<a name='L423'></a><a href='#L423'>423</a>
+<a name='L424'></a><a href='#L424'>424</a>
+<a name='L425'></a><a href='#L425'>425</a>
+<a name='L426'></a><a href='#L426'>426</a>
+<a name='L427'></a><a href='#L427'>427</a>
+<a name='L428'></a><a href='#L428'>428</a>
+<a name='L429'></a><a href='#L429'>429</a>
+<a name='L430'></a><a href='#L430'>430</a>
+<a name='L431'></a><a href='#L431'>431</a>
+<a name='L432'></a><a href='#L432'>432</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -773,6 +789,22 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1176,9 +1208,9 @@ const getMe = <span class="fstat-no" title="function not covered" >as</span>ync 
  */
 const updateMe = <span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {
 <span class="cstat-no" title="statement not covered" >  try {</span>
-    // Solo extrae los campos que el usuario tiene PERMITIDO cambiar.
+    // Extrae los campos que el usuario tiene PERMITIDO cambiar.
     // No extrae 'rol' ni 'activo' por seguridad.
-    const { nombre, apellido, telefono, direccion } = <span class="cstat-no" title="statement not covered" >req.body;</span>
+    const { nombre, apellido, telefono, direccion, email } = <span class="cstat-no" title="statement not covered" >req.body;</span>
     
     // Busca el usuario en la BD por su ID (viene del token via middleware)
     const usuario = <span class="cstat-no" title="statement not covered" >await Usuario.findByPk(req.usuario.id);</span>
@@ -1190,7 +1222,23 @@ const updateMe = <span class="fstat-no" title="function not covered" >as</span>y
       });
     }
     
-    // ACTUALIZAR CAMPOS: solo actualiza si el campo viene definido en el body.
+    // VALIDACIÓN Y ACTUALIZACIÓN: solo actualiza si el campo viene definido en el body.
+    // Permitir cambiar email: validar formato y unicidad.
+<span class="cstat-no" title="statement not covered" >    if (email !== undefined) {</span>
+      const emailRegex = <span class="cstat-no" title="statement not covered" >/^[^\s@]+@[^\s@]+\.[^\s@]+$/;</span>
+<span class="cstat-no" title="statement not covered" >      if (!emailRegex.test(email)) {</span>
+<span class="cstat-no" title="statement not covered" >        return res.status(400).json({ success: false, message: 'Email inválido' });</span>
+      }
+&nbsp;
+      const usuarioConEmail = <span class="cstat-no" title="statement not covered" >await Usuario.findOne({ where: { email } });</span>
+<span class="cstat-no" title="statement not covered" >      if (usuarioConEmail &amp;&amp; usuarioConEmail.id !== usuario.id) {</span>
+<span class="cstat-no" title="statement not covered" >        return res.status(400).json({ success: false, message: 'El email ya está registrado' });</span>
+      }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      usuario.email = email;</span>
+    }
+&nbsp;
+    // ACTUALIZAR OTROS CAMPOS: solo actualiza si el campo viene definido en el body.
     // La condición !== undefined permite enviar valores vacíos o null intencionalmente.
     // Si el campo no viene en el body, no lo modifica (mantiene el valor actual).
 <span class="cstat-no" title="statement not covered" >    if (nombre !== undefined) <span class="cstat-no" title="statement not covered" >usuario.nombre = nombre;</span></span>
@@ -1315,7 +1363,7 @@ module.exports = {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-04-15T08:15:29.804Z
+                at 2026-06-09T15:46:10.792Z
             </div>
         <script src="../prettify.js"></script>
         <script>

@@ -52,7 +52,9 @@ export function AuthProvider({ children }) {
         const payload = response.data || response; 
 
         setToken(payload?.token || null);
-        setUser(payload?.user || null);
+        // El servicio devuelve el usuario bajo la clave `usuario` (backend en español)
+        // o en algunos casos `user`. Guardamos ambos para compatibilidad.
+        setUser(payload?.usuario || payload?.user || null);
         
         return payload;
     }, []);

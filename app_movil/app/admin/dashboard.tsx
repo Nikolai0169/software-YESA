@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Link } from 'expo-router';
+import useAdminRole from '../../src/hooks/useAdminRole';
 import {
   getCategorias,
   getSubcategorias,
@@ -17,6 +18,7 @@ import {
 } from '../../src/services/adminService';
 
 export default function DashboardAdmin() {
+  const { isChecking, isAuthorized } = useAdminRole();
   const [stats, setStats] = useState<{
     categorias: number;
     subcategorias: number;
@@ -69,12 +71,16 @@ export default function DashboardAdmin() {
     loadStats();
   }, []);
 
-  if (loading) {
+  if (isChecking || loading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#7d2181" />
       </View>
     );
+  }
+
+  if (!isAuthorized) {
+    return null;
   }
 
   return (
@@ -121,11 +127,6 @@ export default function DashboardAdmin() {
       <Link href="/admin/categorias" asChild>
         <TouchableOpacity style={styles.actionButton}>
           <Text style={styles.actionButtonText}>Administrar categorías</Text>
-        </TouchableOpacity>
-      </Link>
-      <Link href="/admin/subcategorias" asChild>
-        <TouchableOpacity style={styles.actionButton}>
-          <Text style={styles.actionButtonText}>Administrar subcategorías</Text>
         </TouchableOpacity>
       </Link>
       <Link href="/admin/productos" asChild>

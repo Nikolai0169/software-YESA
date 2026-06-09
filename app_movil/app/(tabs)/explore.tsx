@@ -9,8 +9,10 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 import { useAuth } from '../../src/context/authContext';
+import { useRouter } from 'expo-router';
 
 const isValidEmail = (email: string) => /\S+@\S+\.\S+/.test(email);
 const isValidPhone = (phone: string) => /^3\d{9}$/.test(phone);
@@ -112,6 +114,17 @@ export default function Explore() {
     setIsRegisterMode(false);
     setError('');
     setMessage('Has cerrado sesión.');
+  };
+
+  const router = useRouter();
+
+  const handleOpenAdmin = () => {
+    const role = user?.rol || user?.role || 'cliente';
+    if (role === 'administrador' || role === 'auxiliar') {
+      router.push('/admin/dashboard');
+      return;
+    }
+    Alert.alert('Acceso denegado', 'No tienes permisos para acceder al panel de administración.');
   };
 
   if (isLoadingSession) {
@@ -235,10 +248,10 @@ export default function Explore() {
         <Text style={styles.logoutText}>Cerrar sesión</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.button} onPress={() => {}}>
+      <TouchableOpacity style={styles.button} onPress={() => router.push('/mis-pedidos')}>
         <Text style={styles.buttonText}>Mis pedidos</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.buttonSecondary} onPress={() => {}}>
+      <TouchableOpacity style={styles.buttonSecondary} onPress={handleOpenAdmin}>
         <Text style={styles.buttonSecondaryText}>Abrir panel admin</Text>
       </TouchableOpacity>
     </ScrollView>

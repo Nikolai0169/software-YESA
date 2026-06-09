@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Alert,
 } from 'react-native';
+import useAdminRole from '../../../src/hooks/useAdminRole';
 import { useLocalSearchParams, Link } from 'expo-router';
 import { getPedido } from '../../../src/services/adminService';
 
@@ -44,6 +45,8 @@ export default function PedidoDetalleAdmin() {
   const [pedido, setPedido] = useState<PedidoDetalle | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const { isChecking, isAuthorized } = useAdminRole();
+
   useEffect(() => {
     if (id) {
       loadPedido();
@@ -64,12 +67,16 @@ export default function PedidoDetalleAdmin() {
     }
   }
 
-  if (loading) {
+  if (isChecking || loading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#7d2181" />
       </View>
     );
+  }
+
+  if (!isAuthorized) {
+    return null;
   }
 
   if (!pedido) {

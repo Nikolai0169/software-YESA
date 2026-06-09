@@ -8,9 +8,11 @@ import {
   Alert,
   StyleSheet,
 } from 'react-native';
+import useAdminRole from '../../src/hooks/useAdminRole';
 import { getUsuarios, toggleUsuario, deleteUsuario } from '../../src/services/adminService';
 
 export default function UsuariosAdmin() {
+  const { isChecking, isAuthorized } = useAdminRole();
   const [usuarios, setUsuarios] = useState<{ id: number | string; nombre?: string; email?: string; activo?: boolean }[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -104,6 +106,18 @@ export default function UsuariosAdmin() {
     );
   };
 
+  if (isChecking) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#7d2181" />
+      </View>
+    );
+  }
+
+  if (!isAuthorized) {
+    return null;
+  }
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>Usuarios</Text>
@@ -127,6 +141,12 @@ const styles = StyleSheet.create({
   content: {
     padding: 18,
     paddingBottom: 30,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f8f7fb',
   },
   title: {
     fontSize: 28,

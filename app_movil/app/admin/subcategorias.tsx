@@ -14,9 +14,12 @@ import {
   getCategorias,
   getSubcategorias,
   toggleSubcategoria,
+  updateSubcategoria,
 } from '../../src/services/adminService';
+import useAdminRole from '../../src/hooks/useAdminRole';
 
 export default function SubcategoriasAdmin() {
+  const { isChecking, isAuthorized } = useAdminRole();
   const [subcategorias, setSubcategorias] = useState<{
     id: number | string;
     nombre?: string;
@@ -24,6 +27,11 @@ export default function SubcategoriasAdmin() {
     categoria?: { id?: number | string; nombre?: string; titulo?: string };
     activo?: boolean;
   }[]>([]);
+  const [editingSubcategoria, setEditingSubcategoria] = useState<{
+    id: number | string;
+    nombre: string;
+    categoriaId: string;
+  } | null>(null);
   const [categorias, setCategorias] = useState<{ id: number | string; nombre?: string; titulo?: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [nombre, setNombre] = useState('');
@@ -66,6 +74,39 @@ export default function SubcategoriasAdmin() {
     }
   }
 
+  async function handleSaveSubcategoria() {
+    if (!editingSubcategoria) return;
+    if (!editingSubcategoria.nombre.trim() || !editingSubcategoria.categoriaId.trim()) {
+      Alert.alert('Validación', 'Completa el nombre y la categoría.');
+      return;
+    }
+
+    try {
+      await updateSubcategoria(editingSubcategoria.id, {
+        nombre: editingSubcategoria.nombre.trim(),
+        categoriaId: parseInt(editingSubcategoria.categoriaId, 10),
+      });
+      setEditingSubcategoria(null);
+      loadSubcategorias();
+    } catch (error: unknown) {
+      const err = error as Error;
+      console.error('Error actualizando subcategoría:', err.message || error);
+      Alert.alert('Error', 'No se pudo actualizar la subcategoría.');
+    }
+  }
+
+  function handleEditSubcategoria(subcategoria: { id: number | string; nombre?: string; categoriaId?: number | string; categoria?: { id?: number | string } }) {
+    setEditingSubcategoria({
+      id: subcategoria.id,
+      nombre: subcategoria.nombre || '',
+      categoriaId: String(subcategoria.categoriaId ?? subcategoria.categoria?.id ?? ''),
+    });
+  }
+
+  function cancelEditSubcategoria() {
+    setEditingSubcategoria(null);
+  }
+
   function confirmToggle(subcategoria: { id: number | string; nombre?: string; activo?: boolean }) {
     const active = subcategoria.activo !== false;
     const action = active ? 'desactivar' : 'activar';
@@ -102,51 +143,42 @@ export default function SubcategoriasAdmin() {
           <Text style={styles.itemSubtitle}>{category.nombre || category.titulo || 'Categoría desconocida'}</Text>
           <Text style={styles.itemStatus}>{active ? 'Activo' : 'Inactivo'}</Text>
         </View>
-        <TouchableOpacity
-          style={[styles.itemButton, active ? styles.buttonInactive : styles.buttonActive]}
-          onPress={() => confirmToggle(subcategoria)}
-        >
-          <Text style={styles.itemButtonText}>{active ? 'Desactivar' : 'Activar'}</Text>
-        </TouchableOpacity>
+        <View style={styles.itemActions}>
+          <TouchableOpacity style={[styles.itemButton, styles.editButton]} onPress={() => handleEditSubcategoria(subcategoria)}>
+            <Text style={styles.itemButtonText}>Editar</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.itemButton, active ? styles.buttonInactive : styles.buttonActive]}
+            onPress={() => confirmToggle(subcategoria)}
+          >
+            <Text style={styles.itemButtonText}>{active ? 'Desactivar' : 'Activar'}</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   };
 
+  if (isChecking) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#7d2181" />
+      </View>
+    );
+  }
+
+  if (!isAuthorized) {
+    return null;
+  }
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>Subcategorías</Text>
-      <Text style={styles.subtitle}>Gestión de subcategorías conectada a categorías existentes.</Text>
-
-      <View style={styles.formRow}>
-        <TextInput
-          style={[styles.input, { flex: 1 }]}
-          placeholder="Nombre de subcategoría"
-          value={nombre}
-          onChangeText={setNombre}
-          placeholderTextColor="#9ca3af"
-        />
+      <Text style={styles.subtitle}>Esta gestión está disponible solo desde el panel web.</Text>
+      <View style={styles.webOnlyBox}>
+        <Text style={styles.webOnlyText}>
+          La administración de subcategorías no está habilitada en la aplicación móvil. Por favor usa el panel web para crear, editar o activar/desactivar subcategorías.
+        </Text>
       </View>
-      <View style={styles.formRow}>
-        <TextInput
-          style={styles.input}
-          placeholder="ID de categoría"
-          value={categoriaId}
-          onChangeText={setCategoriaId}
-          keyboardType="numeric"
-          placeholderTextColor="#9ca3af"
-        />
-        <TouchableOpacity style={styles.addButton} onPress={handleCreateSubcategoria}>
-          <Text style={styles.addButtonText}>Agregar</Text>
-        </TouchableOpacity>
-      </View>
-
-      {loading ? (
-        <ActivityIndicator size="large" color="#7d2181" style={styles.loader} />
-      ) : subcategorias.length === 0 ? (
-        <Text style={styles.emptyText}>No hay subcategorías registradas.</Text>
-      ) : (
-        subcategorias.map(renderSubcategoria)
-      )}
     </ScrollView>
   );
 }
@@ -159,6 +191,12 @@ const styles = StyleSheet.create({
   content: {
     padding: 18,
     paddingBottom: 30,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f8f7fb',
   },
   title: {
     fontSize: 28,
@@ -240,16 +278,62 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 14,
     borderRadius: 14,
+    minWidth: 88,
+  },
+  itemActions: {
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'center',
+  },
+  editButton: {
+    backgroundColor: '#6b7280',
   },
   itemButtonText: {
     color: '#fff',
     fontWeight: '700',
     fontSize: 13,
+    textAlign: 'center',
   },
   buttonActive: {
     backgroundColor: '#10b981',
   },
   buttonInactive: {
     backgroundColor: '#ef4444',
+  },
+  editSection: {
+    backgroundColor: '#ffffff',
+    borderRadius: 18,
+    padding: 16,
+    marginBottom: 18,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 10,
+  },
+  editButtonsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 10,
+  },
+  saveButton: {
+    backgroundColor: '#2563eb',
+  },
+  cancelButton: {
+    backgroundColor: '#6b7280',
+  },
+  webOnlyBox: {
+    backgroundColor: '#fff4e5',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#fbbf24',
+    padding: 18,
+    marginTop: 18,
+  },
+  webOnlyText: {
+    color: '#92400e',
+    fontSize: 15,
+    lineHeight: 22,
   },
 });
