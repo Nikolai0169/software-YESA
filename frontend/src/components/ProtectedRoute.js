@@ -2,7 +2,7 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const ProtectedRoute = ({ children, requireAdmin = false }) => {
+const ProtectedRoute = ({ children, requireAdmin = false, requireAdminOnly = false }) => {
   const { user, loading, isAdmin, isAuxiliar } = useAuth();
 
   // Mientras carga, mostrar loading
@@ -19,6 +19,11 @@ const ProtectedRoute = ({ children, requireAdmin = false }) => {
   // Si no hay usuario, redirigir al login
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  // Si requiere sólo administrador
+  if (requireAdminOnly && !isAdmin) {
+    return <Navigate to="/" replace />;
   }
 
   // Si requiere admin y no es admin ni auxiliar

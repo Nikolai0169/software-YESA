@@ -1,0 +1,102 @@
+/**
+ * ============================================
+ * CONTROLADOR DE COTIZACIONES
+ * ============================================
+ * Maneja las acciones que solo el administrador puede ver o modificar.
+ */
+
+const Cotizacion = require('../models/Cotizacion');
+const Usuario = require('../models/Usuario');
+
+const getCotizaciones = async (req, res) => {
+  try {
+    const cotizaciones = await Cotizacion.findAll({
+      order: [['createdAt', 'DESC']],
+      include: [
+        {
+          model: Usuario,
+          as: 'usuario',
+          attributes: ['id', 'nombre', 'email'],
+        },
+      ],
+    });
+
+    res.json({ success: true, cotizaciones });
+  } catch (error) {
+    console.error('Error obteniendo cotizaciones:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener cotizaciones',
+      error: error.message,
+    });
+  }
+};
+
+const getCotizacionById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const cotizacion = await Cotizacion.findByPk(id, {
+      include: [
+        {
+          model: Usuario,
+          as: 'usuario',
+          attributes: ['id', 'nombre', 'email'],
+        },
+      ],
+    });
+
+    if (!cotizacion) {
+      return res.status(404).json({
+        success: false,
+        message: 'Cotización no encontrada',
+      });
+    }
+
+    res.json({ success: true, cotizacion });
+  } catch (error) {
+    console.error('Error obteniendo cotización:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener cotización',
+      error: error.message,
+    });
+  }
+};
+
+const actualizarCotizacion = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { estado, precio, notas } = req.body;
+
+    const cotizacion = await Cotizacion.findByPk(id);
+    if (!cotizacion) {
+      return res.status(404).json({
+        success: false,
+        message: 'Cotización no encontrada',
+      });
+    }
+
+    const estadoActualizado = estado || (precio !== undefined && cotizacion.estado === 'pendiente' ? 'cotizado' : cotizacion.estado);
+
+    await cotizacion.update({
+      estado: estadoActualizado,
+      precio: precio !== undefined ? precio : cotizacion.precio,
+      notas: notas !== undefined ? notas : cotizacion.notas,
+    });
+
+    res.json({ success: true, cotizacion });
+  } catch (error) {
+    console.error('Error actualizando cotización:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al actualizar cotización',
+      error: error.message,
+    });
+  }
+};
+
+module.exports = {
+  getCotizaciones,
+  getCotizacionById,
+  actualizarCotizacion,
+};

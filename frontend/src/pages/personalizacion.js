@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import Personalizacion3D from "../components/Personalizacion3D";
+import { useAuth } from "../context/AuthContext";
 import { guardarDiseno, cotizarProducto } from "../services/api";
 import { saveDesignLocally, getDesignToEdit, clearDesignToEdit } from "../services/personalizationService";
+import { formatCurrency } from "../utils/helpers";
 
 const PersonalizacionPage = () => {
   const defaultColors = {
@@ -27,6 +29,9 @@ const PersonalizacionPage = () => {
     taza: { fontFamily: "sans-serif", fontSize: 24, color: "#000000" },
   });
   const [composedTextureUrl, setComposedTextureUrl] = useState(null);
+  const [cotizacion, setCotizacion] = useState(null);
+  const [cotizando, setCotizando] = useState(false);
+  const { isAuthenticated, isCliente } = useAuth();
   const [textEditorOpen, setTextEditorOpen] = useState(false);
   const [textEditorContent, setTextEditorContent] = useState("");
   const [textEditorFontFamily, setTextEditorFontFamily] = useState("sans-serif");
@@ -343,8 +348,11 @@ const PersonalizacionPage = () => {
 
   const handleCotizar = async () => {
     try {
+      setCotizando(true);
+      setCotizacion(null);
       const currentColors = colorsByModel[modelo3D] || {};
       const currentTexts = textsByModel[modelo3D] || {};
+      const hasTexture = Boolean(texturesByModel[modelo3D]);
       const disenoData = {
         modelo: modelo3D,
         colorInterior: currentColors.interior,
@@ -353,14 +361,28 @@ const PersonalizacionPage = () => {
         colorAsa: currentColors.asa,
         textInterior: currentTexts.interior,
         textExterior: currentTexts.exterior,
-        textureUrl: texturesByModel[modelo3D] || null,
+        hasTexture,
+        overlayText: overlayTextByModel[modelo3D] || '',
+        overlayTextFontFamily:
+          (overlayTextSettingsByModel[modelo3D] && overlayTextSettingsByModel[modelo3D].fontFamily) || 'sans-serif',
+        overlayTextFontSize:
+          (overlayTextSettingsByModel[modelo3D] && overlayTextSettingsByModel[modelo3D].fontSize) || 24,
+        overlayTextColor:
+          (overlayTextSettingsByModel[modelo3D] && overlayTextSettingsByModel[modelo3D].color) || '#ffffff',
+        textureOffsetX: textureOffset?.x || 0,
+        textureOffsetY: textureOffset?.y || 0,
+        textureScale: textureScale || 1,
         zoom: zoomLevel,
+        nombre: currentDesignName || `Diseño personalizado - ${new Date().toLocaleDateString()}`,
       };
       const result = await cotizarProducto(disenoData);
-      alert(`Cotización: $${result.precio || "Consultando..."}`);
+      setCotizacion({ mensaje: result.mensaje || 'Cotización enviada y pendiente' });
     } catch (error) {
-      console.error("Error al cotizar:", error);
-      alert("Error al cotizar el producto");
+      console.error('Error al cotizar:', error);
+      const message = error.response?.data?.message || error.message || 'Error al cotizar el producto';
+      setCotizacion({ error: true, mensaje: message });
+    } finally {
+      setCotizando(false);
     }
   };
 
@@ -807,17 +829,39 @@ const PersonalizacionPage = () => {
                 )}
 
                 {!isFullscreen && (
-                  <div className="personalizacion-actions d-flex flex-wrap justify-content-center gap-2 mt-4">
-                    <button type="button" className="btn btn-yesa-primary" onClick={handleCotizar}>
-                      Cotizar producto
-                    </button>
-                    <button type="button" className="btn btn-yesa-gold" onClick={handleGuardarDiseno}>
-                      Guardar diseño
-                    </button>
-                    <button type="button" className="btn btn-yesa-tertiary" onClick={handleCompartir}>
-                      Compartir
-                    </button>
-                  </div>
+                  <>
+                    <div className="personalizacion-actions d-flex flex-wrap justify-content-center gap-2 mt-4">
+                      <button
+                        type="button"
+                        className="btn btn-yesa-primary"
+                        onClick={handleCotizar}
+                        disabled={cotizando || !isAuthenticated || !isCliente}
+                      >
+                        {cotizando ? 'Cotizando...' : 'Cotizar producto'}
+                      </button>
+                      <button type="button" className="btn btn-yesa-gold" onClick={handleGuardarDiseno}>
+                        Guardar diseño
+                      </button>
+                      <button type="button" className="btn btn-yesa-tertiary" onClick={handleCompartir}>
+                        Compartir
+                      </button>
+                    </div>
+                    {(!isAuthenticated || !isCliente) && (
+                      <div className="mt-3 alert alert-warning">
+                        {isAuthenticated
+                          ? 'Solo usuarios con rol cliente pueden cotizar diseños personalizados.'
+                          : 'Debes iniciar sesión como cliente para cotizar un diseño.'}
+                      </div>
+                    )}
+                    {cotizacion && (
+                      <div className={`mt-3 alert ${cotizacion.error ? 'alert-danger' : 'alert-success'}`}>
+                        <strong>{cotizacion.mensaje || 'Cotización generada'}</strong>
+                        {!cotizacion.error && cotizacion.precio !== undefined && (
+                          <div>Precio estimado: <strong>{formatCurrency(cotizacion.precio)}</strong></div>
+                        )}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>

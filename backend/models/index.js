@@ -44,6 +44,9 @@ const Pedido = require('./Pedido');
 // Importa el modelo DetallePedido desde models/DetallePedido.js → tabla 'detalle_pedidos'
 const DetallePedido = require('./DetallePedido');
 
+// Importa el modelo Cotizacion desde models/Cotizacion.js → tabla 'cotizaciones'
+const Cotizacion = require('./Cotizacion');
+
 /**
  * ============================================
  * DEFINIR ASOCIACIONES (RELACIONES)
@@ -239,6 +242,23 @@ Pedido.belongsTo(Usuario, {
 });
 
 // ==========================================
+// 9. USUARIO ↔ COTIZACION (Uno a Muchos)
+// Un usuario puede tener muchas cotizaciones
+Usuario.hasMany(Cotizacion, {
+  foreignKey: 'usuarioId',
+  as: 'cotizaciones',
+  onDelete: 'SET NULL',
+  onUpdate: 'CASCADE'
+});
+
+Cotizacion.belongsTo(Usuario, {
+  foreignKey: 'usuarioId',
+  as: 'usuario',
+  onDelete: 'SET NULL',
+  onUpdate: 'CASCADE'
+});
+
+// ==========================================
 // 7. PEDIDO ↔ DETALLE PEDIDO (Uno a Muchos)
 // ==========================================
 // Un pedido tiene muchos detalles (cada detalle = un producto comprado con su cantidad y precio)
@@ -340,6 +360,7 @@ module.exports = {
   Carrito,                           // Modelo de carrito → tabla 'carritos'
   Pedido,                            // Modelo de pedidos → tabla 'pedidos'
   DetallePedido,                     // Modelo de detalles de pedido → tabla 'detalle_pedidos'
+  Cotizacion,                        // Modelo de cotizaciones → tabla 'cotizaciones'
   initAssociations                   // Función para confirmar asociaciones en consola
 };
 

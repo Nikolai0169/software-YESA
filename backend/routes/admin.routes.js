@@ -86,6 +86,10 @@ const usuarioController = require('../controllers/usuario.controller');
 // Funciones: getAllPedidos, getPedidoById, getEstadisticasPedidos, actualizarEstadoPedido
 const pedidoController = require('../controllers/pedido.controller');
 
+// Controlador de cotizaciones → desde controllers/cotizacion.controller.js
+// Funciones: getCotizaciones, actualizarCotizacion
+const cotizacionController = require('../controllers/cotizacion.controller');
+
 // ==========================================
 // MIDDLEWARE GLOBAL DEL ROUTER
 // ==========================================
@@ -272,6 +276,21 @@ router.get('/pedidos/:id', pedidoController.getPedidoById);
 // Body esperado: { estado: "pagado" | "enviado" | "entregado" | "cancelado" }
 // Controlador: actualizarEstadoPedido → el hook afterUpdate en Pedido.js auto-establece fechas
 router.put('/pedidos/:id/estado', pedidoController.actualizarEstadoPedido);
+
+// ==========================================
+// RUTAS DE COTIZACIONES (/api/admin/cotizaciones)
+
+// GET /api/admin/cotizaciones → Obtiene todas las cotizaciones generadas por el sistema
+// Acceso: admin + auxiliar
+router.get('/cotizaciones', cotizacionController.getCotizaciones);
+
+// GET /api/admin/cotizaciones/:id → Obtiene una cotización por id
+// Acceso: admin + auxiliar
+router.get('/cotizaciones/:id', cotizacionController.getCotizacionById);
+
+// PUT /api/admin/cotizaciones/:id → Actualiza datos de una cotización (estado, precio, notas)
+// Acceso: solo administrador
+router.put('/cotizaciones/:id', soloAdministrador, cotizacionController.actualizarCotizacion);
 
 // ==========================================
 // EXPORTAR ROUTER

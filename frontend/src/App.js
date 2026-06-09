@@ -33,6 +33,8 @@ import AdminSubcategoriasPage from './pages/admin/AdminSubcategoriasPage';
 import AdminProductosPage from './pages/admin/AdminProductosPage';
 import AdminUsuariosPage from './pages/AdminUsuariosPage';
 import AdminPedidosPage from './pages/AdminPedidosPage';
+import AdminCotizacionesPage from './pages/admin/AdminCotizacionesPage';
+import AdminCotizacionDetallePage from './pages/admin/AdminCotizacionDetallePage';
 import ProfilePage from './pages/ProfilePage';
 
 import './App.css';
@@ -104,6 +106,16 @@ function App() {
               <Route path="/admin/pedidos" element={
                 <ProtectedRoute requireAdmin={true}>
                   <AdminPedidosPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/cotizaciones" element={
+                <ProtectedRoute requireAdminOnly={true}>
+                  <AdminCotizacionesPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/cotizaciones/:id" element={
+                <ProtectedRoute requireAdminOnly={true}>
+                  <AdminCotizacionDetallePage />
                 </ProtectedRoute>
               } />
               
