@@ -5,6 +5,16 @@ import { useCarrito } from '../src/context/carritoContext';
 import { useAuth } from '../src/context/authContext';
 import pedidoService from '../src/services/pedidoService';
 
+// Interfaz para los items del carrito
+interface CarritoItem {
+  id: string | number;
+  productoId: string | number;
+  cantidad: number;
+  precio: number;
+  nombre: string;
+  [key: string]: any;
+}
+
 export default function Checkout() {
   const router = useRouter();
   const { items, vaciarCarrito } = useCarrito();
@@ -47,7 +57,7 @@ export default function Checkout() {
         telefono: telefono.trim(),
         metodoPago: 'efectivo',
         notasAdicionales: 'Pedido generado desde app móvil',
-        items: items.map((item) => ({
+        items: items.map((item: CarritoItem) => ({
           productoId: item.productoId,
           cantidad: item.cantidad,
           precioUnitario: item.precio,
@@ -146,33 +156,5 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     marginTop: 12,
     fontSize: 16,
-  }
-});
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-  },
-  title: {
-    fontSize: 24,
-    marginBottom: 16,
-  },
-  link: {
-    color: '#0a84ff',
-    fontSize: 16,
-  },
-  confirmButton: {
-    backgroundColor: '#7d2181',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 10,
-    marginTop: 8,
-  },
-  confirmText: {
-    color: '#fff',
-    fontWeight: '700'
   }
 });
