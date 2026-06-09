@@ -12,9 +12,6 @@ import { Link } from 'expo-router';
 import useAdminRole from '../../src/hooks/useAdminRole';
 import { getPedidos } from '../../src/services/adminService';
 
-export default function PedidosAdmin() {
-  const { isChecking, isAuthorized } = useAdminRole();
-
 const getStatusColor = (estado: string) => {
   switch (estado) {
     case 'pendiente':
@@ -33,6 +30,7 @@ const getStatusColor = (estado: string) => {
 };
 
 export default function PedidosAdmin() {
+  const { isChecking, isAuthorized } = useAdminRole();
   const [pedidos, setPedidos] = useState<{
     id?: number | string;
     numero?: number | string;
