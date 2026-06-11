@@ -127,6 +127,9 @@ export default function Explore() {
     Alert.alert('Acceso denegado', 'No tienes permisos para acceder al panel de administración.');
   };
 
+  // Verificar si el usuario es admin o auxiliar
+  const isAdmin = user?.rol === 'administrador' || user?.rol === 'auxiliar';
+
   if (isLoadingSession) {
     return (
       <View style={styles.centered}>
@@ -251,9 +254,13 @@ export default function Explore() {
       <TouchableOpacity style={styles.button} onPress={() => router.push('/mis-pedidos')}>
         <Text style={styles.buttonText}>Mis pedidos</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.buttonSecondary} onPress={handleOpenAdmin}>
-        <Text style={styles.buttonSecondaryText}>Abrir panel admin</Text>
-      </TouchableOpacity>
+
+      {/* Botón de panel admin solo para admins y auxiliares */}
+      {isAdmin && (
+        <TouchableOpacity style={styles.buttonSecondary} onPress={handleOpenAdmin}>
+          <Text style={styles.buttonSecondaryText}>Abrir panel admin</Text>
+        </TouchableOpacity>
+      )}
     </ScrollView>
   );
 }
