@@ -362,6 +362,7 @@ const PersonalizacionPage = () => {
         textInterior: currentTexts.interior,
         textExterior: currentTexts.exterior,
         hasTexture,
+        textureUrl: texturesByModel[modelo3D] || null,
         overlayText: overlayTextByModel[modelo3D] || '',
         overlayTextFontFamily:
           (overlayTextSettingsByModel[modelo3D] && overlayTextSettingsByModel[modelo3D].fontFamily) || 'sans-serif',

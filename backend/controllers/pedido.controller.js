@@ -58,7 +58,7 @@ const crearPedido = async (req, res) => {
   try {
     // Extrae datos del body JSON enviado por el frontend.
     // metodoPago tiene valor por defecto 'efectivo' si no se envía.
-    const { direccionEnvio, telefono, metodoPago = 'efectivo', notasAdicionales } = req.body;
+    const { direccionEnvio, telefono, metodoPago = 'efectivo', notasAdicionales, cotizacionId } = req.body;
     
     // VALIDACIÓN 1: La dirección de envío es obligatoria
     if (!direccionEnvio || direccionEnvio.trim() === '') {
@@ -86,6 +86,91 @@ const crearPedido = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: `Método de pago inválido. Opciones: ${metodosValidos.join(', ')}`
+      });
+    }
+
+    // Si se envía una cotizaciónId, crearemos el pedido tomando el total de la cotización
+    // Este flujo es separado del carrito y no requiere items en carrito.
+    // Solo se permite cuando la cotización está en estado 'cotizado'.
+    if (cotizacionId) {
+      const Cotizacion = require('../models/Cotizacion');
+      const cot = await Cotizacion.findByPk(cotizacionId, {
+        include: [{ model: Usuario, as: 'usuario', attributes: ['id', 'nombre', 'email'] }]
+      });
+      
+      if (!cot) {
+        await t.rollback();
+        return res.status(404).json({ success: false, message: 'Cotización no encontrada' });
+      }
+
+      if (cot.estado !== 'cotizado') {
+        await t.rollback();
+        return res.status(400).json({
+          success: false,
+          message: 'Solo se puede crear pedido desde cotización cotizada'
+        });
+      }
+
+      const totalCotizacion = parseFloat(cot.precio);
+      if (isNaN(totalCotizacion) || totalCotizacion <= 0) {
+        await t.rollback();
+        return res.status(400).json({
+          success: false,
+          message: 'La cotización no tiene un precio válido para crear el pedido'
+        });
+      }
+
+      // Crear el pedido con el total de la cotización
+      const pedido = await Pedido.create({
+        usuarioId: req.usuario.id,
+        cotizacionId: cotizacionId,    // Asocia el pedido con la cotización
+        total: totalCotizacion,
+        estado: 'pendiente',
+        direccionEnvio,
+        telefono,
+        metodoPago,
+        notasAdicionales,
+      }, { transaction: t });
+
+      // Crear detalles del pedido basado en los items de la cotización
+      const cotItems = Array.isArray(cot.items) ? cot.items : [];
+      if (cotItems.length > 0) {
+        // Distribuir el total entre los items de la cotización
+        const precioUnitario = totalCotizacion / cotItems.length;
+        
+        for (let i = 0; i < cotItems.length; i++) {
+          const item = cotItems[i];
+          await DetallePedido.create({
+            pedidoId: pedido.id,
+            productoId: null, // No hay producto específico, es un diseño personalizado
+            cantidad: item.cantidad || 1,
+            precioUnitario: precioUnitario,
+            subtotal: precioUnitario * (item.cantidad || 1)
+          }, { transaction: t });
+        }
+      }
+
+      // Actualizar el estado de la cotización a 'convertida' para indicar que ya se hizo un pedido
+      cot.estado = 'convertida';
+      await cot.save({ transaction: t });
+
+      await t.commit();
+
+      // Recarga el pedido con datos de usuario y detalles
+      await pedido.reload({
+        include: [
+          { model: Usuario, as: 'usuario', attributes: ['id', 'nombre', 'email'] },
+          {
+            model: DetallePedido,
+            as: 'detalles'
+          }
+        ]
+      });
+
+      return res.status(201).json({ 
+        success: true, 
+        message: 'Pedido creado desde cotización', 
+        data: { pedido, cotizacionId } 
       });
     }
     

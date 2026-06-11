@@ -7,10 +7,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Form, Button, Alert, ListGroup } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import carritoService from '../services/carritoService';
 import pedidoService from '../services/pedidoService';
+import { obtenerCotizacionUsuario } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 const CheckoutPage = () => {
@@ -20,6 +21,7 @@ const CheckoutPage = () => {
   const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [formData, setFormData] = useState({
     direccionEnvio: '',
@@ -37,8 +39,46 @@ const CheckoutPage = () => {
       setTimeout(() => navigate('/login'), 2000);
       return;
     }
-    loadCarrito();
-  }, [isAuthenticated, navigate]);
+
+    const loadCheckoutData = async () => {
+      const cotizacionId = location.state?.cotizacionId;
+      const cotizacionObj = location.state?.cotizacion;
+
+      if (cotizacionId) {
+        let cot = cotizacionObj || null;
+        if (!cot) {
+          try {
+            const response = await obtenerCotizacionUsuario(cotizacionId);
+            cot = response.cotizacion;
+          } catch (error) {
+            console.error('Error cargando cotización en checkout:', error);
+            setMensaje({ tipo: 'danger', texto: 'No se pudo cargar la cotización para el checkout' });
+            setLoading(false);
+            return;
+          }
+        }
+
+        if (cot) {
+          const itemsFromCot = Array.isArray(cot.items) ? cot.items : [cot];
+          const total = parseFloat(cot.precio || 0);
+          const perItem = itemsFromCot.length > 0 ? Math.round((total / itemsFromCot.length) * 100) / 100 : 0;
+          const mapped = itemsFromCot.map((it, idx) => ({
+            id: idx,
+            nombre: it.nombre || it.modelo || `Diseño ${idx + 1}`,
+            cantidad: it.cantidad || 1,
+            precio: it.precio !== undefined ? parseFloat(it.precio) : perItem,
+          }));
+          setCarrito({ items: mapped, resumen: { total }, cotizacionId });
+          setLoading(false);
+          return;
+        }
+      }
+
+      loadCarrito();
+    };
+
+    loadCheckoutData();
+  }, [isAuthenticated, navigate, location.state]);
 
   const loadCarrito = async () => {
     setLoading(true);
@@ -89,9 +129,13 @@ const CheckoutPage = () => {
     setMensaje({ tipo: '', texto: '' });
 
     try {
+      const cotizacionId = location.state?.cotizacionId;
+      const options = {};
+      if (cotizacionId) options.cotizacionId = cotizacionId;
       const response = await pedidoService.crearPedido(
         formData.direccionEnvio,
-        formData.telefono
+        formData.telefono,
+        options
       );
 
       if (response.success) {
@@ -255,11 +299,18 @@ const CheckoutPage = () => {
                   </Button>
                   <Button
                     variant="outline-secondary"
-                    onClick={() => navigate('/carrito')}
+                    onClick={() => {
+                      const cotizacionId = location.state?.cotizacionId;
+                      if (cotizacionId) {
+                        navigate(`/mis-cotizaciones/${cotizacionId}`);
+                      } else {
+                        navigate('/carrito');
+                      }
+                    }}
                     disabled={procesando}
                   >
                     <i className="bi bi-arrow-left me-2"></i>
-                    Volver al Carrito
+                    {location.state?.cotizacionId ? 'Volver a Cotizaciones' : 'Volver al Carrito'}
                   </Button>
                 </div>
               </Form>
@@ -268,7 +319,7 @@ const CheckoutPage = () => {
         </Col>
 
         <Col lg={4}>
-          <Card className="sticky-top" style={{ top: '20px' }}>
+          <Card className="checkout-summary-card">
             <Card.Header className="bg-white">
               <h5 className="mb-0">Resumen del Pedido</h5>
             </Card.Header>

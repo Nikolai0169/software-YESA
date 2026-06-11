@@ -52,6 +52,20 @@ const Pedido = sequelize.define('Pedido', {
     }
   },
 
+  // Columna 'cotizacionId' → Clave foránea (FK) opcional que apunta a la tabla 'cotizaciones'
+  // Si es NULL → el pedido se creó desde el carrito
+  // Si tiene valor → el pedido se creó desde una cotización
+  cotizacionId: {
+    type: DataTypes.INTEGER,           // Tipo INT, coincide con cotizaciones.id
+    allowNull: true,                   // Opcional: puede ser NULL si viene del carrito
+    references: {                      // Define la relación FK en MySQL
+      model: 'cotizaciones',          // Tabla referenciada
+      key: 'id'                       // Columna referenciada
+    },
+    onUpdate: 'CASCADE',              // Si cambia cotizaciones.id → actualiza aquí
+    onDelete: 'SET NULL',             // Si se elimina cotización → pone cotizacionId en NULL
+  },
+
   // Columna 'total' → Monto total del pedido en dinero
   // Es la suma de todos los subtotales de detalle_pedidos
   total: {
@@ -153,6 +167,10 @@ const Pedido = sequelize.define('Pedido', {
     {
       // Índice en 'usuarioId' → acelera: "dame todos los pedidos de este usuario"
       fields: ['usuarioId']
+    },
+    {
+      // Índice en 'cotizacionId' → acelera: "dame el pedido de esta cotización"
+      fields: ['cotizacionId']
     },
     {
       // Índice en 'estado' → acelera: "dame todos los pedidos pendientes"

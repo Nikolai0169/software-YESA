@@ -32,6 +32,50 @@ const MyCotizacionDetallePage = () => {
   const previewSource = designItems[0] || {};
   const multipleDesigns = designItems.length > 1;
 
+  const renderDesignPreviewCard = (item, index) => (
+    <Col xs={12} md={6} key={`item-preview-${index}`}>
+      <Card className="h-100 shadow-sm saved-design-card">
+        <Card.Body>
+          <div className="d-flex justify-content-between align-items-start mb-2">
+            <div>
+              <Card.Subtitle className="text-muted">Diseño {index + 1}</Card.Subtitle>
+              <div className="fw-bold">{item.nombre || `Diseño ${index + 1}`}</div>
+            </div>
+            <Badge bg="secondary" className="text-capitalize">{item.modelo || 'taza'}</Badge>
+          </div>
+
+          <div className="saved-design-preview">
+            <div className="saved-design-preview-frame">
+              <Personalizacion3D
+                modelo={item.modelo || 'taza'}
+                colorInterior={item.colorInterior || '#ffffff'}
+                colorBase={item.colorBase || '#ffffff'}
+                colorExterior={item.colorExterior || '#ffffff'}
+                colorAsa={item.colorAsa || '#ffffff'}
+                texture={item.textureUrl || item.texture || null}
+                overlayText={item.overlayText || ''}
+                overlayTextFontFamily={item.overlayTextFontFamily || 'sans-serif'}
+                overlayTextFontSize={item.overlayTextFontSize || 24}
+                overlayTextColor={item.overlayTextColor || '#ffffff'}
+                textInterior={item.textInterior || ''}
+                textExterior={item.textExterior || ''}
+                zoom={0.9}
+                autoRotate={false}
+                textureOffset={{ x: item.textureOffsetX || 0, y: item.textureOffsetY || 0 }}
+                textureScale={item.textureScale || 1}
+              />
+            </div>
+          </div>
+
+          <div className="mt-3 text-muted small">
+            <div>Overlay: {item.overlayText || 'No aplica'}</div>
+            <div>Color exterior: {item.colorExterior || 'N/A'}</div>
+          </div>
+        </Card.Body>
+      </Card>
+    </Col>
+  );
+
   return (
     <Container className="py-5">
       <div className="d-flex justify-content-between align-items-start gap-3 mb-4">
@@ -39,8 +83,13 @@ const MyCotizacionDetallePage = () => {
           <h1 className="display-6">Detalle de cotización</h1>
           <p className="text-muted mb-0">Revisa el diseño asociado y todas las características aplicadas.</p>
         </div>
-        <Button variant="outline-secondary" onClick={() => navigate('/mis-cotizaciones')}>
-          Volver
+        <Button
+          variant="outline-secondary"
+          onClick={() => navigate('/mis-cotizaciones')}
+          aria-label="Volver"
+          title="Volver"
+        >
+          <i className="bi bi-arrow-left" />
         </Button>
       </div>
 
@@ -51,124 +100,86 @@ const MyCotizacionDetallePage = () => {
       ) : !cotizacion ? (
         <Alert variant="warning">Cotización no encontrada.</Alert>
       ) : (
-        <Row className="g-4">
-          <Col xs={12} lg={6}>
-            <Card className="shadow-sm">
-              <Card.Body>
-                <div className="d-flex justify-content-between align-items-start mb-3 gap-3">
-                  <div>
-                    <Card.Title className="mb-1">{cotizacion.nombre || (multipleDesigns ? `Cotización múltiple (${designItems.length} diseños)` : 'Diseño cotizado')}</Card.Title>
-                    <Card.Subtitle className="text-muted">ID #{cotizacion.id}</Card.Subtitle>
-                    {multipleDesigns && <div className="text-muted small mt-1">Incluye {designItems.length} diseños</div>}
-                  </div>
-                  <Badge bg={cotizacion.estado ? (cotizacion.estado === 'pendiente' ? 'warning' : cotizacion.estado === 'cotizado' ? 'info' : 'secondary') : 'secondary'} className="text-capitalize">{cotizacion.estado}</Badge>
+        <div className="mx-auto" style={{ maxWidth: '1200px' }}>
+          <Card className="shadow-sm saved-design-card mb-4">
+            <Card.Body>
+              <div className="d-flex justify-content-between align-items-start mb-3 gap-3">
+                <div>
+                  <Card.Title className="mb-1">{cotizacion.nombre || (multipleDesigns ? `Cotización múltiple (${designItems.length} diseños)` : 'Diseño cotizado')}</Card.Title>
+                  <Card.Subtitle className="text-muted">ID #{cotizacion.id}</Card.Subtitle>
+                  {multipleDesigns && <div className="text-muted small mt-1">Incluye {designItems.length} diseños</div>}
                 </div>
-
-                <div className="d-flex justify-content-end mb-3">
-                  <Button variant="primary" onClick={() => navigate('/checkout')}>
+                <div className="d-flex gap-2 align-items-start">
+                  <Badge bg={cotizacion.estado ? (cotizacion.estado === 'pendiente' ? 'warning' : cotizacion.estado === 'cotizado' ? 'info' : 'secondary') : 'secondary'} className="text-capitalize">{cotizacion.estado}</Badge>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    disabled={cotizacion.estado !== 'cotizado'}
+                    onClick={() => navigate('/checkout', { state: { cotizacionId: cotizacion.id, cotizacion } })}
+                    title={cotizacion.estado !== 'cotizado' ? 'Solo se puede realizar pedido de cotizaciones cotizadas' : ''}
+                  >
                     Realizar pedido
                   </Button>
                 </div>
+              </div>
+              <div className="text-muted small">
+                <span>Precio: <strong>{cotizacion.precio !== undefined && cotizacion.precio !== null ? formatCurrency(cotizacion.precio) : 'Pendiente'}</strong></span>
+                {cotizacion.usuario?.nombre || cotizacion.usuario?.email || cotizacion.usuarioEmail ? (
+                  <span className="ms-3">Usuario: <strong>{cotizacion.usuario?.nombre || cotizacion.usuario?.email || cotizacion.usuarioEmail}</strong></span>
+                ) : null}
+              </div>
+            </Card.Body>
+          </Card>
 
-                <div className="border rounded overflow-hidden mb-4" style={{ minHeight: '380px', backgroundColor: '#111' }}>
-                  <Personalizacion3D
-                    modelo={previewSource.modelo || 'taza'}
-                    colorInterior={previewSource.colorInterior || '#ffffff'}
-                    colorBase={previewSource.colorBase || '#ffffff'}
-                    colorExterior={previewSource.colorExterior || '#ffffff'}
-                    colorAsa={previewSource.colorAsa || '#ffffff'}
-                    texture={previewSource.textureUrl || null}
-                    overlayText={previewSource.overlayText || ''}
-                    overlayTextFontFamily={previewSource.overlayTextFontFamily || 'sans-serif'}
-                    overlayTextFontSize={previewSource.overlayTextFontSize || 24}
-                    overlayTextColor={previewSource.overlayTextColor || '#ffffff'}
-                    textInterior={previewSource.textInterior || ''}
-                    textExterior={previewSource.textExterior || ''}
-                    zoom={1.1}
-                    autoRotate={false}
-                    textureOffset={{ x: previewSource.textureOffsetX || 0, y: previewSource.textureOffsetY || 0 }}
-                    textureScale={previewSource.textureScale || 1}
-                  />
-                </div>
+          <div>
+            <h5 className="mb-3">Diseños</h5>
+            <Row className="g-3">
+              {designItems.map((item, index) => (
+                <Col key={`item-preview-${index}`} xs={12} md={6} lg={4}>
+                  <Card className="h-100 shadow-sm saved-design-card">
+                    <Card.Body>
+                      <div className="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                          <Card.Subtitle className="text-muted">Diseño {index + 1}</Card.Subtitle>
+                          <div className="fw-bold">{item.nombre || `Diseño ${index + 1}`}</div>
+                        </div>
+                        <Badge bg="secondary" className="text-capitalize">{item.modelo || 'taza'}</Badge>
+                      </div>
 
-                <div className="mb-3">
-                  <span className="d-block text-muted small mb-2">Precio estimado</span>
-                  <div>{cotizacion.precio !== undefined && cotizacion.precio !== null ? (<strong>{formatCurrency(cotizacion.precio)}</strong>) : (<div className="text-warning">Pendiente</div>)}</div>
-                </div>
+                      <div className="saved-design-preview">
+                        <div className="saved-design-preview-frame">
+                          <Personalizacion3D
+                            modelo={item.modelo || 'taza'}
+                            colorInterior={item.colorInterior || '#ffffff'}
+                            colorBase={item.colorBase || '#ffffff'}
+                            colorExterior={item.colorExterior || '#ffffff'}
+                            colorAsa={item.colorAsa || '#ffffff'}
+                            texture={item.textureUrl || item.texture || null}
+                            overlayText={item.overlayText || ''}
+                            overlayTextFontFamily={item.overlayTextFontFamily || 'sans-serif'}
+                            overlayTextFontSize={item.overlayTextFontSize || 24}
+                            overlayTextColor={item.overlayTextColor || '#ffffff'}
+                            textInterior={item.textInterior || ''}
+                            textExterior={item.textExterior || ''}
+                            zoom={0.9}
+                            autoRotate={false}
+                            textureOffset={{ x: item.textureOffsetX || 0, y: item.textureOffsetY || 0 }}
+                            textureScale={item.textureScale || 1}
+                          />
+                        </div>
+                      </div>
 
-                {multipleDesigns && (
-                  <div className="mb-4">
-                    <h6 className="mb-2">Diseños incluidos</h6>
-                    <ul className="small">
-                      {designItems.map((item, index) => (
-                        <li key={index}><strong>{item.nombre}</strong> - {item.modelo || 'taza'}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-              </Card.Body>
-            </Card>
-          </Col>
-
-          <Col xs={12} lg={6}>
-            <Card className="shadow-sm">
-              <Card.Body>
-                <h5 className="mb-3">Diseños relacionados</h5>
-                <Row className="g-3 mb-4">
-                  {designItems.map((item, index) => (
-                    <Col xs={12} md={6} key={`item-preview-${index}`}>
-                      <Card className="h-100 shadow-sm">
-                        <Card.Body>
-                          <div className="d-flex justify-content-between align-items-start mb-2">
-                            <div>
-                              <Card.Subtitle className="text-muted">Diseño {index + 1}</Card.Subtitle>
-                              <div className="fw-bold">{item.nombre || `Diseño ${index + 1}`}</div>
-                            </div>
-                            <Badge bg="secondary" className="text-capitalize">{item.modelo || 'taza'}</Badge>
-                          </div>
-
-                          <div className="border rounded overflow-hidden" style={{ minHeight: '220px', backgroundColor: '#111' }}>
-                            <Personalizacion3D
-                              modelo={item.modelo || 'taza'}
-                              colorInterior={item.colorInterior || '#ffffff'}
-                              colorBase={item.colorBase || '#ffffff'}
-                              colorExterior={item.colorExterior || '#ffffff'}
-                              colorAsa={item.colorAsa || '#ffffff'}
-                              texture={item.textureUrl || null}
-                              overlayText={item.overlayText || ''}
-                              overlayTextFontFamily={item.overlayTextFontFamily || 'sans-serif'}
-                              overlayTextFontSize={item.overlayTextFontSize || 24}
-                              overlayTextColor={item.overlayTextColor || '#ffffff'}
-                              textInterior={item.textInterior || ''}
-                              textExterior={item.textExterior || ''}
-                              zoom={0.9}
-                              autoRotate={false}
-                              textureOffset={{ x: item.textureOffsetX || 0, y: item.textureOffsetY || 0 }}
-                              textureScale={item.textureScale || 1}
-                            />
-                          </div>
-
-                          <div className="mt-3 text-muted small">
-                            <div>Overlay: {item.overlayText || 'No aplica'}</div>
-                            <div>Color exterior: {item.colorExterior || 'N/A'}</div>
-                          </div>
-                        </Card.Body>
-                      </Card>
-                    </Col>
-                  ))}
-                </Row>
-
-                <h5 className="mb-3">Detalles</h5>
-                <div className="mb-2">
-                  <p className="mb-1"><strong>Usuario:</strong> {cotizacion.usuario?.email || cotizacion.usuarioEmail || 'Anónimo'}</p>
-                  <p className="mb-1"><strong>Notas:</strong> {cotizacion.notas || 'Sin notas'}</p>
-                </div>
-
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
+                      <div className="mt-3 text-muted small">
+                        <div>Overlay: {item.overlayText || 'No aplica'}</div>
+                        <div>Color exterior: {item.colorExterior || 'N/A'}</div>
+                      </div>
+                    </Card.Body>
+                  </Card>
+                </Col>
+              ))}
+            </Row>
+          </div>
+        </div>
       )}
     </Container>
   );

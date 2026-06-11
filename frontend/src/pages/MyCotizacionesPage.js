@@ -79,7 +79,7 @@ const MyCotizacionesPage = () => {
           <Row className="g-4">
             {visibleCotizaciones.map((c) => (
               <Col key={c.id} xs={12} md={6} lg={4}>
-                <Card className="h-100 shadow-sm">
+                <Card className="h-100 shadow-sm border border-2 border-dark">
                   <Card.Body className="d-flex flex-column">
                     <div className="d-flex justify-content-between align-items-start mb-2">
                       <div>

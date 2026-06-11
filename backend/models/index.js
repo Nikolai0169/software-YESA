@@ -328,6 +328,29 @@ Producto.belongsToMany(Pedido, {
   as: 'pedidos'                    // Alias → Producto.findAll({ include: ['pedidos'] })
 });
 
+// ==========================================
+// 10. COTIZACION ↔ PEDIDO (Uno a Muchos - Relación Opcional)
+// ==========================================
+// Una cotización puede generar MUCHOS pedidos (se puede repetir la compra)
+// Un pedido puede ser creado desde UNA cotización (o desde carrito si es NULL)
+// SET NULL: si se elimina una cotización, los pedidos quedan sin referencia pero se conservan
+
+// Lado UNO → una cotización "puede generar muchos" pedidos
+Cotizacion.hasMany(Pedido, {
+  foreignKey: 'cotizacionId',      // Columna FK en tabla 'pedidos' que apunta a 'cotizaciones.id'
+  as: 'pedidos',                   // Alias → Cotizacion.findAll({ include: ['pedidos'] })
+  onDelete: 'SET NULL',            // Si se elimina la cotización → los pedidos quedan con cotizacionId = NULL
+  onUpdate: 'CASCADE'              // Si cambia el id de la cotización → se actualiza en pedidos
+});
+
+// Lado MUCHOS → cada pedido "puede pertenecer a" una cotización (relación opcional)
+Pedido.belongsTo(Cotizacion, {
+  foreignKey: 'cotizacionId',      // Misma FK
+  as: 'cotizacion',                // Alias → Pedido.findAll({ include: ['cotizacion'] })
+  onDelete: 'SET NULL',            // Misma regla: se pone NULL si se elimina la cotización
+  onUpdate: 'CASCADE'
+});
+
 /**
  * ============================================
  * FUNCIÓN DE INICIALIZACIÓN DE ASOCIACIONES

@@ -119,7 +119,7 @@ const Cotizacion = sequelize.define('Cotizacion', {
     defaultValue: 0,
   },
   estado: {
-    type: DataTypes.ENUM('pendiente', 'cotizado', 'aprobado', 'rechazado'),
+    type: DataTypes.ENUM('pendiente', 'cotizado', 'convertida', 'rechazado'),
     allowNull: false,
     defaultValue: 'pendiente',
   },

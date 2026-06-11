@@ -11,12 +11,14 @@ const pedidoService = {
   /**
    * Crear pedido (checkout)
    */
-  crearPedido: async (direccionEnvio, telefono) => {
+  crearPedido: async (direccionEnvio, telefono, options = {}) => {
     try {
-      const response = await api.post('/cliente/pedidos', {
+      const body = {
         direccionEnvio,
         telefono,
-      });
+        ...options,
+      };
+      const response = await api.post('/cliente/pedidos', body);
       return response.data;
     } catch (error) {
       throw error.response?.data || { success: false, message: 'Error de conexión' };

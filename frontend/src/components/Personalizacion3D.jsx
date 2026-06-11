@@ -163,13 +163,9 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
       if (image) {
         const scaledSize = size * scale;
         const centerOffset = (size - scaledSize) / 2;
-        ctx.drawImage(
-          image,
-          centerOffset + offset.x,
-          centerOffset + offset.y,
-          scaledSize,
-          scaledSize
-        );
+        const offsetX = centerOffset + (offset?.x || 0);
+        const offsetY = centerOffset + (offset?.y || 0);
+        ctx.drawImage(image, offsetX, offsetY, scaledSize, scaledSize);
       }
 
       if (overlayText) {
@@ -190,13 +186,14 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
 
       const canvasTexture = new THREE.CanvasTexture(canvas);
       canvasTexture.minFilter = THREE.LinearFilter;
+      canvasTexture.magFilter = THREE.LinearFilter;
       canvasTexture.wrapS = THREE.ClampToEdgeWrapping;
       canvasTexture.wrapT = THREE.ClampToEdgeWrapping;
       canvasTexture.needsUpdate = true;
       callback(canvasTexture);
     };
 
-    if (!textureUrl) {
+    if (!textureUrl || typeof textureUrl !== 'string' || textureUrl.trim() === '') {
       drawCanvas(null);
       return;
     }
@@ -205,7 +202,7 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
     image.crossOrigin = "anonymous";
     image.onload = () => drawCanvas(image);
     image.onerror = () => drawCanvas(null);
-    image.src = textureUrl;
+    image.src = textureUrl.trim();
   };
 
   const updateExteriorTexture = () => {
@@ -270,12 +267,16 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
     // Renderizador
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
     rendererRef.current = renderer;
-    renderer.setPixelRatio(window.devicePixelRatio);
+    // Cap the device pixel ratio for performance but keep clarity on high-DPI
+    const pixelRatio = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setPixelRatio(pixelRatio);
     renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight, false);
     renderer.setClearColor(0xffffff, 1);
     renderer.domElement.style.width = "100%";
     renderer.domElement.style.height = "100%";
     renderer.domElement.style.backgroundColor = "#ffffff";
+    renderer.domElement.style.imageRendering = 'auto';
+    renderer.domElement.style.cursor = 'grab';
     mountRef.current.appendChild(renderer.domElement);
 
     const resizeScene = () => {
@@ -420,9 +421,15 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
     const previousPointerRef = { current: { x: 0, y: 0 } };
 
     const onPointerDown = (event) => {
+      if (event.preventDefault) event.preventDefault();
       isDraggingRef.current = true;
       previousPointerRef.current = { x: event.clientX, y: event.clientY };
-      renderer.domElement.setPointerCapture(event.pointerId);
+      try {
+        if (event.pointerId != null && renderer.domElement.setPointerCapture) renderer.domElement.setPointerCapture(event.pointerId);
+      } catch (e) {
+        // ignore capture errors
+      }
+      renderer.domElement.style.cursor = 'grabbing';
     };
 
     const onPointerMove = (event) => {
@@ -437,7 +444,12 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
 
     const onPointerUp = (event) => {
       isDraggingRef.current = false;
-      if (event.pointerId != null) renderer.domElement.releasePointerCapture(event.pointerId);
+      try {
+        if (event.pointerId != null && renderer.domElement.releasePointerCapture) renderer.domElement.releasePointerCapture(event.pointerId);
+      } catch (e) {
+        // ignore
+      }
+      renderer.domElement.style.cursor = 'grab';
     };
 
     renderer.domElement.style.touchAction = "none";

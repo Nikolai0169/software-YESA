@@ -696,6 +696,20 @@ body {
   font-weight: 600;
 }
 
+.checkout-summary-card {
+  position: sticky;
+  top: 20px;
+  z-index: 5;
+}
+
+@media (max-width: 991.98px) {
+  .checkout-summary-card {
+    position: static;
+    top: auto;
+    z-index: auto;
+  }
+}
+
 .personalizacion-preview-fullscreen-wrapper:fullscreen .personalizacion-preview,
 .personalizacion-preview-fullscreen-wrapper:-webkit-full-screen .personalizacion-preview,
 .personalizacion-preview-fullscreen-wrapper:-ms-fullscreen .personalizacion-preview {

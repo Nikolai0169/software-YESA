@@ -22,11 +22,13 @@ export const formatCurrency = (value) => {
   const numero = Number(normalized);
   if (Number.isNaN(numero)) return '$0';
 
+  const hasDecimals = !Number.isInteger(numero);
+
   return new Intl.NumberFormat('es-CO', {
     style: 'currency',
     currency: 'COP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
+    minimumFractionDigits: hasDecimals ? 2 : 0,
+    maximumFractionDigits: hasDecimals ? 2 : 0,
   }).format(numero);
 };
 
