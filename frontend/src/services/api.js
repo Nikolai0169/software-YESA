@@ -191,5 +191,15 @@ export const actualizarCotizacion = async (id, data) => {
   return response.data;
 };
 
+export const obtenerMisCotizaciones = async () => {
+  const response = await apiClient.get('/personalizacion/mis-cotizaciones');
+  return response.data;
+};
+
+export const obtenerCotizacionUsuario = async (id) => {
+  const response = await apiClient.get(`/personalizacion/cotizaciones/${id}`);
+  return response.data;
+};
+
 // Exportar la instancia configurada de axios
 export default apiClient;

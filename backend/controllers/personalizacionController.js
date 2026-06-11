@@ -96,3 +96,49 @@ exports.obtenerModelos = async (req, res) => {
     res.status(500).json({ error: "Error al obtener modelos" });
   }
 };
+
+// Obtener cotizaciones del usuario autenticado
+exports.obtenerMisCotizaciones = async (req, res) => {
+  try {
+    if (!req.usuario) {
+      return res.status(401).json({ success: false, message: 'No autorizado' });
+    }
+
+    const usuarioId = req.usuario.id;
+    const cotizaciones = await Cotizacion.findAll({
+      where: { usuarioId },
+      order: [['createdAt', 'DESC']],
+    });
+
+    res.json({ success: true, cotizaciones });
+  } catch (error) {
+    console.error('Error obteniendo cotizaciones del usuario:', error);
+    res.status(500).json({ success: false, message: 'Error al obtener cotizaciones' });
+  }
+};
+
+// Obtener una cotización por id SOLO si pertenece al usuario (o si es admin)
+exports.obtenerCotizacionPorUsuario = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const cotizacion = await Cotizacion.findByPk(id);
+    if (!cotizacion) {
+      return res.status(404).json({ success: false, message: 'Cotización no encontrada' });
+    }
+
+    // Si no hay usuario autenticado, negar acceso
+    if (!req.usuario) {
+      return res.status(401).json({ success: false, message: 'No autorizado' });
+    }
+
+    // Permitir si es administrador o propietario
+    if (req.usuario.rol === 'administrador' || cotizacion.usuarioId === req.usuario.id) {
+      return res.json({ success: true, cotizacion });
+    }
+
+    return res.status(403).json({ success: false, message: 'Acceso denegado' });
+  } catch (error) {
+    console.error('Error obteniendo cotización por usuario:', error);
+    res.status(500).json({ success: false, message: 'Error al obtener cotización' });
+  }
+};

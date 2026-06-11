@@ -76,6 +76,13 @@ const actualizarCotizacion = async (req, res) => {
       });
     }
 
+    if (precio !== undefined && Number(precio) <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'El precio de cotización debe ser mayor a 0',
+      });
+    }
+
     const estadoActualizado = estado || (precio !== undefined && cotizacion.estado === 'pendiente' ? 'cotizado' : cotizacion.estado);
 
     await cotizacion.update({

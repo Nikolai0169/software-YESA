@@ -21,6 +21,8 @@ import ProductDetailPage from './pages/ProductDetailPage';
 import FavoritesPage from './pages/FavoritesPage';
 import PersonalizacionPage from './pages/personalizacion';
 import SavedDesignsPage from './pages/SavedDesignsPage';
+import MyCotizacionesPage from './pages/MyCotizacionesPage';
+import MyCotizacionDetallePage from './pages/MyCotizacionDetallePage';
 import CarritoPage from './pages/CarritoPage';
 import CheckoutPage from './pages/CheckoutPage';
 import PedidoConfirmadoPage from './pages/PedidoConfirmadoPage';
@@ -62,6 +64,16 @@ function App() {
               } />
               <Route path="/personalizacion" element={<PersonalizacionPage />} />
               <Route path="/disenos-guardados" element={<SavedDesignsPage />} />
+              <Route path="/mis-cotizaciones" element={
+                <ProtectedRoute>
+                  <MyCotizacionesPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/mis-cotizaciones/:id" element={
+                <ProtectedRoute>
+                  <MyCotizacionDetallePage />
+                </ProtectedRoute>
+              } />
               <Route path="/carrito" element={<CarritoPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/pedido-confirmado/:id" element={<PedidoConfirmadoPage />} />

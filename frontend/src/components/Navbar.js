@@ -125,13 +125,17 @@ const NavigationBar = memo(() => {
                 <NavDropdown.Item as={Link} to="/admin/productos">Productos</NavDropdown.Item>
                 {isAdmin && (
                   <>
-                    <NavDropdown.Item as={Link} to="/admin/cotizaciones">Cotizaciones</NavDropdown.Item>
                     <NavDropdown.Divider />
                     <NavDropdown.Item as={Link} to="/admin/usuarios">Usuarios</NavDropdown.Item>
                   </>
                 )}
                 <NavDropdown.Divider />
                 <NavDropdown.Item as={Link} to="/admin/pedidos">Pedidos</NavDropdown.Item>
+                {isAdmin && (
+                  <>
+                    <NavDropdown.Item as={Link} to="/admin/cotizaciones">Cotizaciones</NavDropdown.Item>
+                  </>
+                )}
               </NavDropdown>
             )}
           </Nav>
@@ -200,6 +204,9 @@ const NavigationBar = memo(() => {
             </NavDropdown.Item>
             <NavDropdown.Item as={Link} to="/disenos-guardados">
               <i className="bi bi-save2-fill me-2" style={{ color: '#0d6efd' }}></i>Diseños guardados
+            </NavDropdown.Item>
+            <NavDropdown.Item as={Link} to="/mis-cotizaciones">
+              <i className="bi bi-receipt me-2" style={{ color: '#6c757d' }}></i>Mis Cotizaciones
             </NavDropdown.Item>
             {isAuthenticated && (
               <>

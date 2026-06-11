@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Card, Button, Row, Col, Badge, Spinner, Alert, Form, InputGroup } from 'react-bootstrap';
+import { Container, Card, Button, Row, Col, Badge, Spinner, Alert, Form, InputGroup, Pagination } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { obtenerCotizaciones, actualizarCotizacion } from '../../services/api';
 import { formatCurrency } from '../../utils/helpers';
@@ -11,6 +11,7 @@ const AdminCotizacionesPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -45,8 +46,8 @@ const AdminCotizacionesPage = () => {
     const inputValue = priceInputs[cotizacionId];
     const precio = parseFloat(inputValue);
 
-    if (Number.isNaN(precio) || precio < 0) {
-      setError('Ingresa un precio válido mayor o igual a 0.');
+    if (Number.isNaN(precio) || precio <= 0) {
+      setError('Ingresa un precio válido mayor a 0.');
       return;
     }
 
@@ -64,6 +65,17 @@ const AdminCotizacionesPage = () => {
     }
   };
 
+  const ITEMS_PER_PAGE = 6;
+  const totalPages = Math.ceil(cotizaciones.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const visibleCotizaciones = cotizaciones.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
   const getEstadoBadge = (estado) => {
     switch (estado) {
       case 'pendiente':
@@ -78,7 +90,6 @@ const AdminCotizacionesPage = () => {
         return 'secondary';
     }
   };
-
 
   return (
     <Container className="py-4">
@@ -101,7 +112,7 @@ const AdminCotizacionesPage = () => {
         <Card.Body>
           <h5 className="fw-semibold">Acceso exclusivo para administradores</h5>
           <p className="text-muted">
-            Aquí puedes revisar los diseños cotizados y ver los detalles que llegaron desde el backend.
+            Aquí puedes revisar los diseños por cotizar y ver los detalles de cada diseño.
           </p>
 
           {loading ? (
@@ -117,9 +128,9 @@ const AdminCotizacionesPage = () => {
           ) : (
             <>
               <Row className="g-4 mt-4">
-                {cotizaciones.map((cotizacion) => (
+                {visibleCotizaciones.map((cotizacion) => (
                 <Col key={cotizacion.id} xs={12} md={6} lg={4}>
-                  <Card className="h-100 shadow-sm">
+                  <Card className="h-100 shadow-sm border border-2 border-dark">
                     <Card.Body className="d-flex flex-column">
                       <div className="d-flex justify-content-between align-items-start mb-3 gap-2">
                         <div>
@@ -138,7 +149,7 @@ const AdminCotizacionesPage = () => {
 
                       <div className="mb-3">
                         <span className="d-block text-muted small mb-1">Usuario</span>
-                        <div>{cotizacion.usuario ? cotizacion.usuario.email : cotizacion.usuarioEmail || 'Anónimo'}</div>
+                        <div>{cotizacion.usuario ? cotizacion.usuario.nombre || cotizacion.usuario.email : cotizacion.usuarioEmail || 'Anónimo'}</div>
                       </div>
 
                       <div className="mb-3">
@@ -169,7 +180,7 @@ const AdminCotizacionesPage = () => {
                             onClick={() => handleSavePrice(cotizacion.id)}
                             disabled={savingPriceIds.includes(cotizacion.id)}
                           >
-                            {savingPriceIds.includes(cotizacion.id) ? 'Guardando...' : 'Guardar'}
+                            {savingPriceIds.includes(cotizacion.id) ? 'Asignando...' : 'Asignar'}
                           </Button>
                         </InputGroup>
                       </div>
@@ -189,6 +200,24 @@ const AdminCotizacionesPage = () => {
                 </Col>
               ))}
             </Row>
+
+            {totalPages > 1 && (
+              <div className="d-flex justify-content-center mt-4">
+                <Pagination>
+                  <Pagination.Prev disabled={currentPage === 1} onClick={() => handlePageChange(currentPage - 1)} />
+                  {Array.from({ length: totalPages }, (_, index) => (
+                    <Pagination.Item
+                      key={index + 1}
+                      active={currentPage === index + 1}
+                      onClick={() => handlePageChange(index + 1)}
+                    >
+                      {index + 1}
+                    </Pagination.Item>
+                  ))}
+                  <Pagination.Next disabled={currentPage === totalPages} onClick={() => handlePageChange(currentPage + 1)} />
+                </Pagination>
+              </div>
+            )}
           </>
           )}
 

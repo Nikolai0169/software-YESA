@@ -67,7 +67,7 @@ const SavedDesignsPage = () => {
   };
 
   const handleQuoteSelected = async () => {
-    if (selectedDesignIds.length === 0 || !isAuthenticated || !isCliente) return;
+    if (selectedDesignIds.length === 0) return;
 
     const selectedDesigns = designs.filter((design) => selectedDesignIds.includes(design.id));
     const selectedItems = selectedDesigns.map((design, index) => ({
@@ -103,6 +103,11 @@ const SavedDesignsPage = () => {
         mensaje: response.mensaje || 'Cotización enviada y pendiente',
       });
       setQuotedDesigns(selectedDesigns);
+        // Eliminar los diseños seleccionados que se enviaron a cotización
+        selectedDesigns.forEach((d) => deleteSavedDesign(d.id));
+        // Refrescar lista y limpiar selección
+        reloadDesigns();
+        setSelectedDesignIds([]);
     } catch (error) {
       console.error('Error cotizando diseños seleccionados:', error);
       const message = error.response?.data?.message || 'Error al cotizar los diseños seleccionados. Intenta nuevamente.';
@@ -144,23 +149,21 @@ const SavedDesignsPage = () => {
               </Button>
               {selectedDesignIds.length > 0 && (
                 <Button
-                  variant="outline-success"
-                  onClick={handleQuoteSelected}
-                  disabled={!isAuthenticated || !isCliente || quotingSelected}
-                >
+                    variant="outline-success"
+                    onClick={handleQuoteSelected}
+                    disabled={quotingSelected}
+                  >
                   {quotingSelected ? `Cotizando... (${selectedDesignIds.length})` : `Cotizar seleccionados (${selectedDesignIds.length})`}
                 </Button>
               )}
             </div>
           </div>
 
-          {(!isAuthenticated || !isCliente) && selectedDesignIds.length > 0 && (
-            <div className="alert alert-warning mt-4">
-              {isAuthenticated
-                ? 'Solo usuarios con rol cliente pueden cotizar diseños guardados.'
-                : 'Debes iniciar sesión como cliente para cotizar diseños guardados.'}
-            </div>
-          )}
+            {!isAuthenticated && selectedDesignIds.length > 0 && (
+              <div className="alert alert-info mt-4">
+                Estás sin sesión: las cotizaciones de diseños guardados se enviarán como anónimas.
+              </div>
+            )}
 
           {quoteSummary && (
             <>

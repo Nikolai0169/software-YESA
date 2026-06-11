@@ -11,6 +11,7 @@ const AdminCotizacionDetallePage = () => {
   const [cotizacion, setCotizacion] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [composedPreviews, setComposedPreviews] = useState({});
 
   useEffect(() => {
     const loadCotizacion = async () => {
@@ -28,6 +29,71 @@ const AdminCotizacionDetallePage = () => {
 
     loadCotizacion();
   }, [id]);
+
+  const composePreviewImage = (item) => {
+    return new Promise((resolve) => {
+      const size = 1024;
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+
+      // Fill background with exterior color or white
+      const bg = item.colorExterior || '#ffffff';
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, size, size);
+
+      const drawAndResolve = (image) => {
+        if (image) {
+          const scale = item.textureScale || 1;
+          const offsetX = item.textureOffsetX || 0;
+          const offsetY = item.textureOffsetY || 0;
+          const scaledSize = size * scale;
+          const centerOffset = (size - scaledSize) / 2;
+          ctx.drawImage(image, centerOffset + offsetX, centerOffset + offsetY, scaledSize, scaledSize);
+        }
+
+        // Draw overlay text
+        if (item.overlayText) {
+          ctx.fillStyle = item.overlayTextColor || '#ffffff';
+          const fontSize = item.overlayTextFontSize || 24;
+          const fontFamily = item.overlayTextFontFamily || 'sans-serif';
+          ctx.font = `bold ${fontSize}px ${fontFamily}`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          const lines = (item.overlayText || '').split('\n');
+          const lineHeight = fontSize + 10;
+          lines.forEach((line, index) => {
+            ctx.fillText(line, size / 2, size / 2 + (index - (lines.length - 1) / 2) * lineHeight);
+          });
+        }
+
+        resolve(canvas.toDataURL('image/png'));
+      };
+
+      if (!item.textureUrl) {
+        drawAndResolve(null);
+        return;
+      }
+
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => drawAndResolve(img);
+      img.onerror = () => drawAndResolve(null);
+      img.src = item.textureUrl;
+    });
+  };
+
+  useEffect(() => {
+    if (!cotizacion) return;
+    const items = Array.isArray(cotizacion.items) ? cotizacion.items : [cotizacion];
+    const promises = items.map((it) => composePreviewImage(it));
+    Promise.all(promises).then((results) => {
+      const map = {};
+      results.forEach((res, idx) => (map[idx] = res));
+      setComposedPreviews(map);
+    });
+  }, [cotizacion]);
 
   const designItems = Array.isArray(cotizacion?.items) ? cotizacion.items : [cotizacion];
   const previewSource = designItems[0] || {};
@@ -74,34 +140,40 @@ const AdminCotizacionDetallePage = () => {
                 </div>
 
                 <div className="border rounded overflow-hidden mb-4" style={{ minHeight: '380px', backgroundColor: '#111' }}>
-                  <Personalizacion3D
-                    modelo={previewSource.modelo || 'taza'}
-                    colorInterior={previewSource.colorInterior || '#ffffff'}
-                    colorBase={previewSource.colorBase || '#ffffff'}
-                    colorExterior={previewSource.colorExterior || '#ffffff'}
-                    colorAsa={previewSource.colorAsa || '#ffffff'}
-                    texture={previewSource.textureUrl || null}
-                    overlayText={previewSource.overlayText || ''}
-                    overlayTextFontFamily={previewSource.overlayTextFontFamily || 'sans-serif'}
-                    overlayTextFontSize={previewSource.overlayTextFontSize || 24}
-                    overlayTextColor={previewSource.overlayTextColor || '#ffffff'}
-                    textInterior={previewSource.textInterior || ''}
-                    textExterior={previewSource.textExterior || ''}
-                    zoom={1.1}
-                    autoRotate={false}
-                    textureOffset={{
-                      x: previewSource.textureOffsetX || 0,
-                      y: previewSource.textureOffsetY || 0,
-                    }}
-                    textureScale={previewSource.textureScale || 1}
-                  />
+                  {composedPreviews[0] ? (
+                    <div style={{ minHeight: '380px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#111' }}>
+                      <img src={composedPreviews[0]} alt={previewSource.nombre || 'Preview'} style={{ maxHeight: '360px', objectFit: 'contain' }} />
+                    </div>
+                  ) : (
+                    <Personalizacion3D
+                      modelo={previewSource.modelo || 'taza'}
+                      colorInterior={previewSource.colorInterior || '#ffffff'}
+                      colorBase={previewSource.colorBase || '#ffffff'}
+                      colorExterior={previewSource.colorExterior || '#ffffff'}
+                      colorAsa={previewSource.colorAsa || '#ffffff'}
+                      texture={previewSource.textureUrl || null}
+                      overlayText={previewSource.overlayText || ''}
+                      overlayTextFontFamily={previewSource.overlayTextFontFamily || 'sans-serif'}
+                      overlayTextFontSize={previewSource.overlayTextFontSize || 24}
+                      overlayTextColor={previewSource.overlayTextColor || '#ffffff'}
+                      textInterior={previewSource.textInterior || ''}
+                      textExterior={previewSource.textExterior || ''}
+                      zoom={1.1}
+                      autoRotate={false}
+                      textureOffset={{
+                        x: previewSource.textureOffsetX || 0,
+                        y: previewSource.textureOffsetY || 0,
+                      }}
+                      textureScale={previewSource.textureScale || 1}
+                    />
+                  )}
                 </div>
 
-                {previewSource.textureUrl && (
+                {(composedPreviews[0] || previewSource.textureUrl) && (
                   <div className="mb-4">
                     <span className="d-block text-muted small mb-2">Textura aplicada</span>
                     <img
-                      src={previewSource.textureUrl}
+                      src={composedPreviews[0] || previewSource.textureUrl}
                       alt="Textura aplicada"
                       className="img-fluid rounded"
                       style={{ maxHeight: '260px', objectFit: 'contain' }}
@@ -172,27 +244,31 @@ const AdminCotizacionDetallePage = () => {
                               </div>
 
                               <div className="border rounded overflow-hidden" style={{ minHeight: '220px', backgroundColor: '#111' }}>
-                                <Personalizacion3D
-                                  modelo={item.modelo || 'taza'}
-                                  colorInterior={item.colorInterior || '#ffffff'}
-                                  colorBase={item.colorBase || '#ffffff'}
-                                  colorExterior={item.colorExterior || '#ffffff'}
-                                  colorAsa={item.colorAsa || '#ffffff'}
-                                  texture={item.textureUrl || null}
-                                  overlayText={item.overlayText || ''}
-                                  overlayTextFontFamily={item.overlayTextFontFamily || 'sans-serif'}
-                                  overlayTextFontSize={item.overlayTextFontSize || 24}
-                                  overlayTextColor={item.overlayTextColor || '#ffffff'}
-                                  textInterior={item.textInterior || ''}
-                                  textExterior={item.textExterior || ''}
-                                  zoom={0.9}
-                                  autoRotate={false}
-                                  textureOffset={{
-                                    x: item.textureOffsetX || 0,
-                                    y: item.textureOffsetY || 0,
-                                  }}
-                                  textureScale={item.textureScale || 1}
-                                />
+                                {composedPreviews[index] ? (
+                                  <img src={composedPreviews[index]} alt={item.nombre || `Diseño ${index + 1}`} className="img-fluid w-100 h-100" style={{ objectFit: 'contain', maxHeight: '220px' }} />
+                                ) : (
+                                  <Personalizacion3D
+                                    modelo={item.modelo || 'taza'}
+                                    colorInterior={item.colorInterior || '#ffffff'}
+                                    colorBase={item.colorBase || '#ffffff'}
+                                    colorExterior={item.colorExterior || '#ffffff'}
+                                    colorAsa={item.colorAsa || '#ffffff'}
+                                    texture={item.textureUrl || null}
+                                    overlayText={item.overlayText || ''}
+                                    overlayTextFontFamily={item.overlayTextFontFamily || 'sans-serif'}
+                                    overlayTextFontSize={item.overlayTextFontSize || 24}
+                                    overlayTextColor={item.overlayTextColor || '#ffffff'}
+                                    textInterior={item.textInterior || ''}
+                                    textExterior={item.textExterior || ''}
+                                    zoom={0.9}
+                                    autoRotate={false}
+                                    textureOffset={{
+                                      x: item.textureOffsetX || 0,
+                                      y: item.textureOffsetY || 0,
+                                    }}
+                                    textureScale={item.textureScale || 1}
+                                  />
+                                )}
                               </div>
 
                               <div className="mt-3 text-muted small">

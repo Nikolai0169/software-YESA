@@ -832,13 +832,13 @@ const PersonalizacionPage = () => {
                   <>
                     <div className="personalizacion-actions d-flex flex-wrap justify-content-center gap-2 mt-4">
                       <button
-                        type="button"
-                        className="btn btn-yesa-primary"
-                        onClick={handleCotizar}
-                        disabled={cotizando || !isAuthenticated || !isCliente}
-                      >
-                        {cotizando ? 'Cotizando...' : 'Cotizar producto'}
-                      </button>
+                      type="button"
+                      className="btn btn-yesa-primary"
+                      onClick={handleCotizar}
+                      disabled={cotizando}
+                    >
+                      {cotizando ? 'Cotizando...' : 'Cotizar producto'}
+                    </button>
                       <button type="button" className="btn btn-yesa-gold" onClick={handleGuardarDiseno}>
                         Guardar diseño
                       </button>
@@ -846,11 +846,9 @@ const PersonalizacionPage = () => {
                         Compartir
                       </button>
                     </div>
-                    {(!isAuthenticated || !isCliente) && (
-                      <div className="mt-3 alert alert-warning">
-                        {isAuthenticated
-                          ? 'Solo usuarios con rol cliente pueden cotizar diseños personalizados.'
-                          : 'Debes iniciar sesión como cliente para cotizar un diseño.'}
+                    {!isAuthenticated && (
+                      <div className="mt-3 alert alert-info">
+                        Estás sin sesión: la cotización se enviará como usuario anónimo.
                       </div>
                     )}
                     {cotizacion && (

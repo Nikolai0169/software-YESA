@@ -37,7 +37,7 @@ export const deleteSavedDesign = (designId) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
     return filtered;
   } catch (error) {
-    console.error('Error eliminando diseño guardado:', error);
+    console.error('Error al eliminar diseño guardado:', error);
     return getSavedDesigns();
   }
 };
@@ -47,7 +47,7 @@ export const clearSavedDesigns = () => {
     localStorage.removeItem(STORAGE_KEY);
     return [];
   } catch (error) {
-    console.error('Error eliminando todos los diseños guardados:', error);
+    console.error('Error al eliminar todos los diseños guardados:', error);
     return getSavedDesigns();
   }
 };
@@ -58,7 +58,7 @@ export const setDesignToEdit = (design) => {
   try {
     localStorage.setItem(CURRENT_DESIGN_KEY, JSON.stringify(design));
   } catch (error) {
-    console.error('Error guardando diseño para edición:', error);
+    console.error('Error al guardar diseño para edición:', error);
   }
 };
 
@@ -67,7 +67,7 @@ export const getDesignToEdit = () => {
     const raw = localStorage.getItem(CURRENT_DESIGN_KEY);
     return raw ? JSON.parse(raw) : null;
   } catch (error) {
-    console.error('Error leyendo diseño para edición:', error);
+    console.error('Error al leer diseño para edición:', error);
     return null;
   }
 };
@@ -76,6 +76,6 @@ export const clearDesignToEdit = () => {
   try {
     localStorage.removeItem(CURRENT_DESIGN_KEY);
   } catch (error) {
-    console.error('Error eliminando diseño para edición:', error);
+    console.error('Error al eliminar diseño para edición:', error);
   }
 };
