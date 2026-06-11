@@ -376,9 +376,14 @@ const AdminDashboardPage = () => {
                   <i className="bi bi-truck me-2"></i>Gestionar Pedidos
                 </Button>
                 {isAdmin && (
-                  <Button variant="outline-secondary" onClick={() => navigate('/admin/usuarios')}>
-                    <i className="bi bi-person-plus me-2"></i>Nuevo Usuario
-                  </Button>
+                  <>
+                    <Button variant="outline-dark" onClick={() => navigate('/admin/cotizaciones')}>
+                      <i className="bi bi-receipt me-2"></i>Cotizaciones
+                    </Button>
+                    <Button variant="outline-secondary" onClick={() => navigate('/admin/usuarios')}>
+                      <i className="bi bi-person-plus me-2"></i>Nuevo Usuario
+                    </Button>
+                  </>
                 )}
                 <Button variant="outline-warning" onClick={loadStats}>
                   <i className="bi bi-arrow-repeat me-2"></i>Refrescar Datos

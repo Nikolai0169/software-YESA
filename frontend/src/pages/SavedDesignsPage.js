@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Button, Card, Row, Col, Badge } from 'react-bootstrap';
+import { Button, Card, Row, Col, Badge, Alert } from 'react-bootstrap';
 import Personalizacion3D from '../components/Personalizacion3D';
+import { formatCurrency } from '../utils/helpers';
+import { useAuth } from '../context/AuthContext';
 import {
   getSavedDesigns,
   deleteSavedDesign,
@@ -33,6 +35,10 @@ const isDefaultDesignName = (name) =>
 const SavedDesignsPage = () => {
   const [designs, setDesigns] = useState([]);
   const [selectedDesignIds, setSelectedDesignIds] = useState([]);
+  const [quoteSummary, setQuoteSummary] = useState(null);
+  const [quotedDesigns, setQuotedDesigns] = useState([]);
+  const [quotingSelected, setQuotingSelected] = useState(false);
+  const { isAuthenticated, isCliente } = useAuth();
 
   useEffect(() => {
     setDesigns(getSavedDesigns());
@@ -61,43 +67,49 @@ const SavedDesignsPage = () => {
   };
 
   const handleQuoteSelected = async () => {
-    if (selectedDesignIds.length === 0) return;
+    if (selectedDesignIds.length === 0 || !isAuthenticated || !isCliente) return;
 
     const selectedDesigns = designs.filter((design) => selectedDesignIds.includes(design.id));
+    const selectedItems = selectedDesigns.map((design, index) => ({
+      nombre: design.nombre || `Diseño ${index + 1}`,
+      modelo: design.modelo,
+      colorInterior: design.colorInterior,
+      colorBase: design.colorBase,
+      colorExterior: design.colorExterior,
+      colorAsa: design.colorAsa,
+      textInterior: design.textInterior,
+      textExterior: design.textExterior,
+      textureUrl: design.textureUrl || design.texture || null,
+      overlayText: design.overlayText || '',
+      overlayTextFontFamily: design.overlayTextFontFamily || 'sans-serif',
+      overlayTextFontSize: design.overlayTextFontSize || 24,
+      overlayTextColor: design.overlayTextColor || '#ffffff',
+      textureOffsetX: design.textureOffsetX || 0,
+      textureOffsetY: design.textureOffsetY || 0,
+      textureScale: design.textureScale || 1,
+      zoom: design.zoom || 1,
+    }));
+
+    setQuotingSelected(true);
+    setQuoteSummary(null);
+    setQuotedDesigns([]);
+
     try {
-      const results = await Promise.all(
-        selectedDesigns.map(async (design) => {
-          const quote = await cotizarProducto({
-            modelo: design.modelo,
-            colorInterior: design.colorInterior,
-            colorBase: design.colorBase,
-            colorExterior: design.colorExterior,
-            colorAsa: design.colorAsa,
-            textInterior: design.textInterior,
-            textExterior: design.textExterior,
-            textureUrl: design.textureUrl || design.texture || null,
-            overlayText: design.overlayText || '',
-            overlayTextFontFamily: design.overlayTextFontFamily || 'sans-serif',
-            overlayTextFontSize: design.overlayTextFontSize || 24,
-            overlayTextColor: design.overlayTextColor || '#ffffff',
-            zoom: design.zoom || 1,
-          });
-          return { design, quote };
-        })
-      );
-
-      const total = results.reduce((sum, item) => sum + (Number(item.quote.precio) || 0), 0);
-      const details = results
-        .map(
-          (item) =>
-            `${item.design.nombre || 'Diseño'}: ${item.quote.precio ? `$${item.quote.precio}` : 'Precio no disponible'}`
-        )
-        .join('\n');
-
-      alert(`Cotización total: $${total}\n\n${details}`);
+      const response = await cotizarProducto({ disenos: selectedItems });
+      const quote = response.cotizacion;
+      setQuoteSummary({
+        cotizacion: quote,
+        items: quote?.items || selectedItems,
+        mensaje: response.mensaje || 'Cotización enviada y pendiente',
+      });
+      setQuotedDesigns(selectedDesigns);
     } catch (error) {
       console.error('Error cotizando diseños seleccionados:', error);
-      alert('Error al cotizar los diseños seleccionados. Intenta nuevamente.');
+      const message = error.response?.data?.message || 'Error al cotizar los diseños seleccionados. Intenta nuevamente.';
+      setQuoteSummary({ error: true, mensaje: message });
+      setQuotedDesigns([]);
+    } finally {
+      setQuotingSelected(false);
     }
   };
 
@@ -131,12 +143,103 @@ const SavedDesignsPage = () => {
                 Eliminar todo
               </Button>
               {selectedDesignIds.length > 0 && (
-                <Button variant="outline-success" onClick={handleQuoteSelected}>
-                  Cotizar seleccionados ({selectedDesignIds.length})
+                <Button
+                  variant="outline-success"
+                  onClick={handleQuoteSelected}
+                  disabled={!isAuthenticated || !isCliente || quotingSelected}
+                >
+                  {quotingSelected ? `Cotizando... (${selectedDesignIds.length})` : `Cotizar seleccionados (${selectedDesignIds.length})`}
                 </Button>
               )}
             </div>
           </div>
+
+          {(!isAuthenticated || !isCliente) && selectedDesignIds.length > 0 && (
+            <div className="alert alert-warning mt-4">
+              {isAuthenticated
+                ? 'Solo usuarios con rol cliente pueden cotizar diseños guardados.'
+                : 'Debes iniciar sesión como cliente para cotizar diseños guardados.'}
+            </div>
+          )}
+
+          {quoteSummary && (
+            <>
+              <div className={`alert ${quoteSummary.error ? 'alert-danger' : 'alert-success'} mt-4`}>
+                {quoteSummary.error ? (
+                  <div>{quoteSummary.mensaje}</div>
+                ) : (
+                  <>
+                    <div className="mb-2">
+                      <strong>Cotización creada:</strong> {quoteSummary.cotizacion?.nombre || quoteSummary.mensaje}
+                    </div>
+                    <div className="mb-2">
+                      <strong>Diseños:</strong> {quoteSummary.items.length}
+                    </div>
+                    <div className="mb-2">
+                      <strong>Precio estimado:</strong>{' '}
+                      {quoteSummary.cotizacion?.precio !== undefined
+                        ? formatCurrency(quoteSummary.cotizacion.precio)
+                        : 'Pendiente'}
+                    </div>
+                    {quoteSummary.items.map((item, index) => (
+                      <div key={index} className="small">
+                        • {item.nombre} ({item.modelo || 'Taza'})
+                      </div>
+                    ))}
+                  </>
+                )}
+              </div>
+
+              {!quoteSummary.error && quotedDesigns.length > 0 && (
+                <div className="mb-4">
+                  <h5 className="mb-3">Vista previa de los diseños cotizados</h5>
+                  <Row className="g-3">
+                    {quotedDesigns.map((design, index) => (
+                      <Col key={`preview-${design.id || index}`} xs={12} md={6} lg={4}>
+                        <Card className="h-100 shadow-sm">
+                          <Card.Body>
+                            <div className="d-flex justify-content-between align-items-start mb-2">
+                              <div>
+                                <Card.Subtitle className="text-muted">Diseño {index + 1}</Card.Subtitle>
+                                <div className="fw-bold">{design.nombre || `Diseño ${index + 1}`}</div>
+                              </div>
+                              <Badge bg="secondary" className="text-capitalize">
+                                {capitalizeFirst(design.modelo || 'Taza')}
+                              </Badge>
+                            </div>
+
+                            <div className="border rounded overflow-hidden" style={{ minHeight: '220px', backgroundColor: '#111' }}>
+                              <Personalizacion3D
+                                modelo={design.modelo || 'taza'}
+                                colorInterior={design.colorInterior || '#ffffff'}
+                                colorBase={design.colorBase || '#ffffff'}
+                                colorExterior={design.colorExterior || '#ffffff'}
+                                colorAsa={design.colorAsa || '#ffffff'}
+                                texture={design.textureUrl || null}
+                                overlayText={design.overlayText || ''}
+                                overlayTextFontFamily={design.overlayTextFontFamily || 'sans-serif'}
+                                overlayTextFontSize={design.overlayTextFontSize || 24}
+                                overlayTextColor={design.overlayTextColor || '#ffffff'}
+                                textInterior={design.textInterior || ''}
+                                textExterior={design.textExterior || ''}
+                                zoom={0.9}
+                                autoRotate={false}
+                                textureOffset={{
+                                  x: design.textureOffsetX || 0,
+                                  y: design.textureOffsetY || 0,
+                                }}
+                                textureScale={design.textureScale || 1}
+                              />
+                            </div>
+                          </Card.Body>
+                        </Card>
+                      </Col>
+                    ))}
+                  </Row>
+                </div>
+              )}
+            </>
+          )}
 
           {designs.length === 0 ? (
             <div className="text-center py-5">

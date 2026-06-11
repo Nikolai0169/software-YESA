@@ -125,6 +125,7 @@ const NavigationBar = memo(() => {
                 <NavDropdown.Item as={Link} to="/admin/productos">Productos</NavDropdown.Item>
                 {isAdmin && (
                   <>
+                    <NavDropdown.Item as={Link} to="/admin/cotizaciones">Cotizaciones</NavDropdown.Item>
                     <NavDropdown.Divider />
                     <NavDropdown.Item as={Link} to="/admin/usuarios">Usuarios</NavDropdown.Item>
                   </>

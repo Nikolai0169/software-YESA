@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Link } from 'expo-router';
+import { useAuth } from '../../src/context/authContext';
 import useAdminRole from '../../src/hooks/useAdminRole';
 import {
   getCategorias,
@@ -132,6 +133,11 @@ export default function DashboardAdmin() {
       <Link href="/admin/productos" asChild>
         <TouchableOpacity style={styles.actionButton}>
           <Text style={styles.actionButtonText}>Administrar productos</Text>
+        </TouchableOpacity>
+      </Link>
+      <Link href="/admin/cotizaciones" asChild>
+        <TouchableOpacity style={styles.actionButton}>
+          <Text style={styles.actionButtonText}>Ver cotizaciones</Text>
         </TouchableOpacity>
       </Link>
       <Link href="/admin/usuarios" asChild>

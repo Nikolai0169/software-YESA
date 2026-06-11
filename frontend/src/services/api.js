@@ -146,12 +146,8 @@ export const downloadFile = (url) => {
  * @returns {Promise} - Promesa con la respuesta del servidor
  */
 export const guardarDiseno = async (data) => {
-  const response = await fetch("/api/personalizacion/guardar", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  return response.json();
+  const response = await apiClient.post('/personalizacion/guardar', data);
+  return response.data;
 };
 
 /**
@@ -161,12 +157,8 @@ export const guardarDiseno = async (data) => {
  * @returns {Promise} - Promesa con la cotización del servidor
  */
 export const cotizarProducto = async (data) => {
-  const response = await fetch("/api/personalizacion/cotizar", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  return response.json();
+  const response = await apiClient.post('/personalizacion/cotizar', data);
+  return response.data;
 };
 
 /**
@@ -175,8 +167,28 @@ export const cotizarProducto = async (data) => {
  * @returns {Promise} - Promesa con la lista de modelos
  */
 export const obtenerModelos = async () => {
-  const response = await fetch("/api/personalizacion/modelos");
-  return response.json();
+  const response = await apiClient.get('/personalizacion/modelos');
+  return response.data;
+};
+
+/**
+ * Obtener cotizaciones registradas en el backend para administración
+ * 
+ * @returns {Promise} - Promesa con la lista de cotizaciones
+ */
+export const obtenerCotizaciones = async () => {
+  const response = await apiClient.get('/admin/cotizaciones');
+  return response.data;
+};
+
+export const obtenerCotizacion = async (id) => {
+  const response = await apiClient.get(`/admin/cotizaciones/${id}`);
+  return response.data;
+};
+
+export const actualizarCotizacion = async (id, data) => {
+  const response = await apiClient.put(`/admin/cotizaciones/${id}`, data);
+  return response.data;
 };
 
 // Exportar la instancia configurada de axios

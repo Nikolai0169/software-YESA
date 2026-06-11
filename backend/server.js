@@ -109,13 +109,14 @@ app.use(cors({
 // Cuando el frontend envía: { "email": "test@test.com", "password": "123" }
 // Este middleware lo convierte en un objeto JavaScript accesible como req.body
 // Sin esto, req.body sería undefined
-app.use(express.json());
+// Se aumenta el límite para soportar payloads grandes como texturas en Base64.
+app.use(express.json({ limit: '50mb' }));
 
 // express.urlencoded() → Middleware que parsea el body de formularios HTML tradicionales
 // Formato: email=test@test.com&password=123 (URL-encoded)
 // extended: true → permite objetos anidados y arrays en el body
 // Se usa cuando el frontend envía formularios con enctype="application/x-www-form-urlencoded"
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // express.static() → Middleware que sirve archivos estáticos (imágenes, CSS, etc.)
 // Hace que los archivos de la carpeta 'uploads/' sean accesibles públicamente via HTTP
@@ -198,6 +199,12 @@ app.use('/api/auth', authRoutes);
 // Ejemplo: GET /api/admin/productos, POST /api/admin/categorias, PUT /api/admin/usuarios/:id
 const adminRoutes = require('./routes/admin.routes');
 app.use('/api/admin', adminRoutes);
+
+// Rutas de personalización → prefijo /api/personalizacion
+// Archivo: routes/personalizacion.js
+// Incluye guardado y cotizado de diseños personalizados
+const personalizacionRoutes = require('./routes/personalizacion');
+app.use('/api/personalizacion', personalizacionRoutes);
 
 // Rutas del cliente → prefijo /api
 // Archivo: routes/cliente.routes.js

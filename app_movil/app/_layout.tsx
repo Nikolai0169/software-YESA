@@ -29,6 +29,7 @@ export default function RootLayout() {
             <Stack.Screen name="producto/[id]" options={{ title: 'Detalle de producto' }} />
             <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modelos 3D' }} />
             <Stack.Screen name="admin/dashboard" options={{ title: 'Dashboard Admin' }} />
+            <Stack.Screen name="admin/cotizaciones" options={{ title: 'Cotizaciones' }} />
             <Stack.Screen name="admin/categorias" options={{ title: 'Categorías' }} />
             <Stack.Screen name="admin/subcategorias" options={{ title: 'Subcategorías' }} />
             <Stack.Screen name="admin/productos" options={{ title: 'Productos' }} />
