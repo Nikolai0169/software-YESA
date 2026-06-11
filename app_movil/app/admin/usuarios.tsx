@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   ScrollView,
   View,
   Text,
+  TextInput,
   TouchableOpacity,
   ActivityIndicator,
   Alert,
@@ -15,6 +16,7 @@ export default function UsuariosAdmin() {
   const { isChecking, isAuthorized } = useAdminRole();
   const [usuarios, setUsuarios] = useState<{ id: number | string; nombre?: string; email?: string; activo?: boolean }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [buscar, setBuscar] = useState('');
 
   useEffect(() => {
     loadUsuarios();
@@ -34,12 +36,23 @@ export default function UsuariosAdmin() {
     }
   }
 
+  // Filtrar usuarios según búsqueda
+  const usuariosFiltrados = useMemo(() => {
+    const termino = buscar.trim().toLowerCase();
+    if (termino === '') return usuarios;
+    return usuarios.filter((user) => {
+      const nombre = String(user.nombre || '').toLowerCase();
+      const email = String(user.email || '').toLowerCase();
+      return nombre.includes(termino) || email.includes(termino);
+    });
+  }, [usuarios, buscar]);
+
   function confirmToggle(usuario: { id: number | string; nombre?: string; email?: string; activo?: boolean }) {
     const active = usuario.activo !== false;
     const action = active ? 'desactivar' : 'activar';
     Alert.alert(
       'Confirmar acción',
-      `¿Quieres ${action} al usuario “${usuario.nombre || usuario.email || 'Sin nombre'}”?`,
+      `¿Quieres ${action} al usuario "${usuario.nombre || usuario.email || 'Sin nombre'}"?`,
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -62,7 +75,7 @@ export default function UsuariosAdmin() {
   function confirmDelete(usuario: { id: number | string; nombre?: string; email?: string }) {
     Alert.alert(
       'Eliminar usuario',
-      `¿Estás seguro de eliminar al usuario “${usuario.nombre || usuario.email || 'Sin nombre'}”?`,
+      `¿Estás seguro de eliminar al usuario "${usuario.nombre || usuario.email || 'Sin nombre'}"?`,
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -122,12 +135,41 @@ export default function UsuariosAdmin() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>Usuarios</Text>
       <Text style={styles.subtitle}>Supervisa y controla el estado de los usuarios registrados.</Text>
+
+      {/* Barra de búsqueda */}
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Buscar usuarios..."
+          value={buscar}
+          onChangeText={setBuscar}
+          placeholderTextColor="#9ca3af"
+        />
+        {buscar !== '' && (
+          <TouchableOpacity
+            style={styles.clearButton}
+            onPress={() => setBuscar('')}
+          >
+            <Text style={styles.clearButtonText}>✕</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {/* Información de filtrado */}
+      {buscar !== '' && (
+        <Text style={styles.filterInfo}>
+          {usuariosFiltrados.length} de {usuarios.length} usuarios
+        </Text>
+      )}
+
       {loading ? (
         <ActivityIndicator size="large" color="#7d2181" style={styles.loader} />
-      ) : usuarios.length === 0 ? (
-        <Text style={styles.emptyText}>No se encontraron usuarios.</Text>
+      ) : usuariosFiltrados.length === 0 ? (
+        <Text style={styles.emptyText}>
+          {buscar !== '' ? 'No se encontraron usuarios.' : 'No hay usuarios registrados.'}
+        </Text>
       ) : (
-        usuarios.map(renderUsuario)
+        usuariosFiltrados.map(renderUsuario)
       )}
     </ScrollView>
   );
@@ -158,6 +200,41 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#4b5563',
     marginBottom: 18,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    gap: 8,
+  },
+  searchInput: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    color: '#111827',
+    fontSize: 15,
+  },
+  clearButton: {
+    backgroundColor: '#ef4444',
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  clearButtonText: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  filterInfo: {
+    fontSize: 13,
+    color: '#6b7280',
+    marginBottom: 12,
+    marginLeft: 4,
   },
   loader: {
     marginTop: 30,
