@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import usuarioService from '../services/usuarioService';
 import { exportarUsuariosAPDF, exportarUsuariosAExcel } from '../utils/exportUtils';
 import { useAuth } from '../context/AuthContext'; // Ajusta la ruta según tu proyecto
+import useDebouncedValue from '../hooks/useDebouncedValue';
 
 function AdminUsuariosPage() {
   const { user: usuarioActualAutenticado } = useAuth(); // Obtén el usuario logueado
@@ -24,15 +25,17 @@ function AdminUsuariosPage() {
     rol: 'todos',
     estado: 'todos'
   });
+  const debouncedBusqueda = useDebouncedValue(filtros.busqueda, 300);
   
   const [orden, setOrden] = useState({ campo: 'nombre', direccion: 'asc' });
   const [paginaActual, setPaginaActual] = useState(1);
   const registrosPorPagina = 25;
 
-  const cargarUsuarios = useCallback(async () => {
+  const cargarUsuarios = useCallback(async (buscar = '') => {
     setLoading(true);
     try {
-      const data = await usuarioService.obtenerUsuarios('?limite=1000');
+      const params = `?limite=1000${buscar ? `&buscar=${encodeURIComponent(buscar)}` : ''}`;
+      const data = await usuarioService.obtenerUsuarios(params);
       setUsuarios(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('❌ Error al cargar usuarios:', error);
@@ -44,8 +47,8 @@ function AdminUsuariosPage() {
   }, []);
 
   useEffect(() => {
-    cargarUsuarios();
-  }, [cargarUsuarios]);
+    cargarUsuarios(debouncedBusqueda);
+  }, [cargarUsuarios, debouncedBusqueda]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

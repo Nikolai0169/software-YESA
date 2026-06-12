@@ -19,8 +19,8 @@ const normalizeList = (response, fallback = []) => {
 
 const normalizeItem = (response) => response?.data?.data || response?.data || null;
 
-export async function getCategorias() {
-  const res = await api.get('/admin/categorias');
+export async function getCategorias(params = {}) {
+  const res = await api.get('/admin/categorias', { params });
   return normalizeList(res);
 }
 
@@ -39,8 +39,8 @@ export async function toggleCategoria(id) {
   return normalizeItem(res);
 }
 
-export async function getSubcategorias() {
-  const res = await api.get('/admin/subcategorias');
+export async function getSubcategorias(params = {}) {
+  const res = await api.get('/admin/subcategorias', { params });
   return normalizeList(res);
 }
 
@@ -59,7 +59,7 @@ export async function toggleSubcategoria(id) {
   return normalizeItem(res);
 }
 
-export async function getProductos(params) {
+export async function getProductos(params = {}) {
   const res = await api.get('/admin/productos', { params });
   return normalizeList(res);
 }
@@ -89,8 +89,8 @@ export async function toggleProduct(id) {
   return normalizeItem(res);
 }
 
-export async function getUsuarios() {
-  const res = await api.get('/admin/usuarios');
+export async function getUsuarios(params = {}) {
+  const res = await api.get('/admin/usuarios', { params });
   return normalizeList(res);
 }
 
@@ -104,7 +104,7 @@ export async function deleteUsuario(id) {
   return normalizeItem(res);
 }
 
-export async function getPedidos(params) {
+export async function getPedidos(params = {}) {
   const res = await api.get('/admin/pedidos', { params });
   return normalizeList(res);
 }

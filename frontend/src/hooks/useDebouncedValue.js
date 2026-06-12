@@ -1,6 +1,6 @@
-const { useState, useEffect, useRef } = require('react');
+import { useEffect, useRef, useState } from 'react';
 
-function useDebouncedValue(value, delay = 300) {
+export default function useDebouncedValue(value, delay = 300) {
   const [debounced, setDebounced] = useState(value);
   const timerRef = useRef(null);
 
@@ -14,5 +14,3 @@ function useDebouncedValue(value, delay = 300) {
 
   return debounced;
 }
-
-module.exports = useDebouncedValue;

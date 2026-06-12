@@ -201,5 +201,10 @@ export const obtenerCotizacionUsuario = async (id) => {
   return response.data;
 };
 
+export const agregarCotizacionAlCarrito = async (cotizacionId) => {
+  const response = await apiClient.post('/cliente/carrito/cotizacion', { cotizacionId });
+  return response.data;
+};
+
 // Exportar la instancia configurada de axios
 export default apiClient;

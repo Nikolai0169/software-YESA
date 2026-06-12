@@ -582,12 +582,24 @@ const cancelarPedido = async (req, res) => {
 const getAllPedidos = async (req, res) => {
   try {
     // Extrae filtros y paginación de los query params
-    const { estado, usuarioId, pagina = 1, limite = 20 } = req.query;
+    const { estado, usuarioId, buscar, pagina = 1, limite = 20 } = req.query;
     
     // Construye filtros dinámicamente según lo que se envíe
     const where = {};
     if (estado) where.estado = estado;           // Filtro por estado
     if (usuarioId) where.usuarioId = usuarioId;  // Filtro por usuario específico
+
+    if (buscar) {
+      const { Op } = require('sequelize');
+      where[Op.or] = [
+        { '$usuario.nombre$': { [Op.like]: `%${buscar}%` } },
+        { '$usuario.email$': { [Op.like]: `%${buscar}%` } }
+      ];
+      const idBusqueda = Number(buscar);
+      if (!Number.isNaN(idBusqueda)) {
+        where[Op.or].push({ id: idBusqueda });
+      }
+    }
     
     const offset = (parseInt(pagina) - 1) * parseInt(limite);
     

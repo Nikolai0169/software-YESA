@@ -23,6 +23,9 @@ const Categoria = require('../models/Categoria');
 // Se incluye en las consultas para mostrar la subcategoría de cada producto.
 const Subcategoria = require('../models/Subcategoria');
 
+// Importa el modelo Cotizacion para convertir una cotización en un paquete de productos.
+const Cotizacion = require('../models/Cotizacion');
+
 // ✅ FUNCIÓN AUXILIAR PARA CONSTRUIR URLs DE IMÁGENES
 const construirURLProducto = (producto) => {
   if (!producto) return producto;
@@ -446,9 +449,113 @@ const vaciarCarrito = async (req, res) => {
 
 // Exporta las funciones del controlador para ser usadas en las rutas.
 // Se importan en routes/cliente.routes.js
+const agregarCotizacionAlCarrito = async (req, res) => {
+  try {
+    const { cotizacionId } = req.body;
+
+    if (!cotizacionId) {
+      return res.status(400).json({ success: false, message: 'El cotizacionId es requerido' });
+    }
+
+    const cotizacion = await Cotizacion.findByPk(cotizacionId);
+    if (!cotizacion) {
+      return res.status(404).json({ success: false, message: 'Cotización no encontrada' });
+    }
+
+    const itemsCotizacion = Array.isArray(cotizacion.items) && cotizacion.items.length > 0
+      ? cotizacion.items
+      : [cotizacion];
+
+    const categoria = await Categoria.findOne({ where: { activo: true } });
+    const subcategoria = await Subcategoria.findOne({
+      where: { activo: true, categoriaId: categoria?.id || null },
+      order: [['id', 'ASC']],
+    });
+
+    if (!categoria || !subcategoria) {
+      return res.status(400).json({
+        success: false,
+        message: 'No hay categorías o subcategorías activas disponibles para crear el paquete de productos',
+      });
+    }
+
+    const { sequelize } = require('../config/database');
+    const transaction = await sequelize.transaction();
+
+    try {
+      const totalCotizacion = Number(cotizacion.precio || 0);
+      const precioPorDiseño = itemsCotizacion.length > 0 ? totalCotizacion / itemsCotizacion.length : 0;
+      const productosCreados = [];
+
+      for (let index = 0; index < itemsCotizacion.length; index += 1) {
+        const item = itemsCotizacion[index];
+        const nombreProducto = `${cotizacion.nombre || 'Cotización'} - ${item.nombre || `Diseño ${index + 1}`}`;
+        const descripcionProducto = [
+          `Paquete generado desde cotización #${cotizacion.id}`,
+          item.modelo ? `Modelo: ${item.modelo}` : null,
+          item.overlayText ? `Overlay: ${item.overlayText}` : null,
+        ].filter(Boolean).join(' | ');
+
+        const productoCreado = await Producto.create({
+          nombre: nombreProducto,
+          descripcion: descripcionProducto,
+          precio: Number.isFinite(precioPorDiseño) ? precioPorDiseño : 0,
+          stock: 99,
+          imagen: 'producto-default.jpg',
+          imagenes: [],
+          modelos3D: [],
+          categoriaId: categoria.id,
+          subcategoriaId: subcategoria.id,
+          activo: true,
+        }, { transaction });
+
+        const itemExistente = await Carrito.findOne({
+          where: { usuarioId: req.usuario.id, productoId: productoCreado.id },
+          transaction,
+        });
+
+        if (itemExistente) {
+          itemExistente.cantidad += 1;
+          await itemExistente.save({ transaction });
+          productosCreados.push(itemExistente);
+        } else {
+          const nuevoItem = await Carrito.create({
+            usuarioId: req.usuario.id,
+            productoId: productoCreado.id,
+            cantidad: 1,
+            precioUnitario: productoCreado.precio,
+          }, { transaction });
+          productosCreados.push(nuevoItem);
+        }
+      }
+
+      cotizacion.estado = cotizacion.estado === 'cotizado' ? 'convertida' : cotizacion.estado;
+      await cotizacion.save({ transaction });
+      await transaction.commit();
+
+      return res.status(201).json({
+        success: true,
+        message: 'Cotización agregada al carrito como paquete de productos',
+        data: { cotizacionId: cotizacion.id, items: productosCreados.length },
+      });
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
+  } catch (error) {
+    console.error('Error en agregarCotizacionAlCarrito:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al convertir la cotización en paquete de productos',
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   getCarrito,               // GET /api/cliente/carrito - Ver carrito
   agregarAlCarrito,         // POST /api/cliente/carrito - Agregar producto
+  agregarCotizacionAlCarrito,
   actualizarItemCarrito,    // PUT /api/cliente/carrito/:id - Cambiar cantidad
   eliminarItemCarrito,      // DELETE /api/cliente/carrito/:id - Quitar un item
   vaciarCarrito             // DELETE /api/cliente/carrito - Vaciar todo

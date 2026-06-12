@@ -11,6 +11,7 @@ import { Container, Card, Table, Button, Modal, Form, Alert, Badge, Dropdown, Bu
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
+import useDebouncedValue from '../../hooks/useDebouncedValue';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { exportarCategoriasAPDF, exportarCategoriasAExcel } from '../../utils/exportUtils';
 
@@ -29,6 +30,7 @@ const AdminCategoriasPage = () => {
     busqueda: '',
     estado: 'todos'
   });
+  const debouncedBusqueda = useDebouncedValue(filtros.busqueda, 300);
   
   // Ordenamiento por nombre
   const [ordenNombre, setOrdenNombre] = useState('asc');
@@ -68,10 +70,13 @@ const AdminCategoriasPage = () => {
     return resultado;
   }, [categorias, filtros.busqueda, filtros.estado, ordenNombre]);
 
-  const loadCategorias = useCallback(async () => {
+  const loadCategorias = useCallback(async (buscar = '') => {
     setLoading(true);
     try {
-      const response = await api.get('/admin/categorias');
+      const params = new URLSearchParams();
+      params.append('limite', '1000');
+      if (buscar) params.append('buscar', buscar);
+      const response = await api.get(`/admin/categorias?${params.toString()}`);
       const categorias = response.data?.data?.categorias || response.data?.categorias || response.data?.data || [];
       setCategorias(Array.isArray(categorias) ? categorias : []);
     } catch (error) {
@@ -84,8 +89,8 @@ const AdminCategoriasPage = () => {
   }, []);
 
   useEffect(() => {
-    loadCategorias();
-  }, [loadCategorias]);
+    loadCategorias(debouncedBusqueda);
+  }, [loadCategorias, debouncedBusqueda]);
 
   const handleShowModal = (categoria = null) => {
     if (categoria) {

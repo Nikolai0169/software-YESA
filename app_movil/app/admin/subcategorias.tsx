@@ -95,7 +95,7 @@ export default function SubcategoriasAdmin() {
     }
   }
 
-  function handleEditSubcategoria(subcategoria: { id: number | string; nombre?: string; categoriaId?: number | string; categoria?: { id?: number | string } }) {
+  function handleEditSubcategoria(subcategoria: { id: number | string; nombre?: string; categoriaId?: number | string; categoria?: { id?: number | string; nombre?: string; titulo?: string } }) {
     setEditingSubcategoria({
       id: subcategoria.id,
       nombre: subcategoria.nombre || '',

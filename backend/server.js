@@ -84,12 +84,28 @@ const PORT = process.env.PORT || 5000;
 // app.use() registra un middleware que se aplica a TODAS las rutas
 
 // CORS → Configura qué dominios pueden hacer peticiones al backend
-// Sin este middleware, el navegador bloquea las peticiones del frontend (localhost:3000)
-// porque el backend está en un puerto diferente (localhost:5000)
+// En desarrollo aceptamos tanto el frontend web como las URLs de Expo web.
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  'http://localhost:8081',
+  'http://localhost:8082',
+  'http://localhost:8083',
+  'http://127.0.0.1:8081',
+  'http://127.0.0.1:8082',
+  'http://127.0.0.1:8083',
+].filter(Boolean);
+
 app.use(cors({
-  // origin → URL del frontend que tiene permiso para hacer peticiones
-  // Lee FRONTEND_URL del .env, o usa http://localhost:3000 por defecto
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin) || /^http:\/\/localhost:\d+$/.test(origin) || /^http:\/\/127\.0\.0\.1:\d+$/.test(origin)) {
+      callback(null, true);
+      return;
+    }
+
+    callback(new Error(`CORS bloqueado para origen: ${origin}`));
+  },
   
   // credentials: true → permite que el navegador envíe cookies y headers de autenticación
   // Necesario para que el token JWT en el header Authorization funcione correctamente
@@ -366,10 +382,13 @@ process.on('unhandledRejection', (err) => {
 // ==========================================
 // INICIAR EL SERVIDOR
 // ==========================================
-// Llama a la función startServer() para comenzar todo el proceso de arranque
-// Esta promesa se usa también en el middleware global para que las pruebas esperen
-// hasta que la base de datos esté lista.
-serverReadyPromise = startServer();
+// Solo arrancamos el servidor cuando se ejecuta este archivo directamente con node server.js.
+// Esto evita que los tests con supertest importen el módulo y dejen listeners abiertos.
+if (require.main === module) {
+  serverReadyPromise = startServer();
+} else {
+  serverReadyPromise = Promise.resolve();
+}
 
 // Exporta la app de Express para poder usarla en los tests (jest + supertest)
 // En los tests se hace: const request = require('supertest')(app) sin necesidad de app.listen()

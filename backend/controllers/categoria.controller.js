@@ -29,19 +29,34 @@ const Producto = require('../models/Producto');
  */
 const getCategorias = async (req, res) => {
   try {
-    // Extrae los query params de la URL (?activo=true&incluirSubcategorias=true)
-    const { activo, incluirSubcategorias } = req.query;
+    // Extrae los query params de la URL (?activo=true&incluirSubcategorias=true&buscar=...)
+    const { activo, incluirSubcategorias, buscar } = req.query;
     
     // Objeto de opciones para la consulta Sequelize.
     // order define el ORDER BY en SQL → orden alfabético A-Z
     const opciones = {
       order: [['nombre', 'ASC']]
     };
+
+    const where = {};
     
     // Si se envió el parámetro 'activo', agrega filtro WHERE.
     // activo === 'true' convierte el string a booleano (query params siempre son strings)
     if (activo !== undefined) {
-      opciones.where = { activo: activo === 'true' };
+      where.activo = activo === 'true';
+    }
+
+    // Búsqueda por texto en nombre o descripción
+    if (buscar) {
+      const { Op } = require('sequelize');
+      where[Op.or] = [
+        { nombre: { [Op.like]: `%${buscar}%` } },      
+        { descripcion: { [Op.like]: `%${buscar}%` } }
+      ];
+    }
+
+    if (Object.keys(where).length > 0) {
+      opciones.where = where;
     }
     
     // Si se pidió incluir subcategorías, agrega un JOIN con la tabla Subcategoria

@@ -11,6 +11,7 @@ import { Container, Card, Table, Button, Modal, Form, Alert, Badge, Dropdown, Bu
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
+import useDebouncedValue from '../../hooks/useDebouncedValue';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { exportarSubcategoriasAPDF, exportarSubcategoriasAExcel } from '../../utils/exportUtils';
 
@@ -32,6 +33,7 @@ const AdminSubcategoriasPage = () => {
     categoriaId: 'todas',
     estado: 'todos'
   });
+  const debouncedBusqueda = useDebouncedValue(filtros.busqueda, 300);
   
   // Ordenamiento por nombre
   const [ordenNombre, setOrdenNombre] = useState('asc');
@@ -72,11 +74,15 @@ const AdminSubcategoriasPage = () => {
     return resultado;
   }, [subcategorias, filtros, categorias, ordenNombre]);
 
-  const loadData = useCallback(async () => {
+  const loadData = useCallback(async (buscar = '', categoriaId = '') => {
     setLoading(true);
     try {
+      const query = new URLSearchParams();
+      query.append('limite', '1000');
+      if (buscar) query.append('buscar', buscar);
+      if (categoriaId && categoriaId !== 'todas') query.append('categoriaId', categoriaId);
       const [subcatResponse, catResponse] = await Promise.all([
-        api.get('/admin/subcategorias'),
+        api.get(`/admin/subcategorias?${query.toString()}`),
         api.get('/admin/categorias')
       ]);
       const subcategorias = subcatResponse.data?.data?.subcategorias || subcatResponse.data?.subcategorias || subcatResponse.data?.data || [];
@@ -94,8 +100,8 @@ const AdminSubcategoriasPage = () => {
   }, []);
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    loadData(debouncedBusqueda, filtros.categoriaId);
+  }, [loadData, debouncedBusqueda, filtros.categoriaId]);
 
   const handleShowModal = (subcategoria = null) => {
     if (subcategoria) {

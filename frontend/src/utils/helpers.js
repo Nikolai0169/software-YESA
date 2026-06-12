@@ -11,13 +11,39 @@
 export const formatCurrency = (value) => {
   if (value === null || value === undefined || value === '') return '$0';
 
-  const normalized = typeof value === 'string'
-    ? value.replace(/\s+/g, '')
-           .replace(/\$/g, '')
-           .replace(/\./g, '')
-           .replace(/,/g, '.')
-           .replace(/[^0-9.-]/g, '')
-    : String(value);
+  const cleaned = String(value)
+    .replace(/\s+/g, '')
+    .replace(/\$/g, '')
+    .replace(/[^0-9,.-]/g, '');
+
+  if (!cleaned) return '$0';
+
+  let normalized = cleaned;
+
+  if (cleaned.includes(',') && cleaned.includes('.')) {
+    const lastComma = cleaned.lastIndexOf(',');
+    const lastDot = cleaned.lastIndexOf('.');
+
+    if (lastComma > lastDot) {
+      normalized = cleaned.replace(/\./g, '').replace(',', '.');
+    } else {
+      normalized = cleaned.replace(/,/g, '');
+    }
+  } else if (cleaned.includes(',')) {
+    const parts = cleaned.split(',');
+
+    if (parts.length > 2 || (parts.length === 2 && parts[0].length <= 3 && parts[1].length === 3)) {
+      normalized = cleaned.replace(/,/g, '');
+    } else {
+      normalized = cleaned.replace(',', '.');
+    }
+  } else if (cleaned.includes('.')) {
+    const parts = cleaned.split('.');
+
+    if (parts.length > 2 || (parts.length === 2 && parts[0].length <= 3 && parts[1].length === 3)) {
+      normalized = cleaned.replace(/\./g, '');
+    }
+  }
 
   const numero = Number(normalized);
   if (Number.isNaN(numero)) return '$0';

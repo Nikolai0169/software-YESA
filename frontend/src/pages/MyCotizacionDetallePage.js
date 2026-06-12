@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Card, Button, Row, Col, Badge, Spinner, Alert } from 'react-bootstrap';
 import Personalizacion3D from '../components/Personalizacion3D';
-import { obtenerCotizacionUsuario } from '../services/api';
+import { agregarCotizacionAlCarrito, obtenerCotizacionUsuario } from '../services/api';
 import { formatCurrency } from '../utils/helpers';
 
 const MyCotizacionDetallePage = () => {
@@ -115,10 +115,24 @@ const MyCotizacionDetallePage = () => {
                     variant="primary"
                     size="sm"
                     disabled={cotizacion.estado !== 'cotizado'}
-                    onClick={() => navigate('/checkout', { state: { cotizacionId: cotizacion.id, cotizacion } })}
-                    title={cotizacion.estado !== 'cotizado' ? 'Solo se puede realizar pedido de cotizaciones cotizadas' : ''}
+                    onClick={async () => {
+                      if (cotizacion.estado !== 'cotizado') {
+                        alert('Esta cotización aún no está cotizada para agregarse al carrito.');
+                        return;
+                      }
+
+                      try {
+                        await agregarCotizacionAlCarrito(cotizacion.id);
+                        alert('Cotización agregada al carrito como paquete de productos.');
+                        navigate('/carrito');
+                      } catch (err) {
+                        console.error('Error agregando cotización al carrito:', err);
+                        alert(err.response?.data?.message || 'No se pudo agregar la cotización al carrito.');
+                      }
+                    }}
+                    title={cotizacion.estado !== 'cotizado' ? 'Solo se pueden agregar al carrito cotizaciones cotizadas' : ''}
                   >
-                    Realizar pedido
+                    Agregar al carrito
                   </Button>
                 </div>
               </div>

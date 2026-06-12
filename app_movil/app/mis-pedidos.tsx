@@ -6,7 +6,7 @@ import pedidoService from '../src/services/pedidoService';
 
 export default function MisPedidos() {
   const { isAuthenticated, isLoadingSession } = useAuth();
-  const [pedidos, setPedidos] = useState([]);
+  const [pedidos, setPedidos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -25,9 +25,10 @@ export default function MisPedidos() {
     try {
       const data = await pedidoService.getMisPedidos();
       setPedidos(Array.isArray(data) ? data : []);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Error cargando pedidos:', err);
-      setError((err && err.message) || 'No fue posible cargar los pedidos.');
+      const errorInfo = err as { message?: string };
+      setError(errorInfo?.message || 'No fue posible cargar los pedidos.');
     } finally {
       setLoading(false);
     }
@@ -90,7 +91,7 @@ export default function MisPedidos() {
       ) : (
         <FlatList
           data={pedidos}
-          keyExtractor={(p) => String(p.id || p._id || p.idPedido)}
+          keyExtractor={(p: any) => String(p.id || p._id || p.idPedido)}
           renderItem={renderPedido}
           contentContainerStyle={styles.list}
         />

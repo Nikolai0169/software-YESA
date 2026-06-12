@@ -34,7 +34,7 @@ export default function Index() {
   const [categorias, setCategorias] = useState<any[]>([]);
   const [selectedCategoria, setSelectedCategoria] = useState<string>('');
   const [buscar, setBuscar] = useState('');
-  const [debounceTimer, setDebounceTimer] = useState(null);
+  const [debounceTimer, setDebounceTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
@@ -75,10 +75,11 @@ export default function Index() {
         : [];
       setProductos(productosActivos);
       setCategorias(Array.isArray(listaCategorias) ? listaCategorias : []);
-    } catch (err) {
+    } catch (err: unknown) {
       // Loguear error detallado para diagnóstico
+      const errorInfo = err as { responseData?: { message?: string }; message?: string };
       console.error('loadCatalogo error', err);
-      const backendMsg = err?.responseData?.message || err?.message || 'Error desconocido';
+      const backendMsg = errorInfo?.responseData?.message || errorInfo?.message || 'Error desconocido';
       setError(`No se pudo cargar el catálogo: ${backendMsg}`);
       setProductos([]);
       setCategorias([]);

@@ -17,15 +17,21 @@ export default function UsuariosAdmin() {
   const [usuarios, setUsuarios] = useState<{ id: number | string; nombre?: string; email?: string; activo?: boolean }[]>([]);
   const [loading, setLoading] = useState(true);
   const [buscar, setBuscar] = useState('');
+  const [buscarDebounced, setBuscarDebounced] = useState('');
 
   useEffect(() => {
-    loadUsuarios();
-  }, []);
+    const timer = setTimeout(() => setBuscarDebounced(buscar.trim()), 300);
+    return () => clearTimeout(timer);
+  }, [buscar]);
 
-  async function loadUsuarios() {
+  useEffect(() => {
+    loadUsuarios(buscarDebounced);
+  }, [buscarDebounced]);
+
+  async function loadUsuarios(termino = '') {
     setLoading(true);
     try {
-      const data = await getUsuarios();
+      const data = await getUsuarios({ buscar: termino, limite: 1000 });
       setUsuarios(Array.isArray(data) ? (data as any) : []);
     } catch (error: unknown) {
       const err = error as Error;
@@ -36,9 +42,9 @@ export default function UsuariosAdmin() {
     }
   }
 
-  // Filtrar usuarios según búsqueda
+  // Filtrar usuarios según búsqueda local como respaldo
   const usuariosFiltrados = useMemo(() => {
-    const termino = buscar.trim().toLowerCase();
+    const termino = buscarDebounced.toLowerCase();
     if (termino === '') return usuarios;
     return usuarios.filter((user) => {
       const nombre = String(user.nombre || '').toLowerCase();
@@ -60,7 +66,7 @@ export default function UsuariosAdmin() {
           onPress: async () => {
             try {
               await toggleUsuario(usuario.id);
-              loadUsuarios();
+              loadUsuarios(buscarDebounced);
             } catch (error: unknown) {
               const err = error as Error;
               console.error('Error actualizando usuario:', err.message || error);
@@ -84,7 +90,7 @@ export default function UsuariosAdmin() {
           onPress: async () => {
             try {
               await deleteUsuario(usuario.id);
-              loadUsuarios();
+              loadUsuarios(buscarDebounced);
             } catch (error: unknown) {
               const err = error as Error;
               console.error('Error eliminando usuario:', err.message || error);
@@ -156,7 +162,7 @@ export default function UsuariosAdmin() {
       </View>
 
       {/* Información de filtrado */}
-      {buscar !== '' && (
+      {buscarDebounced !== '' && (
         <Text style={styles.filterInfo}>
           {usuariosFiltrados.length} de {usuarios.length} usuarios
         </Text>
@@ -166,7 +172,7 @@ export default function UsuariosAdmin() {
         <ActivityIndicator size="large" color="#7d2181" style={styles.loader} />
       ) : usuariosFiltrados.length === 0 ? (
         <Text style={styles.emptyText}>
-          {buscar !== '' ? 'No se encontraron usuarios.' : 'No hay usuarios registrados.'}
+          {buscarDebounced !== '' ? 'No se encontraron usuarios.' : 'No hay usuarios registrados.'}
         </Text>
       ) : (
         usuariosFiltrados.map(renderUsuario)

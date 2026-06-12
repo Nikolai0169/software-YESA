@@ -11,6 +11,7 @@ import { Container, Card, Table, Button, Modal, Form, Alert, Badge, Row, Col, Dr
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
+import useDebouncedValue from '../../hooks/useDebouncedValue';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { exportarProductosAPDF, exportarProductosAExcel } from '../../utils/exportUtils';
 
@@ -28,7 +29,7 @@ const ProductImage = memo(({ imagen, nombre }) => {
 ProductImage.displayName = 'ProductImage';
 
 const AdminProductosPage = () => {
-  const { isAdmin, isAuxiliar } = useAuth();
+  const { /* no-unused vars */ } = useAuth();
   const navigate = useNavigate();
   const [productos, setProductos] = useState([]);
   const [categorias, setCategorias] = useState([]);
@@ -45,6 +46,7 @@ const AdminProductosPage = () => {
   
   // Estados para filtros
   const [busqueda, setBusqueda] = useState('');
+  const debouncedBusqueda = useDebouncedValue(busqueda, 300);
   const [filtroCategoria, setFiltroCategoria] = useState('');
   const [filtroSubcategoria, setFiltroSubcategoria] = useState('');
   const [precioMin, setPrecioMin] = useState('');
@@ -77,14 +79,21 @@ const AdminProductosPage = () => {
     return resultado;
   }, [productos, busqueda, filtroCategoria, filtroSubcategoria, precioMin, precioMax, ordenNombre]);
 
-  const loadData = useCallback(async () => {
+  const loadData = useCallback(async (buscar = '', categoriaId = '', subcategoriaId = '') => {
     setLoading(true);
     try {
+      const productosParams = new URLSearchParams();
+      productosParams.append('limite', '1000');
+      if (buscar) productosParams.append('buscar', buscar);
+      if (categoriaId) productosParams.append('categoriaId', categoriaId);
+      if (subcategoriaId) productosParams.append('subcategoriaId', subcategoriaId);
+
       const [prodResponse, catResponse, subcatResponse] = await Promise.all([
-        api.get('/admin/productos?limite=1000'),
+        api.get(`/admin/productos?${productosParams.toString()}`),
         api.get('/admin/categorias'),
         api.get('/admin/subcategorias')
       ]);
+
       setProductos(Array.isArray(prodResponse.data?.data?.productos || prodResponse.data?.productos || prodResponse.data?.data || []) ? prodResponse.data?.data?.productos || prodResponse.data?.productos || prodResponse.data?.data || [] : []);
       setCategorias(Array.isArray(catResponse.data?.data?.categorias || catResponse.data?.categorias || catResponse.data?.data || []) ? catResponse.data?.data?.categorias || catResponse.data?.categorias || catResponse.data?.data || [] : []);
       setSubcategorias(Array.isArray(subcatResponse.data?.data?.subcategorias || subcatResponse.data?.subcategorias || subcatResponse.data?.data || []) ? subcatResponse.data?.data?.subcategorias || subcatResponse.data?.subcategorias || subcatResponse.data?.data || [] : []);
@@ -96,7 +105,7 @@ const AdminProductosPage = () => {
     }
   }, []);
 
-  useEffect(() => { loadData(); }, [loadData]);
+  useEffect(() => { loadData(debouncedBusqueda, filtroCategoria, filtroSubcategoria); }, [loadData, debouncedBusqueda, filtroCategoria, filtroSubcategoria]);
 
   const handleShowModal = (producto = null) => {
     if (producto) {

@@ -140,10 +140,11 @@ const Carrito = sequelize.define('Carrito', {
       // Importa el modelo Producto aquí dentro (no arriba) para evitar "circular dependency"
       // (Carrito necesita Producto y Producto puede necesitar Carrito → ciclo)
       const Producto = require('./Producto');
+      const transaction = itemCarrito?.$options?.transaction || itemCarrito?.options?.transaction || null;
       
       // Busca el producto en la BD por su ID
       // findByPk = Find By Primary Key → SELECT * FROM productos WHERE id = productoId
-      const producto = await Producto.findByPk(itemCarrito.productoId);
+      const producto = await Producto.findByPk(itemCarrito.productoId, transaction ? { transaction } : undefined);
       
       // Si no existe el producto → lanza error y NO se crea el registro
       if (!producto) {
@@ -175,9 +176,10 @@ const Carrito = sequelize.define('Carrito', {
       // Solo valida stock si realmente cambió la cantidad
       if (itemCarrito.changed('cantidad')) {
         const Producto = require('./Producto');
+        const transaction = itemCarrito?.$options?.transaction || itemCarrito?.options?.transaction || null;
         
         // Busca el producto actual en la BD
-        const producto = await Producto.findByPk(itemCarrito.productoId);
+        const producto = await Producto.findByPk(itemCarrito.productoId, transaction ? { transaction } : undefined);
         
         if (!producto) {
           throw new Error('El producto no existe');

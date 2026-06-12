@@ -120,6 +120,9 @@ router.get('/cliente/carrito', verificarAuth, carritoController.getCarrito);
 // Si el producto ya está en el carrito, suma la cantidad
 router.post('/cliente/carrito', verificarAuth, carritoController.agregarAlCarrito);
 
+// POST /api/cliente/carrito/cotizacion → Convierte una cotización en un paquete de productos y lo agrega al carrito
+router.post('/cliente/carrito/cotizacion', verificarAuth, carritoController.agregarCotizacionAlCarrito);
+
 // PUT /api/cliente/carrito/:id → Actualiza la cantidad de un item del carrito
 // :id es el ID del registro en la tabla 'carritos' (NO el ID del producto)
 // verificarAuth → verifica token

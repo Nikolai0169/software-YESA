@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import pedidoService from '../services/pedidoService';
 import { exportarPedidosAPDF, exportarPedidosAExcel } from '../utils/exportUtils';
+import useDebouncedValue from '../hooks/useDebouncedValue';
 
 function AdminPedidosPage() {
   const [pedidos, setPedidos] = useState([]);
@@ -13,13 +14,18 @@ function AdminPedidosPage() {
     fechaInicio: '',
     fechaFin: ''
   });
+  const debouncedBusqueda = useDebouncedValue(filtros.busqueda, 300);
   
   // Ordenamiento (por fecha descendente)
   const [orden, setOrden] = useState({ campo: 'createdAt', direccion: 'desc' });
 
-  const cargarPedidos = useCallback(async () => {
+  const cargarPedidos = useCallback(async (buscar = '', estado = '') => {
     try {
-      const data = await pedidoService.obtenerTodosPedidos('?limite=1000');
+      const params = new URLSearchParams();
+      params.append('limite', '1000');
+      if (buscar) params.append('buscar', buscar);
+      if (estado && estado !== 'todos') params.append('estado', estado);
+      const data = await pedidoService.obtenerTodosPedidos(`?${params.toString()}`);
       setPedidos(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('❌ Error al cargar pedidos:', error);
@@ -31,8 +37,8 @@ function AdminPedidosPage() {
   }, []);
 
   useEffect(() => {
-    cargarPedidos();
-  }, [cargarPedidos]);
+    cargarPedidos(debouncedBusqueda, filtros.estado);
+  }, [cargarPedidos, debouncedBusqueda, filtros.estado]);
 
   const handleCambiarEstado = async (pedidoId, nuevoEstado) => {
   console.log('🔄 Cambiando estado del pedido:', pedidoId, 'a', nuevoEstado);

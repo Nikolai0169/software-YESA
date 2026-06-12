@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ScrollView,
   View,
   Text,
+  TextInput,
   TouchableOpacity,
   ActivityIndicator,
   Alert,
@@ -20,15 +21,22 @@ export default function ProductosAdmin() {
   const { isChecking, isAuthorized } = useAdminRole();
   const [productos, setProductos] = useState<{ id: number | string; nombre?: string; titulo?: string; precio?: number; price?: number; activo?: boolean }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [buscar, setBuscar] = useState('');
+  const [buscarDebounced, setBuscarDebounced] = useState('');
 
   useEffect(() => {
-    loadProductos();
-  }, []);
+    const timer = setTimeout(() => setBuscarDebounced(buscar.trim()), 300);
+    return () => clearTimeout(timer);
+  }, [buscar]);
 
-  async function loadProductos() {
+  useEffect(() => {
+    loadProductos(buscarDebounced);
+  }, [buscarDebounced]);
+
+  async function loadProductos(termino = '') {
     setLoading(true);
     try {
-      const data = await getProductos();
+      const data = await getProductos({ buscar: termino, limite: 1000 });
       setProductos(Array.isArray(data) ? (data as any) : []);
     } catch (error: unknown) {
       const err = error as Error;
@@ -38,6 +46,16 @@ export default function ProductosAdmin() {
       setLoading(false);
     }
   }
+
+  const productosFiltrados = useMemo(() => {
+    const termino = buscarDebounced.toLowerCase();
+    if (!termino) return productos;
+    return productos.filter((producto) => {
+      const nombre = String(producto.nombre || producto.titulo || '').toLowerCase();
+      const descripcion = String((producto as any).descripcion || '').toLowerCase();
+      return nombre.includes(termino) || descripcion.includes(termino);
+    });
+  }, [productos, buscarDebounced]);
 
   function confirmToggle(producto: { id: number | string; nombre?: string; titulo?: string; activo?: boolean }) {
     const active = producto.activo !== false;
@@ -76,7 +94,7 @@ export default function ProductosAdmin() {
           onPress: async () => {
             try {
               await deleteProduct(producto.id);
-              loadProductos();
+              loadProductos(buscarDebounced);
             } catch (error: unknown) {
               const err = error as Error;
               console.error('Error eliminando producto:', err.message || error);
@@ -136,12 +154,27 @@ export default function ProductosAdmin() {
         </TouchableOpacity>
       </Link>
 
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Buscar productos por nombre o descripción"
+          value={buscar}
+          onChangeText={setBuscar}
+          placeholderTextColor="#9ca3af"
+        />
+        {buscar !== '' && (
+          <TouchableOpacity style={styles.clearButton} onPress={() => setBuscar('')}>
+            <Text style={styles.clearButtonText}>✕</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
       {loading ? (
         <ActivityIndicator size="large" color="#7d2181" style={styles.loader} />
-      ) : productos.length === 0 ? (
-        <Text style={styles.emptyText}>No hay productos disponibles.</Text>
+      ) : productosFiltrados.length === 0 ? (
+        <Text style={styles.emptyText}>{buscarDebounced !== '' ? 'No se encontraron productos.' : 'No hay productos disponibles.'}</Text>
       ) : (
-        productos.map(renderProducto)
+        productosFiltrados.map(renderProducto)
       )}
     </ScrollView>
   );
@@ -184,6 +217,35 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: '700',
     fontSize: 16,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    gap: 8,
+  },
+  searchInput: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    color: '#111827',
+    fontSize: 15,
+  },
+  clearButton: {
+    backgroundColor: '#ef4444',
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  clearButtonText: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: '700',
   },
   loader: {
     marginTop: 30,
