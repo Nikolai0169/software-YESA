@@ -30,7 +30,7 @@ const Producto = require('../models/Producto');
 const getSubcategorias = async (req, res) => {
   try {
     // Extrae los query params de la URL
-    const { categoriaId, activo, incluirCategoria } = req.query;
+    const { categoriaId, activo, incluirCategoria, buscar, pagina = 1, limite = 100 } = req.query;
     
     // Opciones base de la consulta: ordenar alfabéticamente A-Z
     const opciones = {
@@ -41,6 +41,15 @@ const getSubcategorias = async (req, res) => {
     const where = {};
     if (categoriaId) where.categoriaId = categoriaId;         // Filtra por categoría padre
     if (activo !== undefined) where.activo = activo === 'true'; // Convierte string a boolean
+
+    // Soporta búsqueda por texto en nombre o descripción
+    if (buscar) {
+      const { Op } = require('sequelize');
+      where[Op.or] = [
+        { nombre: { [Op.like]: `%${buscar}%` } },
+        { descripcion: { [Op.like]: `%${buscar}%` } }
+      ];
+    }
     
     // Solo agrega WHERE si hay al menos un filtro.
     // Object.keys() retorna las llaves del objeto como array. Si está vacío, length es 0.

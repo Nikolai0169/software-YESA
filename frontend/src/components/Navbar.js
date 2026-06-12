@@ -41,25 +41,28 @@ const NavigationBar = memo(() => {
     setBuscarLocal(params.get('buscar') || '');
   }, [location.search]);
 
-  // BÚSQUEDA INSTANTÁNEA (sin debounce)
+  // BÚSQUEDA CON DEBOUNCE (usa estado local y actualiza URL tras delay)
   const handleBuscarChange = useCallback((e) => {
     const valor = e.target.value;
     setBuscarLocal(valor);
-    
+
     // Cancelar petición anterior si existe
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
-    
-    // Actualizar URL inmediatamente
-    const params = new URLSearchParams(location.search);
-    if (valor.trim()) {
-      params.set('buscar', valor.trim());
-    } else {
-      params.delete('buscar');
-    }
-    params.set('pagina', '1');
-    navigate(`/catalogo?${params.toString()}`);
+
+    // Debounce manual: limpia timer previo y crea uno nuevo
+    if (handleBuscarChange.debounceTimer) clearTimeout(handleBuscarChange.debounceTimer);
+    handleBuscarChange.debounceTimer = setTimeout(() => {
+      const params = new URLSearchParams(location.search);
+      if (valor.trim()) {
+        params.set('buscar', valor.trim());
+      } else {
+        params.delete('buscar');
+      }
+      params.set('pagina', '1');
+      navigate(`/catalogo?${params.toString()}`);
+    }, 300);
   }, [location.search, navigate]);
 
   // Limpiar al desmontar

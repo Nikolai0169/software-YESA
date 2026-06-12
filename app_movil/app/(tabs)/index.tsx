@@ -34,6 +34,7 @@ export default function Index() {
   const [categorias, setCategorias] = useState<any[]>([]);
   const [selectedCategoria, setSelectedCategoria] = useState<string>('');
   const [buscar, setBuscar] = useState('');
+  const [debounceTimer, setDebounceTimer] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
@@ -46,6 +47,19 @@ export default function Index() {
   useEffect(() => {
     setPaginaActual(1);
   }, [buscar, selectedCategoria]);
+
+  // Debounce nativo: espera 300ms tras último cambio en `buscar` para ejecutar acciones (p.ej. pedir al backend)
+  useEffect(() => {
+    if (debounceTimer) {
+      clearTimeout(debounceTimer);
+    }
+    const timer = setTimeout(async () => {
+      // Si quieres, aquí puedes llamar al backend con catalogoService.getProductos({ search: buscar })
+      // Por ahora mantenemos el filtrado client-side pero el debounce evita recalculos excesivos.
+    }, 300);
+    setDebounceTimer(timer);
+    return () => clearTimeout(timer);
+  }, [buscar]);
 
   const loadCatalogo = async () => {
     setLoading(true);
