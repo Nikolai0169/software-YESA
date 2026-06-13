@@ -26,10 +26,18 @@ const Subcategoria = require('../models/Subcategoria');
 // ✅ FUNCIÓN AUXILIAR PARA CONSTRUIR URLs DE IMÁGENES
 const construirURLProducto = (producto) => {
   if (!producto) return producto;
-  
-  if (producto.imagen && !producto.imagen.startsWith('http')) {
-    const baseURL = process.env.BACKEND_URL || 'http://localhost:5000';
-    producto.imagen = `${baseURL}/uploads/${producto.imagen}`;
+
+  const baseURL = process.env.BACKEND_URL || 'http://localhost:5000';
+  const normalizar = (imagen) => {
+    if (!imagen) return imagen;
+    if (imagen.startsWith('http')) return imagen;
+    const limpia = imagen.replace(/^\/+/, '');
+    if (limpia.startsWith('uploads/')) return `${baseURL}/${limpia}`;
+    return `${baseURL}/uploads/${limpia}`;
+  };
+
+  if (producto.imagen) {
+    producto.imagen = normalizar(producto.imagen);
   }
   return producto;
 };

@@ -11,7 +11,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import catalogoService from '../services/catalogoService';
 import carritoService from '../services/carritoService';
 import LoadingSpinner from '../components/LoadingSpinner';
-import Personalization3DModal from '../components/Personalization3DModal';
 import { useAuth } from '../context/AuthContext';
 import { getImageUrl } from '../utils/helpers';
 
@@ -25,7 +24,6 @@ const ProductDetailPage = () => {
   const [cantidad, setCantidad] = useState(1);
   const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
   const [isFavorite, setIsFavorite] = useState(false);
-  const [showPersonalization, setShowPersonalization] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   const checkFavorite = useCallback(async (productoId) => {
@@ -319,7 +317,7 @@ const ProductDetailPage = () => {
                   <Button
                     variant="outline-secondary"
                     size="lg"
-                    onClick={() => setShowPersonalization(true)}
+                    onClick={() => navigate('/personalizacion')}
                     style={{ borderRadius: '0.75rem', fontWeight: '600', padding: '0.75rem', width: '100%' }}
                   >
                     <i className="bi bi-brush me-2" />
@@ -335,17 +333,6 @@ const ProductDetailPage = () => {
               No disponible
             </Button>
           )}
-
-          <Personalization3DModal
-            show={showPersonalization}
-            onHide={() => setShowPersonalization(false)}
-            producto={producto}
-            onPersonalizationComplete={(payload) => {
-              setMensaje({ tipo: 'success', texto: 'Personalización aplicada correctamente.' });
-              setTimeout(() => setMensaje({ tipo: '', texto: '' }), 2000);
-              console.log('Personalización seleccionada:', payload);
-            }}
-          />
         </Col>
       </Row>
 

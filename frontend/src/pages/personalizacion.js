@@ -1,8 +1,16 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import Personalizacion3D from "../components/Personalizacion3D";
 import { useAuth } from "../context/AuthContext";
 import { guardarDiseno, cotizarProducto } from "../services/api";
-import { saveDesignLocally, getDesignToEdit, clearDesignToEdit } from "../services/personalizationService";
+import {
+  saveDesignLocally,
+  getDesignToEdit,
+  clearDesignToEdit,
+  setPendingDesignToEdit,
+  getPendingDesignToEdit,
+  clearPendingDesignToEdit,
+} from "../services/personalizationService";
 import { formatCurrency } from "../utils/helpers";
 
 const PersonalizacionPage = () => {
@@ -32,6 +40,8 @@ const PersonalizacionPage = () => {
   const [cotizacion, setCotizacion] = useState(null);
   const [cotizando, setCotizando] = useState(false);
   const { isAuthenticated, isCliente } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [textEditorOpen, setTextEditorOpen] = useState(false);
   const [textEditorContent, setTextEditorContent] = useState("");
   const [textEditorFontFamily, setTextEditorFontFamily] = useState("sans-serif");
@@ -107,8 +117,48 @@ const PersonalizacionPage = () => {
     }));
   };
 
+  const buildCurrentDesignState = () => {
+    const currentColors = colorsByModel[modelo3D] || {};
+    const currentTexts = textsByModel[modelo3D] || {};
+
+    return {
+      id: currentDesignId || `diseno_${Date.now()}`,
+      nombre:
+        currentDesignName || `Diseño personalizado - ${new Date().toLocaleDateString()}`,
+      modelo: modelo3D,
+      colorInterior: currentColors.interior,
+      colorBase: currentColors.base,
+      colorExterior: currentColors.exterior,
+      colorAsa: currentColors.asa,
+      textInterior: currentTexts.interior,
+      textExterior: currentTexts.exterior,
+      textureUrl: texturesByModel[modelo3D] || null,
+      overlayText: overlayTextByModel[modelo3D] || '',
+      overlayTextFontFamily:
+        (overlayTextSettingsByModel[modelo3D] && overlayTextSettingsByModel[modelo3D].fontFamily) || 'sans-serif',
+      overlayTextFontSize:
+        (overlayTextSettingsByModel[modelo3D] && overlayTextSettingsByModel[modelo3D].fontSize) || 24,
+      overlayTextColor:
+        (overlayTextSettingsByModel[modelo3D] && overlayTextSettingsByModel[modelo3D].color) || '#ffffff',
+      zoom: zoomLevel,
+      textureOffset: textureOffset || { x: 0, y: 0 },
+      textureScale: textureScale || 1,
+      textEditorOpen,
+      textEditorContent,
+      textEditorFontFamily,
+      textEditorFontSize,
+      textEditorColor,
+    };
+  };
+
+  const redirectToLoginWithDesign = () => {
+    setPendingDesignToEdit(buildCurrentDesignState());
+    navigate('/login', { state: { from: location.pathname || '/personalizacion' } });
+  };
+
   useEffect(() => {
-    const designToEdit = getDesignToEdit();
+    const pendingDesign = getPendingDesignToEdit();
+    const designToEdit = pendingDesign || getDesignToEdit();
     if (designToEdit) {
       const model = designToEdit.modelo || 'taza';
       setCurrentDesignId(designToEdit.id || null);
@@ -149,7 +199,18 @@ const PersonalizacionPage = () => {
         },
       }));
       setZoomLevel(designToEdit.zoom || 1);
-      clearDesignToEdit();
+      setTextureOffset(designToEdit.textureOffset || { x: 0, y: 0 });
+      setTextureScale(designToEdit.textureScale || 1);
+      setTextEditorOpen(!!designToEdit.textEditorOpen);
+      setTextEditorContent(designToEdit.textEditorContent || '');
+      setTextEditorFontFamily(designToEdit.textEditorFontFamily || 'sans-serif');
+      setTextEditorFontSize(designToEdit.textEditorFontSize || 24);
+      setTextEditorColor(designToEdit.textEditorColor || '#000000');
+      if (pendingDesign) {
+        clearPendingDesignToEdit();
+      } else {
+        clearDesignToEdit();
+      }
     }
   }, []);
 
@@ -347,6 +408,12 @@ const PersonalizacionPage = () => {
   };
 
   const handleCotizar = async () => {
+    if (!isAuthenticated) {
+      alert('Debes iniciar sesión para cotizar tu diseño.');
+      redirectToLoginWithDesign();
+      return;
+    }
+
     try {
       setCotizando(true);
       setCotizacion(null);
@@ -388,6 +455,12 @@ const PersonalizacionPage = () => {
   };
 
   const handleGuardarDiseno = async () => {
+    if (!isAuthenticated) {
+      alert('Debes iniciar sesión para guardar tu diseño.');
+      redirectToLoginWithDesign();
+      return;
+    }
+
     try {
       const currentColors = colorsByModel[modelo3D] || {};
       const currentTexts = textsByModel[modelo3D] || {};
@@ -848,8 +921,8 @@ const PersonalizacionPage = () => {
                       </button>
                     </div>
                     {!isAuthenticated && (
-                      <div className="mt-3 alert alert-info">
-                        Estás sin sesión: la cotización se enviará como usuario anónimo.
+                      <div className="mt-3 alert alert-warning">
+                        Debes iniciar sesión para guardar tu diseño o cotizar. Al iniciar sesión volverás a esta pantalla con el diseño que llevas hasta el momento.
                       </div>
                     )}
                     {cotizacion && (

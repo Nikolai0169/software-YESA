@@ -7,10 +7,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Form, Button, Alert } from 'react-bootstrap';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const LoginPage = () => {
+  const location = useLocation();
+  const from = location.state?.from;
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -34,11 +36,11 @@ const LoginPage = () => {
     try {
       const response = await login(email, password);
       
-      // Redirigir según el rol
+      // Redirigir según el rol y ruta de origen
       if (response.data.usuario.rol === 'cliente') {
-        navigate('/catalogo');
-      } else if (response.data.usuario.rol === 'administrador' || response.data.usuario.rol === 'auxiliar') {
-        navigate('/admin/dashboard');  // Ir solo al dashboard, no a productos
+        navigate(from || '/catalogo');
+      } else {
+        navigate('/admin/dashboard');
       }
     } catch (err) {
       setError(err.message || 'Error al iniciar sesión');
@@ -123,7 +125,7 @@ const LoginPage = () => {
 
               <div className="text-center">
                 <p className="mb-2">¿No tienes cuenta?</p>
-                <Link to="/register" className="btn btn-outline-primary w-100">
+                <Link to="/register" state={from ? { from } : undefined} className="btn btn-outline-primary w-100">
                   <i className="bi bi-person-plus me-2"></i>
                   Crear cuenta nueva
                 </Link>

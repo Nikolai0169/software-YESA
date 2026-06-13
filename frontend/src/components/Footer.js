@@ -27,14 +27,20 @@ const Footer = memo(() => {
           <Col md={3} className="mb-3">
             <h5 style={{ color: '#E91E63' }}>Categorías</h5>
             <ul className="list-unstyled">
-              {['Alcancías', 'Pocillos', 'Platos', 'Floreros', 'Vasijas'].map((item) => (
-                <li key={item}>
+              {[
+                { label: 'Alcancías', query: 'Alcancías' },
+                { label: 'Pocillos', query: 'Pocillos' },
+                { label: 'Platos', query: 'Platos' },
+                { label: 'Floreros', query: 'Floreros' },
+                { label: 'Vasijas', query: 'Vasijas' },
+              ].map((item) => (
+                <li key={item.label}>
                   <Link
-                    to="/catalogo"
+                    to={`/catalogo?buscar=${encodeURIComponent(item.query)}`}
                     className="text-decoration-none"
                     style={{ color: '#ccc', fontSize: '0.9rem' }}
                   >
-                    {item}
+                    {item.label}
                   </Link>
                 </li>
               ))}

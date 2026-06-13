@@ -17,13 +17,31 @@ const fs = require('fs').promises;
 // ✅ FUNCIÓN AUXILIAR PARA CONSTRUIR URLs DE IMÁGENES
 const construirURLProducto = (producto) => {
   if (!producto) return producto;
-  
+
   const baseURL = process.env.BACKEND_URL || 'http://localhost:5000';
+
+  const normalizar = (imagen) => {
+    if (!imagen) return imagen;
+    if (imagen.startsWith('http')) return imagen;
+    // Quitar barras iniciales
+    const limpia = imagen.replace(/^\/+/, '');
+    // Si ya contiene la carpeta uploads/ -> evitar duplicarla
+    if (limpia.startsWith('uploads/')) return `${baseURL}/${limpia}`;
+    return `${baseURL}/uploads/${limpia}`;
+  };
+
+  if (producto.imagenes && typeof producto.imagenes === 'string') {
+    try {
+      producto.imagenes = JSON.parse(producto.imagenes);
+    } catch (e) {
+      producto.imagenes = [];
+    }
+  }
 
   if (producto.imagenes && Array.isArray(producto.imagenes)) {
     producto.imagenes = producto.imagenes.map((imagen) => {
       if (!imagen) return imagen;
-      return imagen.startsWith('http') ? imagen : `${baseURL}/uploads/${imagen}`;
+      return normalizar(imagen);
     });
 
     if (!producto.imagen && producto.imagenes.length) {
@@ -31,8 +49,8 @@ const construirURLProducto = (producto) => {
     }
   }
 
-  if (producto.imagen && !producto.imagen.startsWith('http')) {
-    producto.imagen = `${baseURL}/uploads/${producto.imagen}`;
+  if (producto.imagen) {
+    producto.imagen = normalizar(producto.imagen);
   }
 
   return producto;

@@ -7,11 +7,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Form, Button, Alert } from 'react-bootstrap';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { isValidEmail, isValidPhone } from '../utils/helpers';
 
 const RegisterPage = () => {
+  const location = useLocation();
+  const from = location.state?.from;
   const [formData, setFormData] = useState({
     nombre: '',
     apellido: '',
@@ -71,7 +73,7 @@ const RegisterPage = () => {
     try {
       const { confirmPassword, ...userData } = formData;
       await register(userData);
-      navigate('/catalogo');
+      navigate(from || '/catalogo');
     } catch (err) {
       setError(err.message || 'Error al registrarse');
     } finally {
@@ -221,7 +223,7 @@ const RegisterPage = () => {
 
               <div className="text-center">
                 <p className="mb-2">¿Ya tienes cuenta?</p>
-                <Link to="/login" className="btn btn-outline-primary w-100">
+                <Link to="/login" state={from ? { from } : undefined} className="btn btn-outline-primary w-100">
                   <i className="bi bi-box-arrow-in-right me-2"></i>
                   Iniciar Sesión
                 </Link>

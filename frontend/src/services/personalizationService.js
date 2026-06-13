@@ -53,6 +53,7 @@ export const clearSavedDesigns = () => {
 };
 
 const CURRENT_DESIGN_KEY = 'current_personalization_design';
+const PENDING_DESIGN_KEY = 'pending_personalization_design';
 
 export const setDesignToEdit = (design) => {
   try {
@@ -77,5 +78,31 @@ export const clearDesignToEdit = () => {
     localStorage.removeItem(CURRENT_DESIGN_KEY);
   } catch (error) {
     console.error('Error al eliminar diseño para edición:', error);
+  }
+};
+
+export const setPendingDesignToEdit = (design) => {
+  try {
+    localStorage.setItem(PENDING_DESIGN_KEY, JSON.stringify(design));
+  } catch (error) {
+    console.error('Error al guardar diseño pendiente para edición:', error);
+  }
+};
+
+export const getPendingDesignToEdit = () => {
+  try {
+    const raw = localStorage.getItem(PENDING_DESIGN_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (error) {
+    console.error('Error al leer diseño pendiente para edición:', error);
+    return null;
+  }
+};
+
+export const clearPendingDesignToEdit = () => {
+  try {
+    localStorage.removeItem(PENDING_DESIGN_KEY);
+  } catch (error) {
+    console.error('Error al eliminar diseño pendiente para edición:', error);
   }
 };

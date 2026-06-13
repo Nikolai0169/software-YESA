@@ -10,13 +10,11 @@ import { Card, Button, Badge } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { formatCurrency, getImageUrl } from '../utils/helpers';
-import Personalization3DModal from './Personalization3DModal';
 
 const ProductCard = memo(({ producto, onAddToCart, showActions = true }) => {
   const { isAuthenticated } = useAuth();
   const [isFavorite, setIsFavorite] = useState(false);
   const [loadingFavorite, setLoadingFavorite] = useState(false);
-  const [showPersonalization, setShowPersonalization] = useState(false);
 
   const checkIfFavorite = useCallback(async () => {
     try {
@@ -90,10 +88,6 @@ const ProductCard = memo(({ producto, onAddToCart, showActions = true }) => {
     },
     [onAddToCart, producto]
   );
-
-  const handlePersonalizationComplete = (personalizationData) => {
-    console.log('Personalización aplicada:', personalizationData);
-  };
 
   return (
     <>
@@ -183,8 +177,9 @@ const ProductCard = memo(({ producto, onAddToCart, showActions = true }) => {
                 <i className="bi bi-eye me-1" /> Ver
               </Button>
               <Button
+                as={Link}
+                to="/personalizacion"
                 variant="outline-secondary"
-                onClick={() => setShowPersonalization(true)}
                 style={{ borderRadius: '0.75rem' }}
                 title="Personalizar 3D"
               >
@@ -202,13 +197,6 @@ const ProductCard = memo(({ producto, onAddToCart, showActions = true }) => {
           )}
         </Card.Body>
       </Card>
-
-      <Personalization3DModal
-        show={showPersonalization}
-        onHide={() => setShowPersonalization(false)}
-        producto={producto}
-        onPersonalizationComplete={handlePersonalizationComplete}
-      />
     </>
   );
 });

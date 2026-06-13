@@ -2,8 +2,8 @@
 import * as THREE from "three";
 
 const createTextSprite = (text, fontFamily = "sans-serif", fontSize = 24, color = "#ffffff") => {
-  const width = 1024;
-  const height = 256;
+  const width = 2048;
+  const height = 512;
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
@@ -11,13 +11,14 @@ const createTextSprite = (text, fontFamily = "sans-serif", fontSize = 24, color 
   ctx.clearRect(0, 0, width, height);
   ctx.fillStyle = "rgba(0, 0, 0, 0)";
   ctx.fillRect(0, 0, width, height);
+  const effectiveFontSize = Math.min(220, Math.max(36, Math.round(fontSize * 1.8)));
   ctx.fillStyle = color;
-  ctx.font = `bold ${fontSize}px ${fontFamily}`;
+  ctx.font = `bold ${effectiveFontSize}px ${fontFamily}`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   const lines = text ? text.split("\n") : [];
   lines.forEach((line, index) => {
-    ctx.fillText(line, width / 2, height / 2 + (index - (lines.length - 1) / 2) * (fontSize + 8));
+    ctx.fillText(line, width / 2, height / 2 + (index - (lines.length - 1) / 2) * (effectiveFontSize + 12));
   });
   const texture = new THREE.CanvasTexture(canvas);
   texture.minFilter = THREE.LinearFilter;
@@ -117,7 +118,9 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
     const textTexture = createTextSprite(text, fontFamily, fontSize, color);
     const spriteMaterial = new THREE.SpriteMaterial({ map: textTexture, transparent: true });
     const sprite = new THREE.Sprite(spriteMaterial);
-    sprite.scale.set(2.4, 0.75, 1);
+    const scaleFactor = Math.min(6, Math.max(3, fontSize * 0.15 + 1.6));
+    const heightFactor = Math.min(2.2, Math.max(1.0, fontSize * 0.06 + 0.6));
+    sprite.scale.set(scaleFactor, heightFactor, 1);
     sprite.position.set(0, 0, zOffset);
     modelGroupRef.current.add(sprite);
     ringSpritesRef.current.push(sprite);
@@ -170,11 +173,12 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
 
       if (overlayText) {
         ctx.fillStyle = color;
-        ctx.font = `bold ${fontSize}px ${fontFamily}`;
+        const scaledFontSize = Math.min(220, Math.max(40, Math.round(fontSize * 2.5)));
+        ctx.font = `bold ${scaledFontSize}px ${fontFamily}`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         const lines = overlayText.split("\n");
-        const lineHeight = fontSize + 10;
+        const lineHeight = scaledFontSize + 16;
         lines.forEach((line, index) => {
           ctx.fillText(
             line,
@@ -224,27 +228,17 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
       exteriorMaterialRef.current.needsUpdate = true;
     };
 
-    if (texture) {
-      createTextureCanvas(
-        texture,
-        overlayText,
-        overlayTextFontFamily,
-        overlayTextFontSize,
-        overlayTextColor,
-        textureOffset,
-        textureScale,
-        setMaterialMap,
-        colorExterior || "#ffffff"
-      );
-      return;
-    }
-
-    if (textureRef.current) {
-      textureRef.current.dispose();
-      textureRef.current = null;
-    }
-    exteriorMaterialRef.current.map = null;
-    exteriorMaterialRef.current.needsUpdate = true;
+    createTextureCanvas(
+      texture,
+      overlayText,
+      overlayTextFontFamily,
+      overlayTextFontSize,
+      overlayTextColor,
+      textureOffset,
+      textureScale,
+      setMaterialMap,
+      colorExterior || "#ffffff"
+    );
   };
 
   useEffect(() => {
@@ -516,7 +510,7 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
     } else {
       updateExteriorTexture();
     }
-  }, [texture, overlayText, overlayTextFontFamily, overlayTextFontSize, overlayTextColor, colorExterior, textureOffset, textureScale]);
+  }, [texture, overlayText, overlayTextFontFamily, overlayTextFontSize, overlayTextColor, textInterior, textExterior, colorExterior, textureOffset, textureScale]);
 
   useEffect(() => {
     autoRotateRef.current = autoRotate;

@@ -13,18 +13,34 @@ const construirURLProducto = (producto) => {
 
   const baseURL = process.env.BACKEND_URL || 'http://localhost:5000';
 
+  const normalizar = (imagen) => {
+    if (!imagen) return imagen;
+    if (imagen.startsWith('http')) return imagen;
+    const limpia = imagen.replace(/^\/+/, '');
+    if (limpia.startsWith('uploads/')) return `${baseURL}/${limpia}`;
+    return `${baseURL}/uploads/${limpia}`;
+  };
+
+  if (producto.imagenes && typeof producto.imagenes === 'string') {
+    try {
+      producto.imagenes = JSON.parse(producto.imagenes);
+    } catch (e) {
+      producto.imagenes = [];
+    }
+  }
+
   if (producto.imagenes && Array.isArray(producto.imagenes)) {
     producto.imagenes = producto.imagenes.map((imagen) => {
       if (!imagen) return imagen;
-      return imagen.startsWith('http') ? imagen : `${baseURL}/uploads/${imagen}`;
+      return normalizar(imagen);
     });
     if (!producto.imagen && producto.imagenes.length) {
       producto.imagen = producto.imagenes[0];
     }
   }
 
-  if (producto.imagen && !producto.imagen.startsWith('http')) {
-    producto.imagen = `${baseURL}/uploads/${producto.imagen}`;
+  if (producto.imagen) {
+    producto.imagen = normalizar(producto.imagen);
   }
 
   return producto;
