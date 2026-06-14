@@ -47,6 +47,9 @@ const DetallePedido = require('./DetallePedido');
 // Importa el modelo Cotizacion desde models/Cotizacion.js → tabla 'cotizaciones'
 const Cotizacion = require('./Cotizacion');
 
+// Importa el modelo ContactoSoporte desde models/ContactoSoporte.js → tabla 'contacto_soporte'
+const ContactoSoporte = require('./ContactoSoporte');
+
 /**
  * ============================================
  * DEFINIR ASOCIACIONES (RELACIONES)
@@ -384,6 +387,7 @@ module.exports = {
   Pedido,                            // Modelo de pedidos → tabla 'pedidos'
   DetallePedido,                     // Modelo de detalles de pedido → tabla 'detalle_pedidos'
   Cotizacion,                        // Modelo de cotizaciones → tabla 'cotizaciones'
+  ContactoSoporte,                   // Modelo de contacto de soporte → tabla 'contacto_soporte'
   initAssociations                   // Función para confirmar asociaciones en consola
 };
 

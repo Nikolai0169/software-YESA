@@ -213,6 +213,12 @@ app.use('/api/personalizacion', personalizacionRoutes);
 const clienteRoutes = require('./routes/cliente.routes');
 app.use('/api', clienteRoutes);
 
+// Rutas de soporte → prefijo /api/support
+// Archivo: routes/soporte.routes.js
+// Incluye: POST /api/support/contact (público), GET/PUT/DELETE /api/support/contactos (admin)
+const soporteRoutes = require('./routes/soporte.routes');
+app.use('/api/support', soporteRoutes);
+
 // ==========================================
 // MANEJO DE RUTAS NO ENCONTRADAS (404)
 // ==========================================

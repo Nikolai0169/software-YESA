@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { ScrollView, StyleSheet, Pressable, View } from 'react-native';
+import { ScrollView, StyleSheet, Pressable, View, TextInput, Alert, ActivityIndicator } from 'react-native';
 import { ThemedText } from '../components/themed-text';
 import { ThemedView } from '../components/themed-view';
 import { Ionicons } from '@expo/vector-icons';
+import { sendContactMessage } from '../src/services/supportService';
 
 const FAQS = [
   {
@@ -45,6 +46,39 @@ const FAQS = [
 
 export default function FAQScreen() {
   const [open, setOpen] = useState<string | null>(null);
+  const [formData, setFormData] = useState({ nombre: '', email: '', asunto: '', mensaje: '' });
+  const [loading, setLoading] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!formData.nombre.trim() || !formData.email.trim() || !formData.asunto.trim() || !formData.mensaje.trim()) {
+      Alert.alert('Error', 'Por favor completa todos los campos');
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      Alert.alert('Error', 'Por favor ingresa un email válido');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await sendContactMessage(formData);
+
+      if (response.success) {
+        Alert.alert('Éxito', response.message);
+        setFormData({ nombre: '', email: '', asunto: '', mensaje: '' });
+        setShowForm(false);
+      } else {
+        Alert.alert('Error', response.message || 'No pudimos enviar tu mensaje. Intenta más tarde.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Error', error.message || 'Error de conexión. Por favor intenta más tarde.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <ThemedView style={styles.container}>
@@ -61,6 +95,85 @@ export default function FAQScreen() {
             {open === f.id ? <ThemedText style={styles.answer}>{f.respuesta}</ThemedText> : null}
           </Pressable>
         ))}
+
+        {/* Sección de Contacto con Soporte */}
+        <View style={styles.contactSeparator} />
+        <ThemedText type="subtitle" style={styles.contactTitle}>¿No encontraste tu respuesta?</ThemedText>
+        
+        {!showForm ? (
+          <Pressable style={styles.contactButton} onPress={() => setShowForm(true)}>
+            <Ionicons name="mail" size={20} color="#fff" style={{ marginRight: 8 }} />
+            <ThemedText style={styles.contactButtonText}>Contactar Soporte</ThemedText>
+          </Pressable>
+        ) : (
+          <View style={styles.formContainer}>
+            <View style={styles.formHeader}>
+              <ThemedText style={styles.formTitle}>Formulario de Contacto</ThemedText>
+              <Pressable onPress={() => setShowForm(false)}>
+                <Ionicons name="close" size={24} color="#7d2181" />
+              </Pressable>
+            </View>
+
+            <ThemedText style={styles.label}>Nombre</ThemedText>
+            <TextInput
+              style={styles.input}
+              placeholder="Tu nombre"
+              value={formData.nombre}
+              onChangeText={(text) => setFormData({ ...formData, nombre: text })}
+              editable={!loading}
+              placeholderTextColor="#999"
+            />
+
+            <ThemedText style={styles.label}>Email</ThemedText>
+            <TextInput
+              style={styles.input}
+              placeholder="tu@email.com"
+              value={formData.email}
+              onChangeText={(text) => setFormData({ ...formData, email: text })}
+              keyboardType="email-address"
+              editable={!loading}
+              placeholderTextColor="#999"
+            />
+
+            <ThemedText style={styles.label}>Asunto</ThemedText>
+            <TextInput
+              style={styles.input}
+              placeholder="¿Cuál es tu consulta?"
+              value={formData.asunto}
+              onChangeText={(text) => setFormData({ ...formData, asunto: text })}
+              editable={!loading}
+              placeholderTextColor="#999"
+            />
+
+            <ThemedText style={styles.label}>Mensaje</ThemedText>
+            <TextInput
+              style={[styles.input, styles.messageInput]}
+              placeholder="Cuéntanos tu problema o pregunta..."
+              value={formData.mensaje}
+              onChangeText={(text) => setFormData({ ...formData, mensaje: text })}
+              multiline
+              numberOfLines={4}
+              editable={!loading}
+              placeholderTextColor="#999"
+            />
+
+            <Pressable
+              style={[styles.submitButton, loading && styles.submitButtonDisabled]}
+              onPress={handleSubmit}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <ThemedText style={styles.submitButtonText}>Enviar Mensaje</ThemedText>
+              )}
+            </Pressable>
+
+            <Pressable onPress={() => setShowForm(false)} disabled={loading}>
+              <ThemedText style={styles.cancelButton}>Cancelar</ThemedText>
+            </Pressable>
+          </View>
+        )}
       </ScrollView>
     </ThemedView>
   );
@@ -69,10 +182,70 @@ export default function FAQScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   scroll: { flex: 1 },
-  content: { padding: 16, gap: 12 },
+  content: { padding: 16, gap: 12, paddingBottom: 40 },
   lead: { color: '#666' },
   item: { borderRadius: 10, padding: 12, backgroundColor: '#fff', borderWidth: 1, borderColor: '#eee' },
   questionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  question: { fontWeight: '700' },
+  question: { fontWeight: '700', flex: 1 },
   answer: { marginTop: 8, color: '#444' },
+  
+  // Estilos para contacto
+  contactSeparator: { height: 1, backgroundColor: '#eee', marginVertical: 16 },
+  contactTitle: { marginVertical: 8, color: '#333' },
+  
+  contactButton: {
+    flexDirection: 'row',
+    backgroundColor: '#7d2181',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  contactButtonText: { color: '#fff', fontWeight: '600', fontSize: 16 },
+  
+  formContainer: {
+    backgroundColor: '#f9f9f9',
+    borderRadius: 10,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  formHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  formTitle: { fontWeight: '700', fontSize: 18, color: '#333' },
+  
+  label: { fontWeight: '600', color: '#333', marginTop: 12, marginBottom: 6 },
+  input: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#d0d0d0',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+    color: '#000',
+  },
+  messageInput: {
+    minHeight: 100,
+    textAlignVertical: 'top',
+    paddingTop: 10,
+  },
+  
+  submitButton: {
+    backgroundColor: '#7d2181',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  submitButtonDisabled: { backgroundColor: '#b896c1', opacity: 0.7 },
+  submitButtonText: { color: '#fff', fontWeight: '600', fontSize: 16 },
+  
+  cancelButton: { color: '#7d2181', textAlign: 'center', paddingVertical: 10, fontWeight: '600' },
 });
