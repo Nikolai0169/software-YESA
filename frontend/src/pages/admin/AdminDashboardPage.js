@@ -385,6 +385,9 @@ const AdminDashboardPage = () => {
                     </Button>
                   </>
                 )}
+                <Button variant="outline-warning" onClick={() => navigate('/admin/soporte')}>
+  <i className="bi bi-chat-left-text me-2"></i>Gestionar Soporte
+</Button>
                 <Button variant="outline-warning" onClick={loadStats}>
                   <i className="bi bi-arrow-repeat me-2"></i>Refrescar Datos
                 </Button>

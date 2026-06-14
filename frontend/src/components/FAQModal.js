@@ -10,6 +10,8 @@ import { Modal, Accordion, Button } from 'react-bootstrap';
 
 const FAQModal = ({ show, onHide }) => {
   const [activeKey, setActiveKey] = useState(null);
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [formMessage, setFormMessage] = useState('');
 
   const faqs = [
     {
@@ -64,48 +66,189 @@ const FAQModal = ({ show, onHide }) => {
     }
   ];
 
+  const handleContactSupport = () => {
+    setShowContactForm(true);
+  };
+
+  const handleSendMessage = (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = {
+      nombre: formData.get('nombre'),
+      email: formData.get('email'),
+      asunto: formData.get('asunto'),
+      mensaje: formData.get('mensaje')
+    };
+    
+    console.log('Mensaje enviado:', data);
+    
+    // TODO: Aquí conectar con la API del backend
+    // await fetch('http://localhost:5000/api/contacto', {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify(data)
+    // });
+    
+    setFormMessage('✅ Mensaje enviado correctamente. Nos pondremos en contacto pronto.');
+    setTimeout(() => {
+      setShowContactForm(false);
+      setFormMessage('');
+    }, 2000);
+  };
+
   return (
-    <Modal show={show} onHide={onHide} size="lg" centered>
-      <Modal.Header closeButton className="bg-primary text-white">
-        <Modal.Title>
-          <i className="bi bi-question-circle-fill me-2"></i>
-          Preguntas Frecuentes
-        </Modal.Title>
-      </Modal.Header>
+    <>
+      {/* MODAL DE PREGUNTAS FRECUENTES */}
+      <Modal show={show && !showContactForm} onHide={onHide} size="lg" centered>
+        <Modal.Header closeButton className="bg-primary text-white">
+          <Modal.Title>
+            <i className="bi bi-question-circle-fill me-2"></i>
+            Preguntas Frecuentes
+          </Modal.Title>
+        </Modal.Header>
 
-      <Modal.Body style={{ maxHeight: '60vh', overflowY: 'auto' }}>
-        <p className="text-muted mb-4">
-          Encuentra respuestas a las preguntas más comunes sobre nuestros productos y servicios.
-        </p>
+        <Modal.Body style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+          <p className="text-muted mb-4">
+            Encuentra respuestas a las preguntas más comunes sobre nuestros productos y servicios.
+          </p>
 
-        <Accordion activeKey={activeKey} onSelect={setActiveKey}>
-          {faqs.map((faq, index) => (
-            <Accordion.Item key={faq.id} eventKey={index.toString()}>
-              <Accordion.Header>
-                <strong>{faq.pregunta}</strong>
-              </Accordion.Header>
-              <Accordion.Body>
-                {faq.respuesta}
-              </Accordion.Body>
-            </Accordion.Item>
-          ))}
-        </Accordion>
+          <Accordion activeKey={activeKey} onSelect={setActiveKey}>
+            {faqs.map((faq, index) => (
+              <Accordion.Item key={faq.id} eventKey={index.toString()}>
+                <Accordion.Header>
+                  <strong>{faq.pregunta}</strong>
+                </Accordion.Header>
+                <Accordion.Body>
+                  {faq.respuesta}
+                </Accordion.Body>
+              </Accordion.Item>
+            ))}
+          </Accordion>
 
-        <div className="text-center mt-4">
-          <p className="text-muted mb-2">¿No encuentras la respuesta que buscas?</p>
-          <Button variant="outline-primary" size="sm">
-            <i className="bi bi-envelope me-1"></i>
-            Contactar Soporte
+          <div className="text-center mt-4">
+            <p className="text-muted mb-2">¿No encuentras la respuesta que buscas?</p>
+            <Button 
+              variant="outline-primary" 
+              size="sm"
+              onClick={handleContactSupport}
+            >
+              <i className="bi bi-envelope me-1"></i>
+              Contactar Soporte
+            </Button>
+          </div>
+        </Modal.Body>
+
+        <Modal.Footer>
+          <Button variant="secondary" onClick={onHide}>
+            Cerrar
           </Button>
-        </div>
-      </Modal.Body>
+        </Modal.Footer>
+      </Modal>
 
-      <Modal.Footer>
-        <Button variant="secondary" onClick={onHide}>
-          Cerrar
-        </Button>
-      </Modal.Footer>
-    </Modal>
+      {/* MODAL DE FORMULARIO DE CONTACTO */}
+      <Modal 
+        show={showContactForm} 
+        onHide={() => setShowContactForm(false)} 
+        size="md" 
+        centered
+      >
+        <Modal.Header closeButton className="bg-info text-white">
+          <Modal.Title>
+            <i className="bi bi-chat-dots me-2"></i>
+            Contactar Soporte
+          </Modal.Title>
+        </Modal.Header>
+
+        <Modal.Body>
+          {formMessage ? (
+            <div className="alert alert-success alert-dismissible fade show" role="alert">
+              {formMessage}
+            </div>
+          ) : (
+            <form onSubmit={handleSendMessage}>
+              <div className="mb-3">
+                <label htmlFor="nombre" className="form-label">
+                  Nombre <span className="text-danger">*</span>
+                </label>
+                <input 
+                  type="text" 
+                  className="form-control" 
+                  id="nombre" 
+                  name="nombre" 
+                  required 
+                  placeholder="Tu nombre completo"
+                />
+              </div>
+
+              <div className="mb-3">
+                <label htmlFor="email" className="form-label">
+                  Email <span className="text-danger">*</span>
+                </label>
+                <input 
+                  type="email" 
+                  className="form-control" 
+                  id="email" 
+                  name="email" 
+                  required 
+                  placeholder="tu@email.com"
+                />
+              </div>
+
+              <div className="mb-3">
+                <label htmlFor="asunto" className="form-label">
+                  Asunto <span className="text-danger">*</span>
+                </label>
+                <select 
+                  className="form-select" 
+                  id="asunto" 
+                  name="asunto" 
+                  required
+                >
+                  <option value="">Selecciona un asunto...</option>
+                  <option value="pedido">Pregunta sobre un pedido</option>
+                  <option value="producto">Pregunta sobre un producto</option>
+                  <option value="devolucion">Devolución o cambio</option>
+                  <option value="pago">Problema de pago</option>
+                  <option value="envio">Problema de envío</option>
+                  <option value="otro">Otro</option>
+                </select>
+              </div>
+
+              <div className="mb-3">
+                <label htmlFor="mensaje" className="form-label">
+                  Mensaje <span className="text-danger">*</span>
+                </label>
+                <textarea 
+                  className="form-control" 
+                  id="mensaje" 
+                  name="mensaje" 
+                  rows="4" 
+                  required 
+                  placeholder="Cuéntanos con detalle tu pregunta o problema..."
+                ></textarea>
+              </div>
+
+              <div className="d-grid gap-2">
+                <Button 
+                  variant="info" 
+                  type="submit"
+                  className="text-white fw-bold"
+                >
+                  <i className="bi bi-send me-2"></i>
+                  Enviar Mensaje
+                </Button>
+                <Button 
+                  variant="outline-secondary" 
+                  onClick={() => setShowContactForm(false)}
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </form>
+          )}
+        </Modal.Body>
+      </Modal>
+    </>
   );
 };
 
