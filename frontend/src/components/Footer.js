@@ -6,10 +6,10 @@
  */
 
 import React, { memo } from 'react';
-import { Container, Row, Col } from 'react-bootstrap';
+import { Container, Row, Col, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
-const Footer = memo(() => {
+const Footer = memo(({ onOpenFAQ }) => {
   return (
     <footer className="bg-black text-light mt-5 py-4">
       <Container>
@@ -38,7 +38,7 @@ const Footer = memo(() => {
                   <Link
                     to={`/catalogo?buscar=${encodeURIComponent(item.query)}`}
                     className="text-decoration-none"
-                    style={{ color: '#ccc', fontSize: '0.9rem' }}
+                    style={{ color: '#ccc', fontSize: '0.9rem', cursor: 'pointer' }}
                   >
                     {item.label}
                   </Link>
@@ -50,21 +50,53 @@ const Footer = memo(() => {
           <Col md={3} className="mb-3">
             <h5 style={{ color: '#E91E63' }}>Atención al Cliente</h5>
             <ul className="list-unstyled">
-              yesa@gmail.com
-              {[
-                { label: 'Envíos', to: '/envios' },
-                { label: 'Devoluciones', to: '/devoluciones' },
-              ].map(({ label, to }) => (
-                <li key={label}>
-                  <Link
-                    to={to}
-                    className="text-decoration-none"
-                    style={{ color: '#ccc', fontSize: '0.9rem' }}
-                  >
-                    {label}
-                  </Link>
-                </li>
-              ))}
+              <li style={{ marginBottom: '8px' }}>
+                <a href="mailto:yesa@gmail.com" className="text-decoration-none" style={{ color: '#ccc', fontSize: '0.9rem' }}>
+                  📧 yesa@gmail.com
+                </a>
+              </li>
+              <li style={{ marginBottom: '8px' }}>
+                <Button
+                  variant="link"
+                  className="text-decoration-none p-0 m-0"
+                  style={{ 
+                    color: '#ccc', 
+                    fontSize: '0.9rem', 
+                    textAlign: 'left',
+                    border: 'none',
+                    background: 'none',
+                    cursor: 'pointer'
+                  }}
+                  onClick={() => {
+                    if (onOpenFAQ) {
+                      onOpenFAQ('envios');
+                    }
+                  }}
+                >
+                  Envíos
+                </Button>
+              </li>
+              <li>
+                <Button
+                  variant="link"
+                  className="text-decoration-none p-0 m-0"
+                  style={{ 
+                    color: '#ccc', 
+                    fontSize: '0.9rem', 
+                    textAlign: 'left',
+                    border: 'none',
+                    background: 'none',
+                    cursor: 'pointer'
+                  }}
+                  onClick={() => {
+                    if (onOpenFAQ) {
+                      onOpenFAQ('devoluciones');
+                    }
+                  }}
+                >
+                  Devoluciones
+                </Button>
+              </li>
             </ul>
           </Col>
 

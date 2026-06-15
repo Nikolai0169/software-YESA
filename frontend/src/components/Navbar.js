@@ -11,14 +11,16 @@ import { useAuth } from '../context/AuthContext';
 import catalogoService from '../services/catalogoService';
 import FAQModal from './FAQModal';
 
-const NavigationBar = memo(() => {
+const NavigationBar = memo(({ onOpenFAQ }) => {
   const { user, isAuthenticated, isAdmin, isAuxiliar, isCliente, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   
   const [categorias, setCategorias] = useState([]);
   const [buscarLocal, setBuscarLocal] = useState('');
-  const abortControllerRef = useRef(null); // Para cancelar peticiones anteriores
+  const [showFAQ, setShowFAQ] = useState(false);
+  const [faqSection, setFaqSection] = useState(null);
+  const abortControllerRef = useRef(null);
 
   const isCatalogo = location.pathname === '/catalogo';
 
@@ -41,17 +43,14 @@ const NavigationBar = memo(() => {
     setBuscarLocal(params.get('buscar') || '');
   }, [location.search]);
 
-  // BÚSQUEDA INSTANTÁNEA (sin debounce)
   const handleBuscarChange = useCallback((e) => {
     const valor = e.target.value;
     setBuscarLocal(valor);
     
-    // Cancelar petición anterior si existe
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
     
-    // Actualizar URL inmediatamente
     const params = new URLSearchParams(location.search);
     if (valor.trim()) {
       params.set('buscar', valor.trim());
@@ -62,7 +61,6 @@ const NavigationBar = memo(() => {
     navigate(`/catalogo?${params.toString()}`);
   }, [location.search, navigate]);
 
-  // Limpiar al desmontar
   useEffect(() => {
     return () => {
       if (abortControllerRef.current) {
@@ -83,16 +81,19 @@ const NavigationBar = memo(() => {
     navigate(`/catalogo?${params.toString()}`);
   }, [location.search, navigate]);
 
-  const [showFAQ, setShowFAQ] = useState(false);
-
   const handleLogout = useCallback(() => {
     logout();
     navigate('/login');
   }, [logout, navigate]);
 
+  const handleOpenFAQLocal = (section) => {
+    setFaqSection(section);
+    setShowFAQ(true);
+  };
+
   return (
     <>
-      <FAQModal show={showFAQ} onHide={() => setShowFAQ(false)} />
+      <FAQModal show={showFAQ} onHide={() => setShowFAQ(false)} openSection={faqSection} setShowFAQ={setShowFAQ} />
       <Navbar bg="dark" variant="dark" expand="lg" sticky="top" className="navbar shadow-sm">
       <Container fluid className="px-4">
         <Navbar.Brand as={Link} to="/" style={{ fontWeight: '700', fontSize: '1.4rem', letterSpacing: '1px' }}>
@@ -140,7 +141,6 @@ const NavigationBar = memo(() => {
             )}
           </Nav>
 
-          {/* Buscador - filtrado instantáneo */}
           {isCatalogo && (
             <Form className="d-flex align-items-center me-3 my-2 my-lg-0 w-100 w-lg-auto" style={{ minWidth: 0 }} onSubmit={(e) => e.preventDefault()}>
               <div className="position-relative" style={{ width: '100%', minWidth: 0, maxWidth: '280px' }}>
@@ -172,7 +172,6 @@ const NavigationBar = memo(() => {
             </Form>
           )}
 
-          {/* Dropdown con scroll */}
           {isCatalogo && categorias.length > 0 && (
             <NavDropdown 
               title={<><i className="bi bi-filter me-1"></i>Categorías</>} 
@@ -193,7 +192,6 @@ const NavigationBar = memo(() => {
             </NavDropdown>
           )}
 
-          {/* Dropdown "Más opciones" que agrupa Personalizar, Diseños guardados y Favoritos */}
           <NavDropdown 
             title={<><i className="bi bi-three-dots-vertical"></i> Más opciones</>} 
             id="more-options-dropdown" 

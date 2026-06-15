@@ -5,10 +5,10 @@
  * Popup global con preguntas frecuentes accesible desde cualquier página.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Accordion, Button } from 'react-bootstrap';
 
-const FAQModal = ({ show, onHide }) => {
+const FAQModal = ({ show, onHide, openSection, setShowFAQ }) => {
   const [activeKey, setActiveKey] = useState(null);
   const [showContactForm, setShowContactForm] = useState(false);
   const [formMessage, setFormMessage] = useState('');
@@ -62,13 +62,24 @@ const FAQModal = ({ show, onHide }) => {
     {
       id: 'registro',
       pregunta: '¿Es obligatorio registrarse para comprar?',
-      respuesta: 'No es obligatorio registrarse para navegar por nuestro catálogo, pero sí es requerido para realizar compras, guardar favoritos y acceder al historial de pedidos. El registro es gratuito y solo toma unos minutos.'
+      respuesta: 'No es obligatorio registrarse para navegar por nuestro catálogo, pero sí es requerido para realizar compras, guardar favoritos y acceder al historial de pedidos. El registro es rápido y gratuito.'
     }
   ];
+
+  // ✅ useEffect DESPUÉS de que faqs está definido
+  useEffect(() => {
+    if (openSection) {
+      const faqIndex = faqs.findIndex(faq => faq.id === openSection);
+      if (faqIndex !== -1) {
+        setActiveKey(faqIndex.toString());
+      }
+    }
+  }, [openSection, show]);
 
   const handleContactSupport = () => {
     setShowContactForm(true);
   };
+  
 
   const handleSendMessage = (e) => {
     e.preventDefault();

@@ -37,7 +37,7 @@ import AdminUsuariosPage from './pages/AdminUsuariosPage';
 import AdminPedidosPage from './pages/AdminPedidosPage';
 import AdminCotizacionesPage from './pages/admin/AdminCotizacionesPage';
 import AdminCotizacionDetallePage from './pages/admin/AdminCotizacionDetallePage';
-import AdminSoportePage from './pages/admin/AdminSoportePage';  // ← NUEVA LÍNEA
+import AdminSoportePage from './pages/admin/AdminSoportePage';
 import ProfilePage from './pages/ProfilePage';
 
 import './App.css';
@@ -132,7 +132,7 @@ function App() {
                 </ProtectedRoute>
               } />
               
-              {/* NUEVA RUTA - PANEL DE SOPORTE */}
+              {/* RUTA - PANEL DE SOPORTE */}
               <Route path="/admin/soporte" element={
                 <ProtectedRoute requireAdmin={true}>
                   <AdminSoportePage />
@@ -144,7 +144,7 @@ function App() {
             </Routes>
           </main>
           
-          <Footer />
+          <Footer onOpenFAQ={() => {}} />
         </div>
       </Router>
     </AuthProvider>
