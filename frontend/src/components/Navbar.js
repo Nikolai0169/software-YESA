@@ -207,13 +207,18 @@ const NavigationBar = memo(({ onOpenFAQ }) => {
               <i className="bi bi-receipt me-2" style={{ color: '#6c757d' }}></i>Mis Cotizaciones
             </NavDropdown.Item>
             {isAuthenticated && (
-              <>
-                <NavDropdown.Divider />
-                <NavDropdown.Item as={Link} to="/favoritos">
-                  <i className="bi bi-heart-fill me-2" style={{ color: '#dc3545' }}></i>Favoritos
-                </NavDropdown.Item>
-              </>
-            )}
+  <>
+    <NavDropdown.Divider />
+    <NavDropdown.Item as={Link} to="/favoritos">
+      <i className="bi bi-heart-fill me-2" style={{ color: '#dc3545' }}></i>Favoritos
+    </NavDropdown.Item>
+    {isCliente && (
+      <NavDropdown.Item as={Link} to="/mis-consultas">
+        <i className="bi bi-chat-dots-fill me-2" style={{ color: '#0dcaf0' }}></i>Mis Consultas
+      </NavDropdown.Item>
+    )}
+  </>
+)}
           </NavDropdown>
 
           <Nav.Link as={Link} to="/carrito" className="btn-carrito me-2">

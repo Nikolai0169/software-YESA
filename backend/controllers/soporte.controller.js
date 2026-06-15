@@ -42,7 +42,7 @@ exports.enviarContacto = async (req, res) => {
   asunto: asunto.trim(),
   mensaje: mensaje.trim(),
   estado: 'pendiente',
-  usuarioId: req.usuarioId || null, // viene del token si está logueado
+  usuarioId: req.usuario?.id || null,
 });
 
     return res.status(201).json({
@@ -218,8 +218,9 @@ exports.eliminarContacto = async (req, res) => {
  */
 exports.misConsultas = async (req, res) => {
   try {
+      console.log('Usuario en req:', req.usuario);
     const consultas = await ContactoSoporte.findAll({
-      where: { usuarioId: req.usuarioId },
+      where: { usuarioId: req.usuario.id },
       order: [['createdAt', 'DESC']],
     });
 

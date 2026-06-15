@@ -27,6 +27,7 @@ import CarritoPage from './pages/CarritoPage';
 import CheckoutPage from './pages/CheckoutPage';
 import PedidoConfirmadoPage from './pages/PedidoConfirmadoPage';
 import MisPedidosPage from './pages/MisPedidosPage';
+import MisConsultasPage from './pages/MisConsultasPage';
 
 // Páginas de administración
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
@@ -58,6 +59,7 @@ function App() {
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/catalogo" element={<CatalogoPage />} />
               <Route path="/producto/:id" element={<ProductDetailPage />} />
+              <Route path="/mis-consultas" element={<MisConsultasPage />} />
               <Route path="/favoritos" element={
                 <ProtectedRoute>
                   <FavoritesPage />

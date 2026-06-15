@@ -19,42 +19,19 @@ const {
   obtenerContactoPorId,
   responderContacto,
   eliminarContacto,
+  misConsultas, // ← agregado
 } = require('../controllers/soporte.controller');
 
-const { verificarAuth } = require('../middleware/auth');
+const { verificarAuth, verificarAuthOpcional } = require('../middleware/auth');
 const { esAdministrador } = require('../middleware/checkRole');
 
-/**
- * POST /api/support/contact
- * Enviar un nuevo mensaje de contacto (PÚBLICO - sin autenticación)
- * Recibe: { nombre, email, asunto, mensaje }
- */
-router.post('/contact', enviarContacto);
+router.post('/contact', verificarAuthOpcional, enviarContacto);
 
-/**
- * GET /api/support/contactos
- * Obtener todos los mensajes de contacto (PROTEGIDO - solo admin)
- * Query: ?estado=pendiente&page=1&limit=20
- */
+router.get('/mis-consultas', verificarAuth, misConsultas); // ← agregado
+
 router.get('/contactos', verificarAuth, esAdministrador, obtenerContactos);
-
-/**
- * GET /api/support/contactos/:id
- * Obtener un mensaje de contacto específico (PROTEGIDO - solo admin)
- */
 router.get('/contactos/:id', verificarAuth, esAdministrador, obtenerContactoPorId);
-
-/**
- * PUT /api/support/contactos/:id/responder
- * Responder a un mensaje (PROTEGIDO - solo admin)
- * Recibe: { respuesta }
- */
 router.put('/contactos/:id/responder', verificarAuth, esAdministrador, responderContacto);
-
-/**
- * DELETE /api/support/contactos/:id
- * Eliminar un mensaje (PROTEGIDO - solo admin)
- */
 router.delete('/contactos/:id', verificarAuth, esAdministrador, eliminarContacto);
 
 module.exports = router;
