@@ -25,6 +25,7 @@ const AdminSoportePage = () => {
   const [respuesta, setRespuesta] = useState('');
   const [enviandoRespuesta, setEnviandoRespuesta] = useState(false);
 
+  
   // Filtros
   const [filtros, setFiltros] = useState({
     busqueda: '',
@@ -88,29 +89,29 @@ const AdminSoportePage = () => {
     setShowRespuestaModal(true);
   };
 
-  const handleEnviarRespuesta = async () => {
-    if (!respuesta.trim()) {
-      setMensaje({ tipo: 'warning', texto: 'Por favor escribe una respuesta' });
-      return;
-    }
+const handleEnviarRespuesta = async () => {
+  if (!respuesta.trim()) {
+    setMensaje({ tipo: 'warning', texto: 'Por favor escribe una respuesta' });
+    return;
+  }
 
-    setEnviandoRespuesta(true);
-    try {
-      await api.put(`/support/contactos/${contactoSeleccionado.id}/responder`, {
-        respuesta: respuesta
-      });
+  setEnviandoRespuesta(true);
+  try {
+    await api.put(`/support/contactos/${contactoSeleccionado.id}/responder`, {
+      respuesta: respuesta
+    });
 
-      setMensaje({ tipo: 'success', texto: 'Respuesta enviada exitosamente' });
-      setShowRespuestaModal(false);
-      setRespuesta('');
-      await loadContactos();
-    } catch (error) {
-      console.error('Error al enviar respuesta:', error);
-      setMensaje({ tipo: 'danger', texto: error.response?.data?.message || 'Error al enviar la respuesta' });
-    } finally {
-      setEnviandoRespuesta(false);
-    }
-  };
+    setMensaje({ tipo: 'success', texto: 'Respuesta enviada exitosamente' });
+    setShowRespuestaModal(false);
+    setRespuesta('');
+    await loadContactos();
+  } catch (error) {
+    console.error('Error al enviar respuesta:', error);
+    setMensaje({ tipo: 'danger', texto: error.response?.data?.message || 'Error al enviar la respuesta' });
+  } finally {
+    setEnviandoRespuesta(false);
+  }
+};
 
   const handleEliminar = async (id) => {
     if (!window.confirm('¿Estás seguro de eliminar este mensaje?')) return;
