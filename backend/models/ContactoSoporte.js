@@ -15,6 +15,16 @@ const ContactoSoporte = sequelize.define('ContactoSoporte', {
     primaryKey: true,
     autoIncrement: true,
   },
+  usuarioId: {
+  type: DataTypes.INTEGER,
+  allowNull: true,  // null = enviado sin estar logueado
+  references: {
+    model: 'usuarios',
+    key: 'id',
+  },
+  onDelete: 'SET NULL',
+  onUpdate: 'CASCADE',
+},
   nombre: {
     type: DataTypes.STRING(100),
     allowNull: false,
@@ -40,7 +50,7 @@ const ContactoSoporte = sequelize.define('ContactoSoporte', {
     type: DataTypes.TEXT,
     allowNull: false,
     validate: {
-      len: [10, 5000],
+      len: [1, 5000],
     },
   },
   estado: {

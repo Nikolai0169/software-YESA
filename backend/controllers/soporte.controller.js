@@ -36,14 +36,14 @@ exports.enviarContacto = async (req, res) => {
       });
     }
 
-    // Crear el contacto en la base de datos
     const contacto = await ContactoSoporte.create({
-      nombre: nombre.trim(),
-      email: email.trim(),
-      asunto: asunto.trim(),
-      mensaje: mensaje.trim(),
-      estado: 'pendiente',
-    });
+  nombre: nombre.trim(),
+  email: email.trim(),
+  asunto: asunto.trim(),
+  mensaje: mensaje.trim(),
+  estado: 'pendiente',
+  usuarioId: req.usuarioId || null, // viene del token si está logueado
+});
 
     return res.status(201).json({
       success: true,
@@ -209,6 +209,29 @@ exports.eliminarContacto = async (req, res) => {
       success: false,
       message: 'Error al eliminar el mensaje',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+    });
+  }
+};
+/**
+ * GET /api/support/mis-consultas
+ * Obtener las consultas del usuario logueado
+ */
+exports.misConsultas = async (req, res) => {
+  try {
+    const consultas = await ContactoSoporte.findAll({
+      where: { usuarioId: req.usuarioId },
+      order: [['createdAt', 'DESC']],
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: consultas,
+    });
+  } catch (error) {
+    console.error('Error al obtener consultas:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error al obtener tus consultas',
     });
   }
 };

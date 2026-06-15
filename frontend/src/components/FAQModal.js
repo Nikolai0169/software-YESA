@@ -7,11 +7,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { Modal, Accordion, Button } from 'react-bootstrap';
+import { useAuth } from '../context/AuthContext';
 
 const FAQModal = ({ show, onHide, openSection, setShowFAQ }) => {
   const [activeKey, setActiveKey] = useState(null);
   const [showContactForm, setShowContactForm] = useState(false);
   const [formMessage, setFormMessage] = useState('');
+  const { user } = useAuth();
 
   const faqs = [
     {
@@ -77,36 +79,44 @@ const FAQModal = ({ show, onHide, openSection, setShowFAQ }) => {
   }, [openSection, show]);
 
   const handleContactSupport = () => {
+    setFormMessage('');
     setShowContactForm(true);
   };
   
+  
 
-  const handleSendMessage = (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const data = {
-      nombre: formData.get('nombre'),
-      email: formData.get('email'),
-      asunto: formData.get('asunto'),
-      mensaje: formData.get('mensaje')
-    };
-    
-    console.log('Mensaje enviado:', data);
-    
-    // TODO: Aquí conectar con la API del backend
-    // await fetch('http://localhost:5000/api/contacto', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(data)
-    // });
-    
+  const handleSendMessage = async (e) => {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  const data = {
+    nombre: formData.get('nombre'),
+    email: formData.get('email'),
+    asunto: formData.get('asunto'),
+    mensaje: formData.get('mensaje'),
+  };
+
+  const token = localStorage.getItem('token');
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  try {
+    const response = await fetch('http://localhost:5000/api/support/contact', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) throw new Error('Error al enviar');
+
     setFormMessage('✅ Mensaje enviado correctamente. Nos pondremos en contacto pronto.');
     setTimeout(() => {
       setShowContactForm(false);
       setFormMessage('');
     }, 2000);
-  };
-
+  } catch (error) {
+    setFormMessage('❌ No se pudo enviar el mensaje. Intenta de nuevo.');
+  }
+};
   return (
     <>
       {/* MODAL DE PREGUNTAS FRECUENTES */}
