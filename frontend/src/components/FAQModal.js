@@ -118,7 +118,7 @@ const FAQModal = ({ show, onHide, openSection, setShowFAQ, openContact = false }
     <>
       {/* MODAL DE PREGUNTAS FRECUENTES */}
       <Modal show={show && !showContactForm} onHide={onHide} size="lg" centered>
-        <Modal.Header closeButton className="bg-primary text-white">
+        <Modal.Header closeButton style={{ background: 'linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%)', color: '#fff' }}>
           <Modal.Title>
             <i className="bi bi-question-circle-fill me-2"></i>
             Preguntas Frecuentes
@@ -170,7 +170,7 @@ const FAQModal = ({ show, onHide, openSection, setShowFAQ, openContact = false }
         size="md" 
         centered
       >
-        <Modal.Header closeButton className="bg-info text-white">
+        <Modal.Header closeButton style={{ background: 'linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%)', color: '#fff' }}>
           <Modal.Title>
             <i className="bi bi-chat-dots me-2"></i>
             Contactar Soporte
@@ -248,7 +248,7 @@ const FAQModal = ({ show, onHide, openSection, setShowFAQ, openContact = false }
 
               <div className="d-grid gap-2">
                 <Button 
-                  variant="info" 
+                  variant="primary" 
                   type="submit"
                   className="text-white fw-bold"
                 >

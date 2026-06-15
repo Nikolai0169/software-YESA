@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Pressable, View, TextInput, Alert, ActivityIndicator } from 'react-native';
 import { ThemedText } from '../components/themed-text';
 import { ThemedView } from '../components/themed-view';
+import { useColorScheme } from '../hooks/use-color-scheme';
+import { Colors } from '../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { sendContactMessage } from '../src/services/supportService';
 
@@ -49,6 +51,13 @@ export default function FAQScreen() {
   const [formData, setFormData] = useState({ nombre: '', email: '', asunto: '', mensaje: '' });
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const theme = useColorScheme() ?? 'light';
+  const primary = Colors[theme].primary;
+  const primaryLight = Colors[theme].primaryLight;
+  const surface = Colors[theme].surface;
+  const surfaceSoft = Colors[theme].surfaceSoft;
+  const borderColor = Colors[theme].border;
+  const textColor = Colors[theme].text;
 
   const handleSubmit = async () => {
     if (!formData.nombre.trim() || !formData.email.trim() || !formData.asunto.trim() || !formData.mensaje.trim()) {
@@ -90,7 +99,7 @@ export default function FAQScreen() {
           <Pressable key={f.id} onPress={() => setOpen(open === f.id ? null : f.id)} style={styles.item}>
             <View style={styles.questionRow}>
               <ThemedText style={styles.question}>{f.pregunta}</ThemedText>
-              <Ionicons name={open === f.id ? 'chevron-up' : 'chevron-down'} size={18} color="#7d2181" />
+              <Ionicons name={open === f.id ? 'chevron-up' : 'chevron-down'} size={18} color={primary} />
             </View>
             {open === f.id ? <ThemedText style={styles.answer}>{f.respuesta}</ThemedText> : null}
           </Pressable>
@@ -98,25 +107,25 @@ export default function FAQScreen() {
 
         {/* Sección de Contacto con Soporte */}
         <View style={styles.contactSeparator} />
-        <ThemedText type="subtitle" style={styles.contactTitle}>¿No encontraste tu respuesta?</ThemedText>
+        <ThemedText type="subtitle" style={[styles.contactTitle, { color: textColor }]}>¿No encontraste tu respuesta?</ThemedText>
         
         {!showForm ? (
-          <Pressable style={styles.contactButton} onPress={() => setShowForm(true)}>
-            <Ionicons name="mail" size={20} color="#fff" style={{ marginRight: 8 }} />
-            <ThemedText style={styles.contactButtonText}>Contactar Soporte</ThemedText>
+          <Pressable style={[styles.contactButton, { backgroundColor: primary }]} onPress={() => setShowForm(true)}>
+            <Ionicons name="mail" size={20} color={surface} style={{ marginRight: 8 }} />
+            <ThemedText style={[styles.contactButtonText, { color: surface }]}>Contactar Soporte</ThemedText>
           </Pressable>
         ) : (
           <View style={styles.formContainer}>
             <View style={styles.formHeader}>
               <ThemedText style={styles.formTitle}>Formulario de Contacto</ThemedText>
               <Pressable onPress={() => setShowForm(false)}>
-                <Ionicons name="close" size={24} color="#7d2181" />
+                <Ionicons name="close" size={24} color={primary} />
               </Pressable>
             </View>
 
             <ThemedText style={styles.label}>Nombre</ThemedText>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: surface, borderColor: borderColor, color: textColor }]}
               placeholder="Tu nombre"
               value={formData.nombre}
               onChangeText={(text) => setFormData({ ...formData, nombre: text })}
@@ -126,7 +135,7 @@ export default function FAQScreen() {
 
             <ThemedText style={styles.label}>Email</ThemedText>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: surface, borderColor: borderColor, color: textColor }]}
               placeholder="tu@email.com"
               value={formData.email}
               onChangeText={(text) => setFormData({ ...formData, email: text })}
@@ -137,7 +146,7 @@ export default function FAQScreen() {
 
             <ThemedText style={styles.label}>Asunto</ThemedText>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: surface, borderColor: borderColor, color: textColor }]}
               placeholder="¿Cuál es tu consulta?"
               value={formData.asunto}
               onChangeText={(text) => setFormData({ ...formData, asunto: text })}
@@ -147,7 +156,7 @@ export default function FAQScreen() {
 
             <ThemedText style={styles.label}>Mensaje</ThemedText>
             <TextInput
-              style={[styles.input, styles.messageInput]}
+              style={[styles.input, styles.messageInput, { backgroundColor: surface, borderColor: borderColor, color: textColor }]}
               placeholder="Cuéntanos tu problema o pregunta..."
               value={formData.mensaje}
               onChangeText={(text) => setFormData({ ...formData, mensaje: text })}
@@ -158,19 +167,19 @@ export default function FAQScreen() {
             />
 
             <Pressable
-              style={[styles.submitButton, loading && styles.submitButtonDisabled]}
+              style={[styles.submitButton, { backgroundColor: primary }, loading && { backgroundColor: primaryLight, opacity: 0.7 }]}
               onPress={handleSubmit}
               disabled={loading}
             >
               {loading ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <ThemedText style={styles.submitButtonText}>Enviar Mensaje</ThemedText>
+                <ThemedText style={[styles.submitButtonText, { color: surface }]}>Enviar Mensaje</ThemedText>
               )}
             </Pressable>
 
             <Pressable onPress={() => setShowForm(false)} disabled={loading}>
-              <ThemedText style={styles.cancelButton}>Cancelar</ThemedText>
+              <ThemedText style={[styles.cancelButton, { color: primary }]}>Cancelar</ThemedText>
             </Pressable>
           </View>
         )}

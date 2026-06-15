@@ -13,7 +13,7 @@ import FAQModal from './FAQModal';
 const Footer = memo(({ onOpenFAQ }) => {
   const [showFAQ, setShowFAQ] = useState(false);
   return (
-    <footer className="bg-black text-light mt-5 py-4" style={{ position: 'relative', zIndex: 2000 }}>
+    <footer className="bg-black text-light mt-5 py-4" style={{ position: 'relative' }}>
       <Container>
         <FAQModal show={showFAQ} onHide={() => setShowFAQ(false)} openSection={"contact"} openContact={true} />
         <Row>
