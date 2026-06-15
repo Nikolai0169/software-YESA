@@ -238,7 +238,7 @@ const CarritoPage = () => {
           </Col>
 
           <Col lg={4}>
-            <Card className="sticky-top" style={{ top: '20px' }}>
+            <Card className="sticky-top" style={{ top: '20px', zIndex: 100 }}>
               <Card.Header className="bg-white">
                 <h5 className="mb-0">Resumen del Pedido</h5>
               </Card.Header>

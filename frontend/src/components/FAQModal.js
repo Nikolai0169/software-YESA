@@ -8,7 +8,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Accordion, Button } from 'react-bootstrap';
 
-const FAQModal = ({ show, onHide, openSection, setShowFAQ }) => {
+const FAQModal = ({ show, onHide, openSection, setShowFAQ, openContact = false }) => {
   const [activeKey, setActiveKey] = useState(null);
   const [showContactForm, setShowContactForm] = useState(false);
   const [formMessage, setFormMessage] = useState('');
@@ -75,6 +75,13 @@ const FAQModal = ({ show, onHide, openSection, setShowFAQ }) => {
       }
     }
   }, [openSection, show]);
+
+  // Si se solicita abrir directamente el formulario de contacto
+  useEffect(() => {
+    if (show && openContact) {
+      setShowContactForm(true);
+    }
+  }, [show, openContact]);
 
   const handleContactSupport = () => {
     setShowContactForm(true);
