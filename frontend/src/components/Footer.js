@@ -5,14 +5,17 @@
  * Pie de página del sitio
  */
 
-import React, { memo } from 'react';
+import React, { memo, useState } from 'react';
 import { Container, Row, Col, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import FAQModal from './FAQModal';
 
 const Footer = memo(({ onOpenFAQ }) => {
+  const [showFAQ, setShowFAQ] = useState(false);
   return (
-    <footer className="bg-black text-light mt-5 py-4">
+    <footer className="bg-black text-light mt-5 py-4" style={{ position: 'relative' }}>
       <Container>
+        <FAQModal show={showFAQ} onHide={() => setShowFAQ(false)} openSection={"contact"} openContact={true} />
         <Row>
           <Col md={4} className="mb-3">
             <h5 style={{ color: '#E91E63' }}>
@@ -25,18 +28,22 @@ const Footer = memo(({ onOpenFAQ }) => {
           </Col>
 
           <Col md={3} className="mb-3">
-            <h5 style={{ color: '#E91E63' }}>Categorías</h5>
+            <h5 style={{ color: '#E91E63' }}>Acciones</h5>
             <ul className="list-unstyled">
               {[
-                { label: 'Alcancías', query: 'Alcancías' },
-                { label: 'Pocillos', query: 'Pocillos' },
-                { label: 'Platos', query: 'Platos' },
-                { label: 'Floreros', query: 'Floreros' },
-                { label: 'Vasijas', query: 'Vasijas' },
+                { label: 'Inicio', to: '/' },
+                { label: 'Catálogo', to: '/catalogo' },
+                { label: 'Personalizar', to: '/personalizacion' },
+                { label: 'Diseños guardados', to: '/disenos-guardados' },
+                { label: 'Favoritos', to: '/favoritos' },
+                { label: 'Mis Cotizaciones', to: '/mis-cotizaciones' },
+                { label: 'Mis Pedidos', to: '/mis-pedidos' },
+                { label: 'Mi Perfil', to: '/perfil' },
+                { label: 'Carrito', to: '/carrito' },
               ].map((item) => (
                 <li key={item.label}>
                   <Link
-                    to={`/catalogo?buscar=${encodeURIComponent(item.query)}`}
+                    to={item.to}
                     className="text-decoration-none"
                     style={{ color: '#ccc', fontSize: '0.9rem', cursor: 'pointer' }}
                   >
@@ -68,34 +75,14 @@ const Footer = memo(({ onOpenFAQ }) => {
                     cursor: 'pointer'
                   }}
                   onClick={() => {
-                    if (onOpenFAQ) {
-                      onOpenFAQ('envios');
-                    }
+                    setShowFAQ(true);
                   }}
                 >
-                  Envíos
+                  Contactar Soporte
                 </Button>
               </li>
-              <li>
-                <Button
-                  variant="link"
-                  className="text-decoration-none p-0 m-0"
-                  style={{ 
-                    color: '#ccc', 
-                    fontSize: '0.9rem', 
-                    textAlign: 'left',
-                    border: 'none',
-                    background: 'none',
-                    cursor: 'pointer'
-                  }}
-                  onClick={() => {
-                    if (onOpenFAQ) {
-                      onOpenFAQ('devoluciones');
-                    }
-                  }}
-                >
-                  Devoluciones
-                </Button>
+              <li style={{ marginTop: '8px', color: '#ccc', fontSize: '0.9rem' }}>
+                Whatsapp: +57 319 2917543
               </li>
             </ul>
           </Col>

@@ -9,7 +9,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Accordion, Button } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
 
-const FAQModal = ({ show, onHide, openSection, setShowFAQ }) => {
+const FAQModal = ({ show, onHide, openSection, setShowFAQ, openContact = false }) => {
   const [activeKey, setActiveKey] = useState(null);
   const [showContactForm, setShowContactForm] = useState(false);
   const [formMessage, setFormMessage] = useState('');
@@ -78,6 +78,13 @@ const FAQModal = ({ show, onHide, openSection, setShowFAQ }) => {
     }
   }, [openSection, show]);
 
+  // Si se solicita abrir directamente el formulario de contacto
+  useEffect(() => {
+    if (show && openContact) {
+      setShowContactForm(true);
+    }
+  }, [show, openContact]);
+
   const handleContactSupport = () => {
     setFormMessage('');
     setShowContactForm(true);
@@ -121,7 +128,7 @@ const FAQModal = ({ show, onHide, openSection, setShowFAQ }) => {
     <>
       {/* MODAL DE PREGUNTAS FRECUENTES */}
       <Modal show={show && !showContactForm} onHide={onHide} size="lg" centered>
-        <Modal.Header closeButton className="bg-primary text-white">
+        <Modal.Header closeButton style={{ background: 'linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%)', color: '#fff' }}>
           <Modal.Title>
             <i className="bi bi-question-circle-fill me-2"></i>
             Preguntas Frecuentes
@@ -173,7 +180,7 @@ const FAQModal = ({ show, onHide, openSection, setShowFAQ }) => {
         size="md" 
         centered
       >
-        <Modal.Header closeButton className="bg-info text-white">
+        <Modal.Header closeButton style={{ background: 'linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%)', color: '#fff' }}>
           <Modal.Title>
             <i className="bi bi-chat-dots me-2"></i>
             Contactar Soporte
@@ -251,7 +258,7 @@ const FAQModal = ({ show, onHide, openSection, setShowFAQ }) => {
 
               <div className="d-grid gap-2">
                 <Button 
-                  variant="info" 
+                  variant="primary" 
                   type="submit"
                   className="text-white fw-bold"
                 >
