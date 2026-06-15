@@ -111,7 +111,7 @@ const NavigationBar = memo(({ onOpenFAQ }) => {
 
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="me-auto align-items-center flex-wrap">
+          <Nav className="me-auto align-items-center">
             <Nav.Link as={Link} to="/" style={{ color: '#ffffff' }}>Inicio</Nav.Link>
             <Nav.Link as={Link} to="/catalogo" style={{ color: '#ffffff' }}>Catálogo</Nav.Link>
 
@@ -142,8 +142,8 @@ const NavigationBar = memo(({ onOpenFAQ }) => {
           </Nav>
 
           {isCatalogo && (
-            <Form className="d-flex align-items-center me-3 my-2 my-lg-0 w-100 w-lg-auto" style={{ minWidth: 0 }} onSubmit={(e) => e.preventDefault()}>
-              <div className="position-relative" style={{ width: '100%', minWidth: 0, maxWidth: '280px' }}>
+              <Form className="search-form d-flex align-items-center me-3 my-2 my-lg-0 w-100 w-lg-auto" style={{ minWidth: 0 }} onSubmit={(e) => e.preventDefault()}>
+                <div className="position-relative" style={{ width: '100%', minWidth: 0, maxWidth: '160px', marginLeft: '60px' }}>
                 <FormControl
                   type="search"
                   placeholder="Buscar productos..."
@@ -232,7 +232,7 @@ const NavigationBar = memo(({ onOpenFAQ }) => {
             </div>
           </Nav.Link>
 
-          <Nav className="align-items-center flex-wrap" style={{ gap: '0.5rem' }}>
+          <Nav className="align-items-center" style={{ gap: '0.5rem' }}>
             <Button variant="outline-light" size="sm" className="me-2" onClick={() => setShowFAQ(true)}>
               <i className="bi bi-question-circle-fill me-1"></i><span className="d-none d-sm-inline">FAQ</span>
             </Button>
