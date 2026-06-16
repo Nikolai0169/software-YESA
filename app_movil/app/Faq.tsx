@@ -6,6 +6,8 @@ import { useColorScheme } from '../hooks/use-color-scheme';
 import { Colors } from '../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { sendContactMessage } from '../src/services/supportService';
+import { useAuth } from '../src/context/authContext';
+import { useRouter } from 'expo-router';
 
 const FAQS = [
   {
@@ -47,6 +49,8 @@ const FAQS = [
 ];
 
 export default function FAQScreen() {
+  const router = useRouter();
+  const { isAuthenticated, isLoadingSession } = useAuth();
   const [open, setOpen] = useState<string | null>(null);
   const [formData, setFormData] = useState({ nombre: '', email: '', asunto: '', mensaje: '' });
   const [loading, setLoading] = useState(false);
@@ -60,6 +64,12 @@ export default function FAQScreen() {
   const textColor = Colors[theme].text;
 
   const handleSubmit = async () => {
+    if (isLoadingSession) return;
+    if (!isAuthenticated) {
+      Alert.alert('Debes iniciar sesión', 'Por favor inicia sesión para enviar una consulta');
+      router.push('/login');
+      return;
+    }
     if (!formData.nombre.trim() || !formData.email.trim() || !formData.asunto.trim() || !formData.mensaje.trim()) {
       Alert.alert('Error', 'Por favor completa todos los campos');
       return;
@@ -110,7 +120,21 @@ export default function FAQScreen() {
         <ThemedText type="subtitle" style={[styles.contactTitle, { color: textColor }]}>¿No encontraste tu respuesta?</ThemedText>
         
         {!showForm ? (
-          <Pressable style={[styles.contactButton, { backgroundColor: primary }]} onPress={() => setShowForm(true)}>
+          <Pressable
+            style={[styles.contactButton, { backgroundColor: primary }]}
+            onPress={() => {
+              // Si la sesión todavía se está restaurando, evitar navegar hasta que termine
+              if (isLoadingSession) return;
+
+              if (!isAuthenticated) {
+                // Redirigir al login para que el usuario inicie sesión antes de enviar el formulario
+                router.push('/login');
+                return;
+              }
+
+              setShowForm(true);
+            }}
+          >
             <Ionicons name="mail" size={20} color={surface} style={{ marginRight: 8 }} />
             <ThemedText style={[styles.contactButtonText, { color: surface }]}>Contactar Soporte</ThemedText>
           </Pressable>

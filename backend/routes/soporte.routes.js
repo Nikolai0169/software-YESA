@@ -23,15 +23,18 @@ const {
 } = require('../controllers/soporte.controller');
 
 const { verificarAuth, verificarAuthOpcional } = require('../middleware/auth');
-const { esAdministrador } = require('../middleware/checkRole');
+const { esAdministrador, esAdminOAuxiliar, soloAdministrador } = require('../middleware/checkRole');
 
-router.post('/contact', verificarAuthOpcional, enviarContacto);
+// Ahora se requiere autenticación para enviar mensajes de soporte
+router.post('/contact', verificarAuth, enviarContacto);
 
 router.get('/mis-consultas', verificarAuth, misConsultas); // ← agregado
 
-router.get('/contactos', verificarAuth, esAdministrador, obtenerContactos);
-router.get('/contactos/:id', verificarAuth, esAdministrador, obtenerContactoPorId);
-router.put('/contactos/:id/responder', verificarAuth, esAdministrador, responderContacto);
-router.delete('/contactos/:id', verificarAuth, esAdministrador, eliminarContacto);
+// Permitir que administradores y auxiliares vean y respondan consultas
+router.get('/contactos', verificarAuth, esAdminOAuxiliar, obtenerContactos);
+router.get('/contactos/:id', verificarAuth, esAdminOAuxiliar, obtenerContactoPorId);
+router.put('/contactos/:id/responder', verificarAuth, esAdminOAuxiliar, responderContacto);
+// Solo el administrador puede eliminar
+router.delete('/contactos/:id', verificarAuth, soloAdministrador, eliminarContacto);
 
 module.exports = router;

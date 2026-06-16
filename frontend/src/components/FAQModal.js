@@ -8,6 +8,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Accordion, Button } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const FAQModal = ({ show, onHide, openSection, setShowFAQ, openContact = false }) => {
   const [activeKey, setActiveKey] = useState(null);
@@ -85,8 +86,17 @@ const FAQModal = ({ show, onHide, openSection, setShowFAQ, openContact = false }
     }
   }, [show, openContact]);
 
+  const navigate = useNavigate();
+
   const handleContactSupport = () => {
     setFormMessage('');
+    // Si no hay usuario autenticado, redirige a login
+    if (!user) {
+      // Cierra el modal de FAQ antes de navegar
+      onHide();
+      navigate('/login');
+      return;
+    }
     setShowContactForm(true);
   };
   
@@ -121,6 +131,13 @@ const FAQModal = ({ show, onHide, openSection, setShowFAQ, openContact = false }
       setFormMessage('');
     }, 2000);
   } catch (error) {
+    // Si el backend requiere autenticación, sugerir iniciar sesión
+    if (error.message && error.message.toLowerCase().includes('401')) {
+      setFormMessage('❌ Debes iniciar sesión para enviar una consulta.');
+      setTimeout(() => navigate('/login'), 1200);
+      return;
+    }
+
     setFormMessage('❌ No se pudo enviar el mensaje. Intenta de nuevo.');
   }
 };
