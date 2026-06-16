@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import useAdminRole from '../../src/hooks/useAdminRole';
 import { getUsuarios, toggleUsuario, deleteUsuario } from '../../src/services/adminService';
+import { Colors } from '../../constants/theme';
 
 export default function UsuariosAdmin() {
   const { isChecking, isAuthorized } = useAdminRole();
@@ -122,7 +123,7 @@ export default function UsuariosAdmin() {
   if (isChecking) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#7d2181" />
+        <ActivityIndicator size="large" color={Colors.light.primary} />
       </View>
     );
   }
@@ -178,7 +179,7 @@ export default function UsuariosAdmin() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f7fb',
+    backgroundColor: Colors.light.background,
   },
   content: {
     padding: 18,
@@ -188,17 +189,17 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8f7fb',
+    backgroundColor: Colors.light.background,
   },
   title: {
     fontSize: 28,
     fontWeight: '800',
     marginBottom: 6,
-    color: '#1f2937',
+    color: Colors.light.text,
   },
   subtitle: {
     fontSize: 15,
-    color: '#4b5563',
+    color: Colors.light.icon,
     marginBottom: 18,
   },
   searchContainer: {
@@ -209,16 +210,16 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.light.surface,
     borderRadius: 16,
     padding: 12,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
-    color: '#111827',
+    borderColor: Colors.light.border,
+    color: Colors.light.text,
     fontSize: 15,
   },
   clearButton: {
-    backgroundColor: '#ef4444',
+    backgroundColor: Colors.light.danger,
     width: 40,
     height: 40,
     borderRadius: 12,
@@ -232,7 +233,7 @@ const styles = StyleSheet.create({
   },
   filterInfo: {
     fontSize: 13,
-    color: '#6b7280',
+    color: Colors.light.icon,
     marginBottom: 12,
     marginLeft: 4,
   },
@@ -240,12 +241,12 @@ const styles = StyleSheet.create({
     marginTop: 30,
   },
   emptyText: {
-    color: '#6b7280',
+    color: Colors.light.icon,
     textAlign: 'center',
     marginTop: 24,
   },
   itemContainer: {
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.light.surface,
     borderRadius: 18,
     padding: 16,
     marginBottom: 12,
@@ -260,12 +261,12 @@ const styles = StyleSheet.create({
   itemTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#111827',
+    color: Colors.light.text,
     marginBottom: 4,
   },
   itemSubtitle: {
     fontSize: 14,
-    color: '#6b7280',
+    color: Colors.light.icon,
     marginBottom: 4,
   },
   itemStatus: {
@@ -273,10 +274,10 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   statusActive: {
-    color: '#10b981',
+    color: Colors.light.success,
   },
   statusInactive: {
-    color: '#ef4444',
+    color: Colors.light.danger,
   },
   controls: {
     flexDirection: 'row',
@@ -284,14 +285,14 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   smallButton: {
-    backgroundColor: '#7d2181',
+    backgroundColor: Colors.light.primary,
     borderRadius: 14,
     paddingVertical: 10,
     paddingHorizontal: 12,
     marginBottom: 8,
   },
   deleteButton: {
-    backgroundColor: '#ef4444',
+    backgroundColor: Colors.light.danger,
   },
   smallButtonText: {
     color: '#fff',

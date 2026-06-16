@@ -16,6 +16,7 @@ import {
   updateCategoria,
 } from '../../src/services/adminService';
 import useAdminRole from '../../src/hooks/useAdminRole';
+import { Colors } from '../../constants/theme';
 
 export default function CategoriasAdmin() {
   const { isChecking, isAuthorized } = useAdminRole();
@@ -136,7 +137,7 @@ export default function CategoriasAdmin() {
   if (isChecking) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#7d2181" />
+        <ActivityIndicator size="large" color={Colors.light.primary} />
       </View>
     );
   }
@@ -200,7 +201,7 @@ export default function CategoriasAdmin() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f7fb',
+    backgroundColor: Colors.light.background,
   },
   content: {
     padding: 18,
@@ -210,17 +211,17 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8f7fb',
+    backgroundColor: Colors.light.background,
   },
   title: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#1f2937',
+    color: Colors.light.text,
     marginBottom: 6,
   },
   subtitle: {
     fontSize: 15,
-    color: '#4b5563',
+    color: Colors.light.icon,
     marginBottom: 18,
   },
   formRow: {
@@ -231,15 +232,15 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.light.surface,
     borderRadius: 16,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
-    color: '#111827',
+    borderColor: Colors.light.border,
+    color: Colors.light.text,
   },
   addButton: {
-    backgroundColor: '#7d2181',
+    backgroundColor: Colors.light.primary,
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderRadius: 16,
@@ -252,13 +253,13 @@ const styles = StyleSheet.create({
     marginTop: 40,
   },
   emptyText: {
-    color: '#6b7280',
+    color: Colors.light.icon,
     fontSize: 15,
     textAlign: 'center',
     marginTop: 36,
   },
   itemContainer: {
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.light.surface,
     borderRadius: 18,
     padding: 16,
     marginBottom: 12,
@@ -277,12 +278,12 @@ const styles = StyleSheet.create({
   itemTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#111827',
+    color: Colors.light.text,
     marginBottom: 4,
   },
   itemSubtitle: {
     fontSize: 14,
-    color: '#6b7280',
+    color: Colors.light.icon,
   },
   itemButton: {
     paddingVertical: 10,
@@ -314,7 +315,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ef4444',
   },
   editSection: {
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.light.surface,
     borderRadius: 18,
     padding: 16,
     marginBottom: 18,
@@ -322,7 +323,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#111827',
+    color: Colors.light.text,
     marginBottom: 10,
   },
   editButtonsRow: {
@@ -331,9 +332,9 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   saveButton: {
-    backgroundColor: '#2563eb',
+    backgroundColor: Colors.light.primaryLight,
   },
   cancelButton: {
-    backgroundColor: '#6b7280',
+    backgroundColor: Colors.light.icon,
   },
 });

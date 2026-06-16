@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter, Link } from 'expo-router';
 import useAdminRole from '../../src/hooks/useAdminRole';
+import { Colors } from '../../constants/theme';
 import {
   createProduct,
   getCategorias,
@@ -154,7 +155,7 @@ export default function AdminProductoForm() {
   if (isChecking || loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#7d2181" />
+        <ActivityIndicator size="large" color={Colors.light.primary} />
       </View>
     );
   }
@@ -335,7 +336,7 @@ export default function AdminProductoForm() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f7fb',
+    backgroundColor: Colors.light.background,
   },
   content: {
     padding: 18,
@@ -345,35 +346,35 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: Colors.light.background,
   },
   title: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#1f2937',
+    color: Colors.light.text,
     marginBottom: 6,
   },
   subtitle: {
     fontSize: 15,
-    color: '#4b5563',
+    color: Colors.light.icon,
     marginBottom: 18,
   },
   input: {
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.light.surface,
     borderRadius: 16,
     padding: 14,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
-    color: '#111827',
+    borderColor: Colors.light.border,
+    color: Colors.light.text,
   },
   pickerButton: {
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.light.surface,
     borderRadius: 16,
     padding: 14,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: Colors.light.border,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -391,7 +392,7 @@ const styles = StyleSheet.create({
     color: '#9ca3af',
   },
   pickerArrow: {
-    color: '#7d2181',
+    color: Colors.light.primary,
     fontSize: 12,
     fontWeight: 'bold',
   },
@@ -399,7 +400,7 @@ const styles = StyleSheet.create({
     color: '#d1d5db',
   },
   helperText: {
-    color: '#ef4444',
+    color: Colors.light.danger,
     fontSize: 12,
     marginTop: -8,
     marginBottom: 12,
@@ -410,7 +411,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.light.surface,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     maxHeight: '80%',
@@ -423,41 +424,41 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: Colors.light.border,
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1f2937',
+    color: Colors.light.text,
   },
   modalCloseBtn: {
     fontSize: 24,
-    color: '#6b7280',
+    color: Colors.light.icon,
   },
   modalItem: {
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+    borderBottomColor: Colors.light.surfaceSoft,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   modalItemSelected: {
-    backgroundColor: '#f3f4f6',
+    backgroundColor: Colors.light.surfaceSoft,
   },
   modalItemText: {
     fontSize: 16,
-    color: '#111827',
+    color: Colors.light.text,
     flex: 1,
   },
   modalItemTextSelected: {
-    color: '#7d2181',
+    color: Colors.light.primary,
     fontWeight: '700',
   },
   checkMark: {
     fontSize: 18,
-    color: '#7d2181',
+    color: Colors.light.primary,
     fontWeight: 'bold',
   },
   emptyText: {
@@ -481,28 +482,28 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   checkboxBoxActive: {
-    backgroundColor: '#7d2181',
-    borderColor: '#7d2181',
+    backgroundColor: Colors.light.primary,
+    borderColor: Colors.light.primary,
   },
   checkboxLabel: {
     color: '#111827',
     fontWeight: '700',
   },
   saveButton: {
-    backgroundColor: '#7d2181',
+    backgroundColor: Colors.light.primary,
     paddingVertical: 16,
     borderRadius: 16,
     marginTop: 12,
   },
   saveButtonText: {
-    color: '#fff',
+    color: Colors.light.surface,
     textAlign: 'center',
     fontWeight: '700',
     fontSize: 16,
   },
   link: {
     marginTop: 18,
-    color: '#7d2181',
+    color: Colors.light.primary,
     fontSize: 16,
     fontWeight: '700',
     textAlign: 'center',

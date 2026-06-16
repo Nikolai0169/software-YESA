@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Link } from 'expo-router';
 import { useAuth } from '../../src/context/authContext';
+import { Colors } from '../../constants/theme';
 import useAdminRole from '../../src/hooks/useAdminRole';
 import {
   getCategorias,
@@ -75,7 +76,7 @@ export default function DashboardAdmin() {
   if (isChecking || loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#7d2181" />
+        <ActivityIndicator size="large" color={Colors.light.primary} />
       </View>
     );
   }
@@ -157,7 +158,7 @@ export default function DashboardAdmin() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f7fb',
+    backgroundColor: Colors.light.background,
   },
   content: {
     padding: 18,
@@ -172,12 +173,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#1f2937',
+    color: Colors.light.text,
     marginBottom: 6,
   },
   subtitle: {
     fontSize: 15,
-    color: '#4b5563',
+    color: Colors.light.icon,
     marginBottom: 20,
   },
   cardsRow: {
@@ -187,7 +188,7 @@ const styles = StyleSheet.create({
   },
   card: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.light.surface,
     borderRadius: 20,
     padding: 16,
     marginRight: 10,
@@ -198,13 +199,13 @@ const styles = StyleSheet.create({
   },
   cardLabel: {
     fontSize: 13,
-    color: '#6b7280',
+    color: Colors.light.icon,
     marginBottom: 10,
   },
   cardValue: {
     fontSize: 26,
     fontWeight: '800',
-    color: '#7d2181',
+    color: Colors.light.primary,
   },
   smallCardsRow: {
     flexDirection: 'row',
@@ -213,30 +214,30 @@ const styles = StyleSheet.create({
   },
   smallCard: {
     flex: 1,
-    backgroundColor: '#fdf4ff',
+    backgroundColor: Colors.light.surfaceSoft,
     borderRadius: 16,
     padding: 14,
     marginRight: 10,
   },
   smallCardLabel: {
     fontSize: 13,
-    color: '#9333ea',
+    color: Colors.light.primaryLight,
     marginBottom: 8,
   },
   smallCardValue: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#6d28d9',
+    color: Colors.light.primaryDark,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#111827',
+    color: Colors.light.text,
     marginBottom: 12,
     marginTop: 4,
   },
   actionButton: {
-    backgroundColor: '#7d2181',
+    backgroundColor: Colors.light.primary,
     paddingVertical: 16,
     borderRadius: 16,
     marginBottom: 12,
@@ -248,7 +249,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   actionSecondaryButton: {
-    borderColor: '#7d2181',
+    borderColor: Colors.light.primary,
     borderWidth: 1,
     paddingVertical: 16,
     borderRadius: 16,

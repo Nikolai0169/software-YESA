@@ -16,6 +16,7 @@ import {useState, useEffect} from 'react';
 //modal mostrar detalles de contenido en ventana emergente
 import {ActivityIndicator, ScrollView, StyleSheet,TextInput, Text, Alert, Button, View, TouchableOpacity} from 'react-native';
 import apiClient from '../../src/api/apiClient';
+import { Colors } from '../../constants/theme';
 
 //lee los parametros de la url para obtener el id del pedido
 import {useLocalSearchParams, useRouter} from 'expo-router';//navegacion y parametros de ruta
@@ -255,15 +256,14 @@ export default function AdminProductoForm() {
 
 // ── ESTILOS ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  // Contenedor del ScrollView: padding interior, fondo blanco.
-  // flexGrow: 1 hace que ocupe toda la pantalla aunque el contenido sea corto.
-  container: { padding: 20, backgroundColor: '#fff', flexGrow: 1 },
+  // Contenedor del ScrollView: padding interior, fondo.
+  container: { padding: 20, backgroundColor: Colors.light.surface, flexGrow: 1 },
   // Etiqueta de campo: negrita con margen superior para separar campos.
-  label: { fontWeight: 'bold', marginTop: 10 },
+  label: { fontWeight: 'bold', marginTop: 10, color: Colors.light.text },
   // Campo de texto: borde gris, esquinas ligeramente redondeadas, padding interior.
-  input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 5, padding: 8, marginTop: 5, marginBottom: 10 },
-  chip: { paddingVertical: 6, paddingHorizontal: 10, borderRadius: 16, backgroundColor: '#f3f4f6', marginRight: 8, marginBottom: 8 },
-  chipSelected: { backgroundColor: '#2563eb' },
-  chipText: { color: '#111' },
-  chipTextSelected: { color: '#fff' },
+  input: { borderWidth: 1, borderColor: Colors.light.border, borderRadius: 5, padding: 8, marginTop: 5, marginBottom: 10, backgroundColor: Colors.light.surface, color: Colors.light.text },
+  chip: { paddingVertical: 6, paddingHorizontal: 10, borderRadius: 16, backgroundColor: Colors.light.surfaceSoft, marginRight: 8, marginBottom: 8 },
+  chipSelected: { backgroundColor: Colors.light.primary },
+  chipText: { color: Colors.light.text },
+  chipTextSelected: { color: Colors.light.surface },
 });

@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { Link } from 'expo-router';
 import useAdminRole from '../../src/hooks/useAdminRole';
+import { Colors } from '../../constants/theme';
 import {
   deleteProduct,
   getProductos,
@@ -116,7 +117,7 @@ export default function ProductosAdmin() {
   if (isChecking) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#7d2181" />
+        <ActivityIndicator size="large" color={Colors.light.primary} />
       </View>
     );
   }
@@ -150,7 +151,7 @@ export default function ProductosAdmin() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f7fb',
+    backgroundColor: Colors.light.background,
   },
   content: {
     padding: 18,
@@ -160,21 +161,21 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8f7fb',
+    backgroundColor: Colors.light.background,
   },
   title: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#1f2937',
+    color: Colors.light.text,
     marginBottom: 6,
   },
   subtitle: {
     fontSize: 15,
-    color: '#4b5563',
+    color: Colors.light.icon,
     marginBottom: 18,
   },
   primaryButton: {
-    backgroundColor: '#7d2181',
+    backgroundColor: Colors.light.primary,
     paddingVertical: 16,
     borderRadius: 16,
     marginBottom: 18,
@@ -189,13 +190,13 @@ const styles = StyleSheet.create({
     marginTop: 30,
   },
   emptyText: {
-    color: '#6b7280',
+    color: Colors.light.icon,
     textAlign: 'center',
     marginTop: 24,
     fontSize: 15,
   },
   itemContainer: {
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.light.surface,
     borderRadius: 18,
     padding: 16,
     marginBottom: 12,
@@ -210,12 +211,12 @@ const styles = StyleSheet.create({
   itemTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#111827',
+    color: Colors.light.text,
     marginBottom: 6,
   },
   itemSubtitle: {
     fontSize: 14,
-    color: '#6b7280',
+    color: Colors.light.icon,
     marginBottom: 6,
   },
   itemStatus: {
@@ -223,10 +224,10 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   statusActive: {
-    color: '#10b981',
+    color: Colors.light.success,
   },
   statusInactive: {
-    color: '#ef4444',
+    color: Colors.light.danger,
   },
   itemActions: {
     flexDirection: 'row',
@@ -234,14 +235,14 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   smallButton: {
-    backgroundColor: '#7d2181',
+    backgroundColor: Colors.light.primary,
     borderRadius: 14,
     paddingVertical: 10,
     paddingHorizontal: 12,
     marginBottom: 8,
   },
   deleteButton: {
-    backgroundColor: '#ef4444',
+    backgroundColor: Colors.light.danger,
   },
   smallButtonText: {
     color: '#fff',

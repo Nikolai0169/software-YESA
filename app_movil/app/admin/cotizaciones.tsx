@@ -2,6 +2,7 @@ import React from 'react';
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Link } from 'expo-router';
 import useAdminRole from '../../src/hooks/useAdminRole';
+import { Colors } from '../../constants/theme';
 
 export default function CotizacionesAdmin() {
   const { isChecking, isAuthorized } = useAdminRole();
@@ -45,7 +46,7 @@ export default function CotizacionesAdmin() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f7fb',
+    backgroundColor: Colors.light.background,
   },
   content: {
     padding: 18,
@@ -55,25 +56,25 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8f7fb',
+    backgroundColor: Colors.light.background,
   },
   loadingText: {
     fontSize: 16,
-    color: '#6b7280',
+    color: Colors.light.icon,
   },
   title: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#1f2937',
+    color: Colors.light.text,
     marginBottom: 6,
   },
   subtitle: {
     fontSize: 15,
-    color: '#4b5563',
+    color: Colors.light.icon,
     marginBottom: 20,
   },
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.light.surface,
     borderRadius: 18,
     padding: 20,
     shadowColor: '#000',
@@ -85,21 +86,21 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#111827',
+    color: Colors.light.text,
     marginBottom: 10,
   },
   cardText: {
     fontSize: 14,
-    color: '#4b5563',
+    color: Colors.light.icon,
     lineHeight: 20,
   },
   backButton: {
-    backgroundColor: '#7d2181',
+    backgroundColor: Colors.light.primary,
     paddingVertical: 16,
     borderRadius: 16,
   },
   backButtonText: {
-    color: '#ffffff',
+    color: Colors.light.surface,
     textAlign: 'center',
     fontWeight: '700',
     fontSize: 16,

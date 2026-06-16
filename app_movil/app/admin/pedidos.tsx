@@ -11,21 +11,22 @@ import {
 import { Link } from 'expo-router';
 import useAdminRole from '../../src/hooks/useAdminRole';
 import { getPedidos } from '../../src/services/adminService';
+import { Colors } from '../../constants/theme';
 
 const getStatusColor = (estado: string) => {
   switch (estado) {
     case 'pendiente':
-      return '#f59e0b';
+      return Colors.light.warning;
     case 'pagado':
       return '#06b6d4';
     case 'enviado':
       return '#3b82f6';
     case 'entregado':
-      return '#10b981';
+      return Colors.light.success;
     case 'cancelado':
-      return '#ef4444';
+      return Colors.light.danger;
     default:
-      return '#6b7280';
+      return Colors.light.icon;
   }
 };
 
@@ -83,7 +84,7 @@ export default function PedidosAdmin() {
   if (isChecking) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#7d2181" />
+        <ActivityIndicator size="large" color={Colors.light.primary} />
       </View>
     );
   }
@@ -98,7 +99,7 @@ export default function PedidosAdmin() {
       <Text style={styles.subtitle}>Consulta el histórico de pedidos y accede a cada detalle.</Text>
 
       {loading ? (
-        <ActivityIndicator size="large" color="#7d2181" style={styles.loader} />
+        <ActivityIndicator size="large" color={Colors.light.primary} style={styles.loader} />
       ) : pedidos.length === 0 ? (
         <Text style={styles.emptyText}>No hay pedidos disponibles en este momento.</Text>
       ) : (
@@ -117,7 +118,7 @@ export default function PedidosAdmin() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f7fb',
+    backgroundColor: Colors.light.background,
   },
   content: {
     padding: 18,
@@ -127,17 +128,17 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8f7fb',
+    backgroundColor: Colors.light.background,
   },
   title: {
     fontSize: 28,
     fontWeight: '800',
     marginBottom: 6,
-    color: '#1f2937',
+    color: Colors.light.text,
   },
   subtitle: {
     fontSize: 15,
-    color: '#4b5563',
+    color: Colors.light.icon,
     marginBottom: 18,
   },
   loader: {
@@ -145,12 +146,12 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     textAlign: 'center',
-    color: '#6b7280',
+    color: Colors.light.icon,
     marginTop: 24,
     fontSize: 15,
   },
   itemContainer: {
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.light.surface,
     borderRadius: 18,
     padding: 16,
     marginBottom: 12,
@@ -165,12 +166,12 @@ const styles = StyleSheet.create({
   itemTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#111827',
+    color: Colors.light.text,
     marginBottom: 4,
   },
   itemSubtitle: {
     fontSize: 14,
-    color: '#6b7280',
+    color: Colors.light.icon,
   },
   statusBadge: {
     borderRadius: 999,
@@ -184,13 +185,13 @@ const styles = StyleSheet.create({
   },
   backButton: {
     marginTop: 18,
-    backgroundColor: '#7d2181',
+    backgroundColor: Colors.light.primary,
     paddingVertical: 16,
     borderRadius: 16,
   },
   backButtonText: {
     textAlign: 'center',
-    color: '#fff',
+    color: Colors.light.surface,
     fontWeight: '700',
     fontSize: 16,
   },
