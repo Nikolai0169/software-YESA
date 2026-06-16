@@ -7,9 +7,6 @@
     "icon": "./assets/icon.png",
     "scheme": "appmovil",
     "userInterfaceStyle": "automatic",
-    "extra": {
-      "apiBaseUrl": "http://10.0.2.2:5000/api"
-    },
     "ios": {
       "supportsTablet": true
     },

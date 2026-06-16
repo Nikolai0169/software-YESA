@@ -84,25 +84,33 @@ const PORT = process.env.PORT || 5000;
 // app.use() registra un middleware que se aplica a TODAS las rutas
 
 // CORS → Configura qué dominios pueden hacer peticiones al backend
-// Sin este middleware, el navegador bloquea las peticiones del frontend (localhost:3000)
-// porque el backend está en un puerto diferente (localhost:5000)
+// Sin este middleware, el navegador bloquea las peticiones del frontend en diferentes puertos
 app.use(cors({
-  // origin → URL del frontend que tiene permiso para hacer peticiones
-  // Lee FRONTEND_URL del .env, o usa http://localhost:3000 por defecto
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  
-  // credentials: true → permite que el navegador envíe cookies y headers de autenticación
-  // Necesario para que el token JWT en el header Authorization funcione correctamente
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      process.env.FRONTEND_URL || 'http://localhost:3000',
+      'http://localhost:8081',
+      'http://127.0.0.1:8081',
+    ];
+
+    // Permite peticiones sin origen (cURL, Postman, servidores)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    // Permite cualquier localhost con puerto distinto si el origen viene de localhost o 127.0.0.1
+    const localhostRegex = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
+    if (localhostRegex.test(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error('CORS policy: origin not allowed'));
+  },
   credentials: true,
-  
-  // methods → lista de métodos HTTP que el frontend puede usar
-  // GET (leer), POST (crear), PUT (actualizar todo), DELETE (eliminar), PATCH (actualizar parcial)
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  
-  // allowedHeaders → headers que el frontend puede enviar en las peticiones
-  // Content-Type → indica el formato del body (application/json, multipart/form-data)
-  // Authorization → contiene el token JWT (Bearer eyJ...)
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 // express.json() → Middleware que parsea (interpreta) el body de las peticiones en formato JSON

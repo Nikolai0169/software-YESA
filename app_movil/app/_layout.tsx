@@ -1,7 +1,11 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+import { Platform } from 'react-native';
+
+if (Platform.OS !== 'web') {
+  require('react-native-reanimated');
+}
 
 import { useColorScheme } from '../hooks/use-color-scheme';
 import { AuthProvider } from '../src/context/authContext';

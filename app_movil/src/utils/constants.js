@@ -51,28 +51,26 @@ function hostFromDebuggerHost() {
 }
 
 function resolveApiBaseUrl() {
-  // 1) Explicit overrides
-  if (expoApiBaseUrl) return expoApiBaseUrl;
-  if (envApi) return envApi;
-
-  // 2) WEB: use current page hostname
+  // 1) WEB: use current page hostname, ignoring app.json extra apiBaseUrl
   if (isWeb) {
     const host = getWebHostname() || 'localhost';
     return `http://${host}:5000/api`;
   }
 
-  // 3) NATIVE (Expo Go on physical device or simulator)
+  // 2) Native: if we can derive the device host from Expo debuggerHost, use it
   const host = hostFromDebuggerHost();
   if (host) {
     return `http://${host}:5000/api`;
   }
 
-  // 4) Fallback
+  // 3) Native environment variable override (useful in native builds or custom dev env)
+  if (envApi) return envApi;
+
+  // 4) Fallback: emulator / simulator
   if (platformOS === 'android') {
     return 'http://10.0.2.2:5000/api';
   }
 
-  // iOS simulator o unknown device
   return 'http://localhost:5000/api';
 }
 
