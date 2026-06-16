@@ -15,6 +15,10 @@ const Pedido = require('../models/Pedido');
 // Almacena cada producto dentro de un pedido con su cantidad y precio.
 const DetallePedido = require('../models/DetallePedido');
 
+// Importa el modelo DetallePedidoPersonalizado desde models/DetallePedidoPersonalizado.js → tabla 'DetallePedidoPersonalizado'
+// Almacena cada diseño personalizado (cotización) dentro de un pedido con su cantidad y precio.
+const DetallePedidoPersonalizado = require('../models/DetallePedidoPersonalizado');
+
 // Importa el modelo Carrito desde models/Carrito.js → tabla 'Carrito'
 // Se usa para leer los items del carrito al crear un pedido.
 const Carrito = require('../models/Carrito');
@@ -32,6 +36,9 @@ const Categoria = require('../models/Categoria');
 
 // Importa el modelo Subcategoria desde models/Subcategoria.js → tabla 'Subcategoria'
 const Subcategoria = require('../models/Subcategoria');
+
+// Importa el modelo Cotizacion desde models/Cotizacion.js → tabla 'Cotizacion'
+const Cotizacion = require('../models/Cotizacion');
 
 /**
  * Crear pedido desde el carrito (checkout) - CLIENTE
@@ -140,9 +147,9 @@ const crearPedido = async (req, res) => {
         
         for (let i = 0; i < cotItems.length; i++) {
           const item = cotItems[i];
-          await DetallePedido.create({
+          await DetallePedidoPersonalizado.create({
             pedidoId: pedido.id,
-            productoId: null, // No hay producto específico, es un diseño personalizado
+            cotizacionId: cotizacionId, // Referencia a la cotización (diseño personalizado)
             cantidad: item.cantidad || 1,
             precioUnitario: precioUnitario,
             subtotal: precioUnitario * (item.cantidad || 1)
@@ -156,13 +163,17 @@ const crearPedido = async (req, res) => {
 
       await t.commit();
 
-      // Recarga el pedido con datos de usuario y detalles
+      // Recarga el pedido con datos de usuario y detalles (tanto normales como personalizados)
       await pedido.reload({
         include: [
           { model: Usuario, as: 'usuario', attributes: ['id', 'nombre', 'email'] },
           {
             model: DetallePedido,
             as: 'detalles'
+          },
+          {
+            model: DetallePedidoPersonalizado,
+            as: 'detallesPersonalizados'
           }
         ]
       });
@@ -323,6 +334,15 @@ const crearPedido = async (req, res) => {
             as: 'producto',
             attributes: ['id', 'nombre', 'precio', 'imagen']   // Datos del producto
           }]
+        },
+        {
+          model: DetallePedidoPersonalizado,
+          as: 'detallesPersonalizados',
+          include: [{
+            model: Cotizacion,
+            as: 'cotizacion',
+            attributes: ['id', 'nombre', 'modelo', 'precio']   // Datos de la cotización
+          }]
         }
       ]
     });
@@ -379,6 +399,15 @@ const getMisPedidos = async (req, res) => {
             model: Producto,
             as: 'producto',
             attributes: ['id', 'nombre', 'imagen']   // Solo datos básicos del producto
+          }]
+        },
+        {
+          model: DetallePedidoPersonalizado,
+          as: 'detallesPersonalizados',
+          include: [{
+            model: Cotizacion,
+            as: 'cotizacion',
+            attributes: ['id', 'nombre', 'modelo']
           }]
         }
       ],
@@ -457,6 +486,15 @@ const getPedidoById = async (req, res) => {
               }
             ]
           }]
+        },
+        {
+          model: DetallePedidoPersonalizado,
+          as: 'detallesPersonalizados',
+          include: [{
+            model: Cotizacion,
+            as: 'cotizacion',
+            attributes: ['id', 'nombre', 'modelo', 'precio', 'estado']
+          }]
         }
       ]
     });
@@ -510,14 +548,20 @@ const cancelarPedido = async (req, res) => {
         id,
         usuarioId: req.usuario.id    // Solo sus propios pedidos
       },
-      include: [{
-        model: DetallePedido,
-        as: 'detalles',
-        include: [{
-          model: Producto,
-          as: 'producto'              // Producto completo para actualizar stock
-        }]
-      }],
+      include: [
+        {
+          model: DetallePedido,
+          as: 'detalles',
+          include: [{
+            model: Producto,
+            as: 'producto'              // Producto completo para actualizar stock
+          }]
+        },
+        {
+          model: DetallePedidoPersonalizado,
+          as: 'detallesPersonalizados'  // Detalles personalizados (no tienen productos)
+        }
+      ],
       transaction: t
     });
     
@@ -607,6 +651,15 @@ const getAllPedidos = async (req, res) => {
             model: Producto,
             as: 'producto',
             attributes: ['id', 'nombre', 'imagen']
+          }]
+        },
+        {
+          model: DetallePedidoPersonalizado,
+          as: 'detallesPersonalizados',
+          include: [{
+            model: Cotizacion,
+            as: 'cotizacion',
+            attributes: ['id', 'nombre', 'modelo']
           }]
         }
       ],

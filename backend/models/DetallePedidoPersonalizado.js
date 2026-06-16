@@ -1,0 +1,192 @@
+/**
+ * ============================================
+ * MODELO DETALLE PEDIDO PERSONALIZADO
+ * ============================================
+ * Define la estructura de la tabla 'detalle_pedidos_personalizados' en MySQL usando Sequelize ORM.
+ * Cada fila representa UN diseño personalizado (cotización convertida) incluido dentro de un pedido específico.
+ * A diferencia de DetallePedido, NO tiene relación FK a productos (es un diseño 3D personalizado).
+ * En su lugar, guarda la referencia a la cotización que generó el diseño.
+ * Guarda precio y cantidad "congelados" al momento de la compra (historial inmutable).
+ */
+
+// Importa DataTypes de la librería 'sequelize' (paquete npm)
+// DataTypes proporciona los tipos de datos: INTEGER, DECIMAL, etc.
+const { DataTypes } = require('sequelize');
+
+// Importa la instancia 'sequelize' (conexión activa a MySQL) desde config/database.js
+const { sequelize } = require('../config/database');
+
+/**
+ * sequelize.define() crea el modelo que mapea a la tabla 'detalle_pedidos_personalizados'.
+ * 'DetallePedidoPersonalizado' → nombre interno del modelo en Sequelize
+ */
+const DetallePedidoPersonalizado = sequelize.define('DetallePedidoPersonalizado', {
+  // ==========================================
+  // COLUMNAS DE LA TABLA 'detalle_pedidos_personalizados'
+  // ==========================================
+  
+  // Columna 'id' → Identificador único de cada línea de detalle personalizado
+  id: {
+    type: DataTypes.INTEGER,           // Tipo INT en MySQL
+    primaryKey: true,                  // Es la clave primaria
+    autoIncrement: true,               // Auto-incrementa: 1, 2, 3...
+    allowNull: false                   // No permite NULL
+  },
+
+  // Columna 'pedidoId' → Clave foránea (FK) que apunta a la tabla 'pedidos'
+  // Indica A QUÉ pedido pertenece este detalle personalizado
+  pedidoId: {
+    type: DataTypes.INTEGER,           // Tipo INT, coincide con pedidos.id
+    allowNull: false,                  // Obligatorio: todo detalle pertenece a un pedido
+    references: {                      // Define la relación FK en MySQL
+      model: 'pedidos',               // Tabla referenciada → tabla 'pedidos'
+      key: 'id'                       // Columna referenciada → pedidos.id
+    },
+    onUpdate: 'CASCADE',              // Si cambia pedidos.id → actualiza aquí
+    onDelete: 'CASCADE',              // Si se elimina el pedido → elimina sus detalles personalizados
+    validate: {
+      notNull: {
+        msg: 'Debe especificar un pedido'
+      }
+    }
+  },
+
+  // Columna 'cotizacionId' → Clave foránea (FK) que apunta a la tabla 'cotizaciones'
+  // Indica CUÁL diseño personalizado (cotización) es este detalle
+  // Se usa para auditoría y para recuperar los datos del diseño 3D
+  cotizacionId: {
+    type: DataTypes.INTEGER,           // Tipo INT, coincide con cotizaciones.id
+    allowNull: true,                   // Opcional: si se elimina la cotización, el pedido seguirá existiendo
+    references: {                      // Define la relación FK en MySQL
+      model: 'cotizaciones',          // Tabla referenciada → tabla 'cotizaciones'
+      key: 'id'                       // Columna referenciada → cotizaciones.id
+    },
+    onUpdate: 'CASCADE',              // Si cambia cotizaciones.id → actualiza aquí
+    onDelete: 'SET NULL',             // Si se elimina la cotización → cotizacionId se pone NULL (pero el detalle se conserva)
+    validate: {
+      // cotizacionId puede ser null, así que no hay validación notNull
+    }
+  },
+
+  // Columna 'cantidad' → Cuántas unidades de este diseño personalizado se compraron
+  cantidad: {
+    type: DataTypes.INTEGER,           // Tipo INT (entero)
+    allowNull: false,                  // Obligatorio
+    validate: {
+      isInt: {                         // Valida que sea entero
+        msg: 'La cantidad debe ser un número entero'
+      },
+      min: {                           // Mínimo 1 unidad
+        args: [1],
+        msg: 'La cantidad debe ser al menos 1'
+      }
+    }
+  },
+
+  // Columna 'precioUnitario' → Precio del diseño personalizado AL MOMENTO de la compra
+  // Se guarda como "foto" del precio para mantener el historial
+  // Este es el precio asignado por el admin desde la cotización
+  precioUnitario: {
+    type: DataTypes.DECIMAL(10, 2),    // DECIMAL(10,2) → hasta 99,999,999.99
+    allowNull: false,                  // Obligatorio
+    validate: {
+      isDecimal: {                     // Valida formato decimal
+        msg: 'El precio debe ser un número decimal válido'
+      },
+      min: {                           // No permite negativos
+        args: [0],
+        msg: 'El precio no puede ser negativo'
+      }
+    }
+  },
+
+  // Columna 'subtotal' → Total de esta línea = precioUnitario × cantidad
+  // Se calcula automáticamente en el hook beforeCreate
+  // Ejemplo: Si precio = 50000 y cantidad = 3, subtotal = 150000
+  subtotal: {
+    type: DataTypes.DECIMAL(10, 2),    // DECIMAL(10,2)
+    allowNull: false,                  // Obligatorio (se asigna en el hook)
+    validate: {
+      isDecimal: {
+        msg: 'El subtotal debe ser un número decimal válido'
+      },
+      min: {
+        args: [0],
+        msg: 'El subtotal no puede ser negativo'
+      }
+    }
+  }
+
+}, {
+  // ==========================================
+  // OPCIONES DEL MODELO
+  // ==========================================
+  
+  tableName: 'detalle_pedidos_personalizados',  // Nombre EXACTO de la tabla en MySQL
+  timestamps: false,                            // NO crea createdAt/updatedAt (los detalles no cambian)
+  
+  // Índices → aceleran las consultas SQL frecuentes
+  indexes: [
+    {
+      // Índice en 'pedidoId' → acelera: SELECT * FROM detalle_pedidos_personalizados WHERE pedidoId = ?
+      // Usado cuando se consultan los detalles personalizados de un pedido específico
+      fields: ['pedidoId']
+    },
+    {
+      // Índice en 'cotizacionId' → acelera: SELECT * FROM detalle_pedidos_personalizados WHERE cotizacionId = ?
+      // Usado para auditoría: "¿cuáles pedidos usan esta cotización?"
+      fields: ['cotizacionId']
+    }
+  ],
+  
+  // HOOKS → funciones automáticas del ciclo de vida del registro
+  hooks: {
+    /**
+     * beforeCreate → Se ejecuta ANTES de insertar un nuevo detalle personalizado en la BD
+     * Calcula automáticamente el subtotal = precioUnitario × cantidad
+     */
+    beforeCreate: (detalle) => {
+      // parseFloat() convierte el DECIMAL de Sequelize a número JavaScript
+      // Luego multiplica por la cantidad para obtener el subtotal
+      detalle.subtotal = parseFloat(detalle.precioUnitario) * detalle.cantidad;
+    },
+
+    /**
+     * beforeUpdate → Se ejecuta ANTES de actualizar un detalle existente
+     * Recalcula el subtotal si el precio o la cantidad cambiaron
+     */
+    beforeUpdate: (detalle) => {
+      // changed() verifica si un campo fue modificado
+      if (detalle.changed('precioUnitario') || detalle.changed('cantidad')) {
+        detalle.subtotal = parseFloat(detalle.precioUnitario) * detalle.cantidad;
+      }
+    }
+  }
+});
+
+// ==========================================
+// MÉTODOS DE INSTANCIA
+// ==========================================
+// Se llaman sobre UN registro: detalle.calcularSubtotal()
+
+/**
+ * calcularSubtotal() → Calcula manualmente el subtotal de esta línea
+ * Útil para verificaciones antes de guardar
+ * @returns {number} precioUnitario × cantidad
+ */
+DetallePedidoPersonalizado.prototype.calcularSubtotal = function() {
+  return parseFloat(this.precioUnitario) * this.cantidad;
+};
+
+/**
+ * obtenerCotizacion() → Busca y retorna la cotización asociada a este detalle
+ * Ejecuta: SELECT * FROM cotizaciones WHERE id = this.cotizacionId
+ * @returns {Promise<Cotizacion>} Instancia del modelo Cotizacion (o null si no existe)
+ */
+DetallePedidoPersonalizado.prototype.obtenerCotizacion = async function() {
+  const Cotizacion = require('./Cotizacion');   // Importa el modelo Cotizacion
+  if (!this.cotizacionId) return null;           // Si no hay cotización, retorna null
+  return await Cotizacion.findByPk(this.cotizacionId);  // findByPk = Find By Primary Key
+};
+
+module.exports = DetallePedidoPersonalizado;

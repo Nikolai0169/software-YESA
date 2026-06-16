@@ -44,6 +44,9 @@ const Pedido = require('./Pedido');
 // Importa el modelo DetallePedido desde models/DetallePedido.js → tabla 'detalle_pedidos'
 const DetallePedido = require('./DetallePedido');
 
+// Importa el modelo DetallePedidoPersonalizado desde models/DetallePedidoPersonalizado.js → tabla 'detalle_pedidos_personalizados'
+const DetallePedidoPersonalizado = require('./DetallePedidoPersonalizado');
+
 // Importa el modelo Cotizacion desde models/Cotizacion.js → tabla 'cotizaciones'
 const Cotizacion = require('./Cotizacion');
 
@@ -378,18 +381,65 @@ const initAssociations = () => {
 // Se importa en server.js como: const { Usuario, Producto, ..., initAssociations } = require('./models')
 // Al importar este archivo, las asociaciones ya se ejecutan automáticamente
 module.exports = {
-  Usuario,                           // Modelo de usuarios → tabla 'usuarios'
-  Categoria,                         // Modelo de categorías → tabla 'categorias'
-  Subcategoria,                      // Modelo de subcategorías → tabla 'subcategorias'
-  Producto,                          // Modelo de productos → tabla 'productos'
-  Favorito,                          // Modelo de favoritos → tabla 'favoritos'
-  Carrito,                           // Modelo de carrito → tabla 'carritos'
-  Pedido,                            // Modelo de pedidos → tabla 'pedidos'
-  DetallePedido,                     // Modelo de detalles de pedido → tabla 'detalle_pedidos'
-  Cotizacion,                        // Modelo de cotizaciones → tabla 'cotizaciones'
-  ContactoSoporte,                   // Modelo de contacto de soporte → tabla 'contacto_soporte'
-  initAssociations                   // Función para confirmar asociaciones en consola
+  Usuario,                                  // Modelo de usuarios → tabla 'usuarios'
+  Categoria,                                // Modelo de categorías → tabla 'categorias'
+  Subcategoria,                             // Modelo de subcategorías → tabla 'subcategorias'
+  Producto,                                 // Modelo de productos → tabla 'productos'
+  Favorito,                                 // Modelo de favoritos → tabla 'favoritos'
+  Carrito,                                  // Modelo de carrito → tabla 'carritos'
+  Pedido,                                   // Modelo de pedidos → tabla 'pedidos'
+  DetallePedido,                            // Modelo de detalles de pedido → tabla 'detalle_pedidos'
+  DetallePedidoPersonalizado,               // Modelo de detalles personalizados → tabla 'detalle_pedidos_personalizados'
+  Cotizacion,                               // Modelo de cotizaciones → tabla 'cotizaciones'
+  ContactoSoporte,                          // Modelo de contacto de soporte → tabla 'contacto_soporte'
+  initAssociations                          // Función para confirmar asociaciones en consola
 };
+
+// ==========================================
+// 11. PEDIDO ↔ DETALLE PEDIDO PERSONALIZADO (Uno a Muchos)
+// ==========================================
+// Un pedido puede tener MUCHOS detalles personalizados (diseños 3D comprados)
+// Cada detalle personalizado pertenece a un pedido
+// CASCADE: si se elimina un pedido, se eliminan todos sus detalles personalizados
+
+// Lado UNO → el pedido "tiene muchos" detalles personalizados
+Pedido.hasMany(DetallePedidoPersonalizado, {
+  foreignKey: 'pedidoId',                  // Columna FK en tabla 'detalle_pedidos_personalizados' que apunta a 'pedidos.id'
+  as: 'detallesPersonalizados',           // Alias → Pedido.findAll({ include: ['detallesPersonalizados'] })
+  onDelete: 'CASCADE',                     // Si se elimina el pedido → se eliminan sus detalles personalizados
+  onUpdate: 'CASCADE'                      // Si cambia el id del pedido → se actualiza en detalles
+});
+
+// Lado MUCHOS → cada detalle personalizado "pertenece a" un pedido
+DetallePedidoPersonalizado.belongsTo(Pedido, {
+  foreignKey: 'pedidoId',                  // Misma FK
+  as: 'pedido',                            // Alias → DetallePedidoPersonalizado.findAll({ include: ['pedido'] })
+  onDelete: 'CASCADE',                     // Mismas reglas de eliminación
+  onUpdate: 'CASCADE'                      // Mismas reglas de actualización
+});
+
+// ==========================================
+// 12. COTIZACION ↔ DETALLE PEDIDO PERSONALIZADO (Uno a Muchos - Relación Opcional)
+// ==========================================
+// Una cotización puede tener MUCHOS detalles de pedidos personalizados (auditoría)
+// Cada detalle personalizado puede referenciar a UNA cotización (o NULL si se eliminó)
+// SET NULL: si se elimina una cotización, los detalles quedan sin referencia pero se conservan
+
+// Lado UNO → una cotización "puede tener muchos" detalles de pedidos personalizados
+Cotizacion.hasMany(DetallePedidoPersonalizado, {
+  foreignKey: 'cotizacionId',              // Columna FK en tabla 'detalle_pedidos_personalizados' que apunta a 'cotizaciones.id'
+  as: 'detallesPedido',                    // Alias → Cotizacion.findAll({ include: ['detallesPedido'] })
+  onDelete: 'SET NULL',                    // Si se elimina la cotización → cotizacionId se pone NULL (pero el detalle se conserva)
+  onUpdate: 'CASCADE'                      // Si cambia el id de la cotización → se actualiza en detalles
+});
+
+// Lado MUCHOS → cada detalle personalizado "puede pertenecer a" una cotización (relación opcional)
+DetallePedidoPersonalizado.belongsTo(Cotizacion, {
+  foreignKey: 'cotizacionId',              // Misma FK
+  as: 'cotizacion',                        // Alias → DetallePedidoPersonalizado.findAll({ include: ['cotizacion'] })
+  onDelete: 'SET NULL',                    // Mismas reglas: si se elimina cotización, FK se pone NULL
+  onUpdate: 'CASCADE'                      // Mismas reglas de actualización
+});
 
 /**
  * ============================================
