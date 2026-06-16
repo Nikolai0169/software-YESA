@@ -11,13 +11,29 @@
 export const formatCurrency = (value) => {
   if (value === null || value === undefined || value === '') return '$0';
 
-  const normalized = typeof value === 'string'
-    ? value.replace(/\s+/g, '')
-           .replace(/\$/g, '')
-           .replace(/\./g, '')
-           .replace(/,/g, '.')
-           .replace(/[^0-9.-]/g, '')
+  const raw = typeof value === 'string'
+    ? value.replace(/\s+/g, '').replace(/\$/g, '').replace(/[^0-9,.-]/g, '')
     : String(value);
+
+  const normalized = (() => {
+    if (raw.includes(',') && raw.includes('.')) {
+      const lastComma = raw.lastIndexOf(',');
+      const lastDot = raw.lastIndexOf('.');
+      const decimalSeparator = lastComma > lastDot ? ',' : '.';
+      const thousandSeparator = decimalSeparator === ',' ? '.' : ',';
+
+      return raw
+        .replace(new RegExp(`\\${thousandSeparator}`, 'g'), '')
+        .replace(decimalSeparator, '.');
+    }
+
+    if (raw.includes(',')) {
+      const parts = raw.split(',');
+      return parts.length > 1 ? `${parts[0]}.${parts[1]}` : raw;
+    }
+
+    return raw.replace(/\./g, '');
+  })();
 
   const numero = Number(normalized);
   if (Number.isNaN(numero)) return '$0';
