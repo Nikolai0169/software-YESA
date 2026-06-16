@@ -227,6 +227,12 @@ app.use('/api', clienteRoutes);
 const soporteRoutes = require('./routes/soporte.routes');
 app.use('/api/support', soporteRoutes);
 
+// Rutas de reseñas → prefijo /api/resena
+// Archivo: routes/resena.routes.js
+// Incluye: POST /api/resena y GET /api/resena/producto/:id
+const resenaRoutes = require('./routes/resena.routes');
+app.use('/api/resena', resenaRoutes);
+
 // ==========================================
 // MANEJO DE RUTAS NO ENCONTRADAS (404)
 // ==========================================

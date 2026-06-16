@@ -997,6 +997,94 @@ body {
   margin-bottom: 1rem;
 }
 
+.service-card {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, #f3e8ff 0%, #fdf7ff 50%, #ffffff 100%) !important;
+  border: 1px solid rgba(125, 33, 129, 0.2) !important;
+  box-shadow: 0 30px 90px rgba(125, 33, 129, 0.12) !important;
+  border-radius: 1.75rem !important;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+}
+
+.service-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at top left, rgba(125, 33, 129, 0.12), transparent 36%);
+}
+
+.service-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 45px 100px rgba(125, 33, 129, 0.18) !important;
+}
+
+.service-card .card-body {
+  position: relative;
+  z-index: 1;
+  background: transparent !important;
+  color: inherit !important;
+}
+
+.service-card h5,
+.service-card p,
+.service-card .feature-icon,
+.service-card .feature-icon i {
+  color: inherit !important;
+}
+
+.service-card h5 {
+  color: #341c62 !important;
+}
+
+.service-card p {
+  color: #5e4a7f !important;
+}
+
+.service-card-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(125, 33, 129, 0.98), rgba(183, 0, 120, 0.9)) !important;
+  color: white !important;
+  font-size: 1.6rem;
+  box-shadow: 0 14px 28px rgba(125, 33, 129, 0.22) !important;
+}
+
+body.theme-dark .service-card {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(11, 15, 39, 0.98) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 0 35px 90px rgba(0, 0, 0, 0.5) !important;
+}
+
+body.theme-dark .service-card::before {
+  background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.06), transparent 36%);
+}
+
+body.theme-dark .service-card h5,
+body.theme-dark .service-card p,
+body.theme-dark .service-card .card-body {
+  color: #f8fafc !important;
+}
+
+body.theme-dark .service-card-icon {
+  background: linear-gradient(135deg, rgba(123, 50, 158, 0.98), rgba(187, 41, 114, 0.92)) !important;
+}
+
+body.theme-dark .yesa-section {
+  background: linear-gradient(180deg, rgba(12, 17, 38, 0.95), rgba(15, 23, 42, 0.96)) !important;
+  box-shadow: 0 35px 90px rgba(0, 0, 0, 0.4) !important;
+}
+
+body.theme-dark .section-note,
+body.theme-dark .yesa-section p {
+  color: #cbd5e1 !important;
+}
+
 .text-gold {
   color: var(--yesa-gold) !important;
 }

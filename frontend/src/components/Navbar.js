@@ -11,7 +11,7 @@ import { useAuth } from '../context/AuthContext';
 import catalogoService from '../services/catalogoService';
 import FAQModal from './FAQModal';
 
-const NavigationBar = memo(({ onOpenFAQ }) => {
+const NavigationBar = memo(({ onOpenFAQ, theme = 'light', toggleTheme }) => {
   const { user, isAuthenticated, isAdmin, isAuxiliar, isCliente, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -238,6 +238,10 @@ const NavigationBar = memo(({ onOpenFAQ }) => {
           </Nav.Link>
 
           <Nav className="align-items-center" style={{ gap: '0.5rem' }}>
+            <Button variant="outline-light" size="sm" className="me-2" onClick={toggleTheme}>
+              <i className={`bi me-1 ${theme === 'dark' ? 'bi-sun-fill' : 'bi-moon-stars-fill'}`}></i>
+              <span className="d-none d-sm-inline">{theme === 'dark' ? 'Claro' : 'Oscuro'}</span>
+            </Button>
             <Button variant="outline-light" size="sm" className="me-2" onClick={() => setShowFAQ(true)}>
               <i className="bi bi-question-circle-fill me-1"></i><span className="d-none d-sm-inline">FAQ</span>
             </Button>

@@ -396,12 +396,12 @@ const ProductDetailPage = () => {
 
           <Button
             variant="outline-primary"
-            onClick={() => setMensaje({ tipo: 'info', texto: 'Función de escribir reseña proximamente' })}
+            onClick={() => navigate(`/producto/${id}/escribir-resena`)}
           >
             Escribir Reseña
           </Button>
 
-          <Button variant="link" className="ms-2">
+          <Button variant="link" className="ms-2" onClick={() => navigate(`/producto/${id}/resenas`)}>
             Ver Todas las Reseñas
           </Button>
         </Col>

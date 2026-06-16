@@ -152,18 +152,22 @@ const FAQModal = ({ show, onHide, openSection, setShowFAQ, openContact = false }
           </Modal.Title>
         </Modal.Header>
 
-        <Modal.Body style={{ maxHeight: '60vh', overflowY: 'auto' }}>
-          <p className="text-muted mb-4">
+        <Modal.Body style={{ maxHeight: '60vh', overflowY: 'auto', backgroundColor: '#ffffff', color: '#000000' }}>
+          <p className="text-muted mb-4" style={{ color: '#333333' }}>
             Encuentra respuestas a las preguntas más comunes sobre nuestros productos y servicios.
           </p>
 
           <Accordion activeKey={activeKey} onSelect={setActiveKey}>
             {faqs.map((faq, index) => (
-              <Accordion.Item key={faq.id} eventKey={index.toString()}>
-                <Accordion.Header>
+              <Accordion.Item
+                key={faq.id}
+                eventKey={index.toString()}
+                style={{ backgroundColor: '#ffffff', color: '#000000', border: '1px solid #e9ecef', borderRadius: '0.75rem', marginBottom: '0.75rem' }}
+              >
+                <Accordion.Header style={{ backgroundColor: '#ffffff', color: '#000000' }}>
                   <strong>{faq.pregunta}</strong>
                 </Accordion.Header>
-                <Accordion.Body>
+                <Accordion.Body style={{ backgroundColor: '#ffffff', color: '#000000' }}>
                   {faq.respuesta}
                 </Accordion.Body>
               </Accordion.Item>

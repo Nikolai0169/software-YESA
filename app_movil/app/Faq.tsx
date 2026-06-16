@@ -103,20 +103,24 @@ export default function FAQScreen() {
     <ThemedView style={styles.container}>
       <ThemedText type="title">Preguntas Frecuentes</ThemedText>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-        <ThemedText style={styles.lead}>Encuentra respuestas a las preguntas más comunes sobre nuestros productos y servicios.</ThemedText>
+        <ThemedText style={[styles.lead, { color: textColor }]}>Encuentra respuestas a las preguntas más comunes sobre nuestros productos y servicios.</ThemedText>
 
         {FAQS.map((f) => (
-          <Pressable key={f.id} onPress={() => setOpen(open === f.id ? null : f.id)} style={styles.item}>
+          <Pressable
+            key={f.id}
+            onPress={() => setOpen(open === f.id ? null : f.id)}
+            style={[styles.item, { backgroundColor: surface, borderColor }]}
+          >
             <View style={styles.questionRow}>
-              <ThemedText style={styles.question}>{f.pregunta}</ThemedText>
+              <ThemedText style={[styles.question, { color: textColor }]}>{f.pregunta}</ThemedText>
               <Ionicons name={open === f.id ? 'chevron-up' : 'chevron-down'} size={18} color={primary} />
             </View>
-            {open === f.id ? <ThemedText style={styles.answer}>{f.respuesta}</ThemedText> : null}
+            {open === f.id ? <ThemedText style={[styles.answer, { color: textColor }]}>{f.respuesta}</ThemedText> : null}
           </Pressable>
         ))}
 
         {/* Sección de Contacto con Soporte */}
-        <View style={styles.contactSeparator} />
+        <View style={[styles.contactSeparator, { backgroundColor: borderColor }]} />
         <ThemedText type="subtitle" style={[styles.contactTitle, { color: textColor }]}>¿No encontraste tu respuesta?</ThemedText>
         
         {!showForm ? (
@@ -135,19 +139,19 @@ export default function FAQScreen() {
               setShowForm(true);
             }}
           >
-            <Ionicons name="mail" size={20} color={surface} style={{ marginRight: 8 }} />
-            <ThemedText style={[styles.contactButtonText, { color: surface }]}>Contactar Soporte</ThemedText>
+            <Ionicons name="mail" size={20} color="#fff" style={{ marginRight: 8 }} />
+            <ThemedText style={[styles.contactButtonText, { color: '#fff' }]}>Contactar Soporte</ThemedText>
           </Pressable>
         ) : (
-          <View style={styles.formContainer}>
+          <View style={[styles.formContainer, { backgroundColor: surface, borderColor }]}> 
             <View style={styles.formHeader}>
-              <ThemedText style={styles.formTitle}>Formulario de Contacto</ThemedText>
+              <ThemedText style={[styles.formTitle, { color: textColor }]}>Formulario de Contacto</ThemedText>
               <Pressable onPress={() => setShowForm(false)}>
                 <Ionicons name="close" size={24} color={primary} />
               </Pressable>
             </View>
 
-            <ThemedText style={styles.label}>Nombre</ThemedText>
+            <ThemedText style={[styles.label, { color: textColor }]}>Nombre</ThemedText>
             <TextInput
               style={[styles.input, { backgroundColor: surface, borderColor: borderColor, color: textColor }]}
               placeholder="Tu nombre"
@@ -157,7 +161,7 @@ export default function FAQScreen() {
               placeholderTextColor="#999"
             />
 
-            <ThemedText style={styles.label}>Email</ThemedText>
+            <ThemedText style={[styles.label, { color: textColor }]}>Email</ThemedText>
             <TextInput
               style={[styles.input, { backgroundColor: surface, borderColor: borderColor, color: textColor }]}
               placeholder="tu@email.com"
@@ -168,7 +172,7 @@ export default function FAQScreen() {
               placeholderTextColor="#999"
             />
 
-            <ThemedText style={styles.label}>Asunto</ThemedText>
+            <ThemedText style={[styles.label, { color: textColor }]}>Asunto</ThemedText>
             <TextInput
               style={[styles.input, { backgroundColor: surface, borderColor: borderColor, color: textColor }]}
               placeholder="¿Cuál es tu consulta?"
@@ -178,7 +182,7 @@ export default function FAQScreen() {
               placeholderTextColor="#999"
             />
 
-            <ThemedText style={styles.label}>Mensaje</ThemedText>
+            <ThemedText style={[styles.label, { color: textColor }]}>Mensaje</ThemedText>
             <TextInput
               style={[styles.input, styles.messageInput, { backgroundColor: surface, borderColor: borderColor, color: textColor }]}
               placeholder="Cuéntanos tu problema o pregunta..."
@@ -198,7 +202,7 @@ export default function FAQScreen() {
               {loading ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <ThemedText style={[styles.submitButtonText, { color: surface }]}>Enviar Mensaje</ThemedText>
+                <ThemedText style={[styles.submitButtonText, { color: '#fff' }]}>Enviar Mensaje</ThemedText>
               )}
             </Pressable>
 

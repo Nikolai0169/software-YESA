@@ -47,6 +47,114 @@ body {
   line-height: 1.6;
 }
 
+body.theme-dark {
+  background-color: #020617;
+  color: #f8fafc;
+}
+
+body.theme-dark .navbar {
+  background: rgba(15, 23, 42, 0.95) !important;
+}
+
+body.theme-dark .navbar .nav-link,
+body.theme-dark .navbar .dropdown-item,
+body.theme-dark .navbar .navbar-brand {
+  color: #f8fafc !important;
+}
+
+body.theme-dark .card,
+body.theme-dark .stat-card,
+body.theme-dark .feature-card,
+body.theme-dark .alert,
+body.theme-dark .table,
+body.theme-dark .form-control,
+body.theme-dark .form-select {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #f8fafc !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+body.theme-dark .table thead {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+body.theme-dark .dropdown-menu {
+  background: #111827 !important;
+  color: #e5e7eb !important;
+  border-color: rgba(255,255,255,0.12) !important;
+}
+
+body.theme-dark .dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+body.theme-dark .card.btn-yesa-primary,
+body.theme-dark .btn-yesa-primary {
+  background: linear-gradient(135deg, #5d1468 0%, #b70078 100%) !important;
+  color: #ffffff !important;
+  border-color: rgba(255,255,255,0.16) !important;
+}
+
+body.theme-dark .bg-white {
+  background-color: #111827 !important;
+  color: #f8fafc !important;
+}
+
+body.theme-dark .bg-light {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+body.theme-dark .bg-secondary {
+  background-color: #1f2937 !important;
+  color: #f8fafc !important;
+}
+
+body.theme-dark .card.bg-white,
+body.theme-dark .card.bg-light,
+body.theme-dark .card.bg-secondary,
+body.theme-dark .card.bg-info,
+body.theme-dark .card.bg-warning,
+body.theme-dark .card.bg-danger {
+  background-color: #111827 !important;
+  color: #f8fafc !important;
+  border-color: rgba(255,255,255,0.12) !important;
+}
+
+body.theme-dark .text-dark,
+body.theme-dark .text-body {
+  color: #f8fafc !important;
+}
+
+body.theme-dark .text-muted,
+body.theme-dark .text-secondary,
+body.theme-dark .text-black-50,
+body.theme-dark .text-gray-600,
+body.theme-dark .text-gray-700 {
+  color: #cbd5e1 !important;
+}
+
+body.theme-dark .table tbody tr:hover {
+  background-color: rgba(255,255,255,0.05) !important;
+}
+
+body.theme-dark .border,
+body.theme-dark .border-top,
+body.theme-dark .border-bottom,
+body.theme-dark .border-left,
+body.theme-dark .border-right {
+  border-color: rgba(255,255,255,0.12) !important;
+}
+
+body.theme-dark .card.btn-yesa-primary .card-body,
+body.theme-dark .btn-yesa-primary .card-body,
+body.theme-dark .btn-yesa-primary h5,
+body.theme-dark .btn-yesa-primary p,
+body.theme-dark .btn-yesa-primary .feature-icon,
+body.theme-dark .btn-yesa-primary .feature-icon i {
+  color: #ffffff !important;
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }

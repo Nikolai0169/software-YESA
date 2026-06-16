@@ -77,9 +77,9 @@ const HomePage = () => {
           </div>
           <Row className="g-4">
             <Col md={4}>
-              <Card className="btn-yesa-primary text-white h-100 border-0">
+              <Card className="service-card h-100">
                 <Card.Body>
-                  <div className="feature-icon mb-3">
+                  <div className="service-card-icon mb-3">
                     <i className="bi bi-brush"></i>
                   </div>
                   <h5 className="mb-3">Personalización en línea</h5>
@@ -88,9 +88,9 @@ const HomePage = () => {
               </Card>
             </Col>
             <Col md={4}>
-              <Card className="btn-yesa-primary text-white h-100 border-0">
+              <Card className="service-card h-100">
                 <Card.Body>
-                  <div className="feature-icon mb-3">
+                  <div className="service-card-icon mb-3">
                     <i className="bi bi-grid-1x2-fill"></i>
                   </div>
                   <h5 className="mb-3">Catálogo estructurado</h5>
@@ -99,9 +99,9 @@ const HomePage = () => {
               </Card>
             </Col>
             <Col md={4}>
-              <Card className="btn-yesa-primary text-white h-100 border-0">
+              <Card className="service-card h-100">
                 <Card.Body>
-                  <div className="feature-icon mb-3">
+                  <div className="service-card-icon mb-3">
                     <i className="bi bi-award"></i>
                   </div>
                   <h5 className="mb-3">Asesoría especializada</h5>

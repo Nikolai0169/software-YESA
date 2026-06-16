@@ -5,7 +5,7 @@
  * Configuración de rutas y contexto global
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
@@ -39,17 +39,37 @@ import AdminPedidosPage from './pages/AdminPedidosPage';
 import AdminCotizacionesPage from './pages/admin/AdminCotizacionesPage';
 import AdminCotizacionDetallePage from './pages/admin/AdminCotizacionDetallePage';
 import AdminSoportePage from './pages/admin/AdminSoportePage';
+import ProductReviewsPage from './pages/ProductReviewsPage';
+import ProductReviewFormPage from './pages/ProductReviewFormPage';
 import ProfilePage from './pages/ProfilePage';
 
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
+  const [theme, setTheme] = useState('light');
+
+  useEffect(() => {
+    const storedTheme = localStorage.getItem('yesa-theme');
+    const initialTheme = storedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    setTheme(initialTheme);
+    document.body.classList.toggle('theme-dark', initialTheme === 'dark');
+  }, []);
+
+  const toggleTheme = () => {
+    setTheme((currentTheme) => {
+      const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('yesa-theme', nextTheme);
+      document.body.classList.toggle('theme-dark', nextTheme === 'dark');
+      return nextTheme;
+    });
+  };
+
   return (
     <AuthProvider>
       <Router>
         <div className="d-flex flex-column min-vh-100">
-          <Navbar />
+          <Navbar theme={theme} toggleTheme={toggleTheme} />
           
           <main className="flex-grow-1">
             <Routes>
@@ -59,6 +79,8 @@ function App() {
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/catalogo" element={<CatalogoPage />} />
               <Route path="/producto/:id" element={<ProductDetailPage />} />
+              <Route path="/producto/:id/resenas" element={<ProductReviewsPage />} />
+              <Route path="/producto/:id/escribir-resena" element={<ProductReviewFormPage />} />
               <Route path="/mis-consultas" element={<MisConsultasPage />} />
               <Route path="/favoritos" element={
                 <ProtectedRoute>

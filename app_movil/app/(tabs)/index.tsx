@@ -169,6 +169,11 @@ export default function Index() {
             <Text style={styles.quickButtonText}>Pedidos</Text>
           </TouchableOpacity>
         </Link>
+        <Link href="/faq" asChild>
+          <TouchableOpacity style={styles.quickButton}> 
+            <Text style={styles.quickButtonText}>FAQ</Text>
+          </TouchableOpacity>
+        </Link>
       </ScrollView>
 
       <View style={styles.searchRow}>
@@ -269,14 +274,19 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8f5ff',
+    paddingTop: 24,
+    paddingBottom: 8,
   },
   quickActions: {
     paddingHorizontal: 20,
     marginBottom: 16,
+    flexShrink: 0,
   },
   quickActionList: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingVertical: 8,
+    paddingRight: 20,
   },
   quickButton: {
     backgroundColor: '#7c3aed',
@@ -303,12 +313,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   categoriesScroll: {
-    maxHeight: 56,
-    marginBottom: 8,
+    maxHeight: 68,
+    marginBottom: 10,
+    flexShrink: 0,
   },
   categoriesContainer: {
     paddingHorizontal: 20,
     alignItems: 'center',
+    paddingVertical: 6,
   },
   categoryButton: {
     paddingHorizontal: 16,
@@ -415,6 +427,7 @@ const styles = StyleSheet.create({
   list: {
     paddingHorizontal: 20,
     paddingBottom: 28,
+    flexGrow: 1,
   },
   centered: {
     flex: 1,
