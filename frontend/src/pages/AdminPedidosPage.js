@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import pedidoService from '../services/pedidoService';
 import { exportarPedidosAPDF, exportarPedidosAExcel } from '../utils/exportUtils';
 
 function AdminPedidosPage() {
+  const navigate = useNavigate();
   const [pedidos, setPedidos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showDetalleModal, setShowDetalleModal] = useState(false);
@@ -191,7 +193,12 @@ function AdminPedidosPage() {
 
       {/* Cabecera */}
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2>Gestión de Pedidos</h2>
+        <div className="d-flex align-items-center gap-2">
+          <button className="btn btn-outline-secondary" onClick={() => navigate('/admin/dashboard')}>
+            <i className="bi bi-arrow-left me-1"></i> Volver
+          </button>
+          <h2 className="mb-0">Gestión de Pedidos</h2>
+        </div>
         <div className="btn-group">
           <button className="btn btn-success" onClick={() => exportarPedidosAPDF(pedidosFiltradosYOrdenados)}>
             <i className="bi bi-file-earmark-pdf me-1"></i> Exportar

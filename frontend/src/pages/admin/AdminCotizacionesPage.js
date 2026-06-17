@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { obtenerCotizaciones, actualizarCotizacion } from '../../services/api';
 import { formatCurrency } from '../../utils/helpers';
 
+// Pantalla de administración para revisar cotizaciones, asignar precios y cambiar su estado.
 const AdminCotizacionesPage = () => {
   const [cotizaciones, setCotizaciones] = useState([]);
   const [priceInputs, setPriceInputs] = useState({});

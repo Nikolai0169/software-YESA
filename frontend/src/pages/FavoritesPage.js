@@ -12,6 +12,7 @@ import { useAuth } from '../context/AuthContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { formatCurrency, getImageUrl } from '../utils/helpers';
 
+// Página de favoritos donde el usuario puede ver, abrir o eliminar productos guardados.
 const FavoritesPage = () => {
   const { isAuthenticated } = useAuth();
   const [favoritos, setFavoritos] = useState([]);

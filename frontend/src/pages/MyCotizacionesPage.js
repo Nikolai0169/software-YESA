@@ -5,6 +5,7 @@ import { obtenerMisCotizaciones } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { formatCurrency } from '../utils/helpers';
 
+// Asigna el color de estado visible para cada cotización según su estado actual.
 const getEstadoBadge = (estado) => {
   switch (estado) {
     case 'pendiente': return 'warning';
@@ -17,6 +18,7 @@ const getEstadoBadge = (estado) => {
 
 const ITEMS_PER_PAGE = 6;
 
+// Página principal del usuario donde se listan sus cotizaciones y se permite ver detalles o avanzar a pedido.
 const MyCotizacionesPage = () => {
   const [cotizaciones, setCotizaciones] = useState([]);
   const [loading, setLoading] = useState(true);

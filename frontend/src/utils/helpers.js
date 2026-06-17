@@ -11,61 +11,43 @@
 export const formatCurrency = (value) => {
   if (value === null || value === undefined || value === '') return '$0';
 
-<<<<<<< HEAD
-  const normalized = typeof value === 'string'
-    ? (() => {
-        const raw = value.replace(/\s+/g, '').replace(/[^0-9.,-]/g, '');
-        if (!raw) return '';
-        const hasComma = raw.includes(',');
-        const hasDot = raw.includes('.');
-
-        if (hasComma && hasDot) {
-          const lastComma = raw.lastIndexOf(',');
-          const lastDot = raw.lastIndexOf('.');
-          if (lastDot > lastComma) {
-            return raw.replace(/,/g, '');
-          }
-          return raw.replace(/\./g, '').replace(/,/g, '.');
-        }
-
-        if (hasComma) {
-          return raw.replace(/,/g, '.');
-        }
-
-        if (hasDot) {
-          const parts = raw.split('.');
-          if (parts.length > 2) {
-            return `${parts.slice(0, -1).join('')}.${parts[parts.length - 1]}`;
-          }
-          return raw;
-        }
-
-        return raw;
-      })()
-=======
   const raw = typeof value === 'string'
-    ? value.replace(/\s+/g, '').replace(/\$/g, '').replace(/[^0-9,.-]/g, '')
->>>>>>> d6d52b32204a3eb2399aab86aad8de7784abd95c
+    ? value.trim().replace(/\$/g, '').replace(/\s+/g, '').replace(/[^0-9,.-]/g, '')
     : String(value);
 
   const normalized = (() => {
     if (raw.includes(',') && raw.includes('.')) {
       const lastComma = raw.lastIndexOf(',');
       const lastDot = raw.lastIndexOf('.');
-      const decimalSeparator = lastComma > lastDot ? ',' : '.';
-      const thousandSeparator = decimalSeparator === ',' ? '.' : ',';
 
-      return raw
-        .replace(new RegExp(`\\${thousandSeparator}`, 'g'), '')
-        .replace(decimalSeparator, '.');
+      if (lastComma > lastDot) {
+        return raw.replace(/\./g, '').replace(/,/g, '.');
+      }
+
+      return raw.replace(/,/g, '');
     }
 
     if (raw.includes(',')) {
       const parts = raw.split(',');
-      return parts.length > 1 ? `${parts[0]}.${parts[1]}` : raw;
+
+      if (parts.length > 1 && parts[parts.length - 1].length === 3 && parts[0].length <= 3) {
+        return parts.join('');
+      }
+
+      return raw.replace(/,/g, '.');
     }
 
-    return raw.replace(/\./g, '');
+    if (raw.includes('.')) {
+      const parts = raw.split('.');
+
+      if (parts.length > 1 && parts[parts.length - 1].length === 3 && parts[0].length <= 3) {
+        return parts.join('');
+      }
+
+      return raw;
+    }
+
+    return raw;
   })();
 
   const numero = Number(normalized);

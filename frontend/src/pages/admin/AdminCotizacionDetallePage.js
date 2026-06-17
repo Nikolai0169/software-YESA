@@ -5,6 +5,7 @@ import Personalizacion3D from '../../components/Personalizacion3D';
 import { obtenerCotizacion } from '../../services/api';
 import { formatCurrency, getEstadoBadge } from '../../utils/helpers';
 
+// Vista administrativa con el detalle completo de una cotización y su diseño personalizado asociado.
 const AdminCotizacionDetallePage = () => {
   const { id } = useParams();
   const navigate = useNavigate();

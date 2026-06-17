@@ -156,6 +156,7 @@ export const guardarDiseno = async (data) => {
  * @param {Object} data - Datos del producto para cotizar
  * @returns {Promise} - Promesa con la cotización del servidor
  */
+// Envía un conjunto de diseños personalizados al backend para crear una cotización.
 export const cotizarProducto = async (data) => {
   const response = await apiClient.post('/personalizacion/cotizar', data);
   return response.data;
@@ -176,6 +177,7 @@ export const obtenerModelos = async () => {
  * 
  * @returns {Promise} - Promesa con la lista de cotizaciones
  */
+// Obtiene la lista de cotizaciones para la vista administrativa.
 export const obtenerCotizaciones = async () => {
   const response = await apiClient.get('/admin/cotizaciones');
   return response.data;
@@ -191,6 +193,7 @@ export const actualizarCotizacion = async (id, data) => {
   return response.data;
 };
 
+// Obtiene las cotizaciones asociadas al usuario autenticado.
 export const obtenerMisCotizaciones = async () => {
   const response = await apiClient.get('/personalizacion/mis-cotizaciones');
   return response.data;

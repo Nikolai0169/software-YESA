@@ -8,6 +8,7 @@
 const Favorito = require('../models/Favorito');
 const Producto = require('../models/Producto');
 
+// Normaliza las rutas de imagen de los productos favoritos para que el frontend pueda mostrarlas correctamente.
 const construirURLProducto = (producto) => {
   if (!producto) return producto;
 
@@ -46,6 +47,7 @@ const construirURLProducto = (producto) => {
   return producto;
 };
 
+// Recupera la lista de favoritos del usuario autenticado, incluyendo los datos del producto asociado.
 const getFavoritos = async (req, res) => {
   try {
     const usuarioId = req.usuario.id;
@@ -84,6 +86,7 @@ const getFavoritos = async (req, res) => {
   }
 };
 
+// Agrega un producto a la lista de favoritos del usuario, evitando duplicados.
 const agregarAFavoritos = async (req, res) => {
   try {
     const usuarioId = req.usuario.id;
@@ -132,6 +135,7 @@ const agregarAFavoritos = async (req, res) => {
   }
 };
 
+// Elimina un producto de la lista de favoritos del usuario autenticado.
 const eliminarFavorito = async (req, res) => {
   try {
     const usuarioId = req.usuario.id;

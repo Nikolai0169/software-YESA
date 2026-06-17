@@ -10,6 +10,7 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
 
+// Define la relación de favoritos entre un usuario y un producto para mantener la lista persistente.
 const Favorito = sequelize.define('Favorito', {
   id: {
     type: DataTypes.INTEGER,

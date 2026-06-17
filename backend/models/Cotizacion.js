@@ -9,6 +9,7 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
 
+// Define la tabla de cotizaciones y sus campos principales para persistir diseños y precios cotizados.
 const Cotizacion = sequelize.define('Cotizacion', {
   id: {
     type: DataTypes.INTEGER,
@@ -82,6 +83,7 @@ const Cotizacion = sequelize.define('Cotizacion', {
     type: DataTypes.STRING(20),
     allowNull: true,
   },
+  // Convierte el arreglo de diseños guardados en texto JSON para almacenarlo en la base de datos.
   items: {
     type: DataTypes.TEXT('long'),
     allowNull: true,

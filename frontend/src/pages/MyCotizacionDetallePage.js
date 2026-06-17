@@ -5,6 +5,7 @@ import Personalizacion3D from '../components/Personalizacion3D';
 import { obtenerCotizacionUsuario } from '../services/api';
 import { formatCurrency } from '../utils/helpers';
 
+// Muestra el detalle completo de una cotización específica con el diseño 3D asociado y el precio.
 const MyCotizacionDetallePage = () => {
   const { id } = useParams();
   const navigate = useNavigate();

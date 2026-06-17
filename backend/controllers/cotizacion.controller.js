@@ -8,6 +8,7 @@
 const Cotizacion = require('../models/Cotizacion');
 const Usuario = require('../models/Usuario');
 
+// Obtiene todas las cotizaciones registradas para mostrarlas en el panel administrativo.
 const getCotizaciones = async (req, res) => {
   try {
     const cotizaciones = await Cotizacion.findAll({
@@ -32,6 +33,7 @@ const getCotizaciones = async (req, res) => {
   }
 };
 
+// Busca una cotización específica por su identificador para mostrar su detalle completo.
 const getCotizacionById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -63,6 +65,7 @@ const getCotizacionById = async (req, res) => {
   }
 };
 
+// Actualiza el precio, estado y notas de una cotización ya existente.
 const actualizarCotizacion = async (req, res) => {
   try {
     const { id } = req.params;

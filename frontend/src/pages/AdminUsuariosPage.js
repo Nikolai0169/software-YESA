@@ -396,7 +396,7 @@ function AdminUsuariosPage() {
                 <h5 className="modal-title">{editando ? 'Editar Usuario' : 'Nuevo Usuario'}</h5>
                 <button type="button" className="btn-close" onClick={() => { setShowModal(false); limpiarFormulario(); }}></button>
               </div>
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={handleSubmit} autoComplete="off">
                 <div className="modal-body">
                   {/* ... contenido del modal sin cambios ... */}
                   <div className="row">
@@ -421,18 +421,15 @@ function AdminUsuariosPage() {
                   </div>
                   <div className="row">
                     <div className="col-md-6 mb-3">
-                      <label className="form-label">Contraseña {editando ? '(dejar vacío para no cambiar)' : '*'}</label>
-                      <input type="password" className="form-control" value={usuarioActual.password} onChange={(e) => setUsuarioActual({...usuarioActual, password: e.target.value})} required={!editando} />
-                    </div>
-                    <div className="col-md-6 mb-3">
                       <label className="form-label">Teléfono</label>
                       <input type="text" className="form-control" value={usuarioActual.telefono} onChange={(e) => setUsuarioActual({...usuarioActual, telefono: e.target.value})} />
                     </div>
+                    <div className="col-md-6 mb-3">
+                      <label className="form-label">Dirección</label>
+                      <textarea className="form-control" rows="2" value={usuarioActual.direccion} onChange={(e) => setUsuarioActual({...usuarioActual, direccion: e.target.value})}></textarea>
+                    </div>
                   </div>
-                  <div className="mb-3">
-                    <label className="form-label">Dirección</label>
-                    <textarea className="form-control" rows="2" value={usuarioActual.direccion} onChange={(e) => setUsuarioActual({...usuarioActual, direccion: e.target.value})}></textarea>
-                  </div>
+
                   <div className="row">
                     <div className="col-md-6 mb-3">
                       <label className="form-label">Rol *</label>
