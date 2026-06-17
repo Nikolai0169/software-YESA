@@ -11,6 +11,7 @@
 export const formatCurrency = (value) => {
   if (value === null || value === undefined || value === '') return '$0';
 
+<<<<<<< HEAD
   const normalized = typeof value === 'string'
     ? (() => {
         const raw = value.replace(/\s+/g, '').replace(/[^0-9.,-]/g, '');
@@ -41,7 +42,31 @@ export const formatCurrency = (value) => {
 
         return raw;
       })()
+=======
+  const raw = typeof value === 'string'
+    ? value.replace(/\s+/g, '').replace(/\$/g, '').replace(/[^0-9,.-]/g, '')
+>>>>>>> d6d52b32204a3eb2399aab86aad8de7784abd95c
     : String(value);
+
+  const normalized = (() => {
+    if (raw.includes(',') && raw.includes('.')) {
+      const lastComma = raw.lastIndexOf(',');
+      const lastDot = raw.lastIndexOf('.');
+      const decimalSeparator = lastComma > lastDot ? ',' : '.';
+      const thousandSeparator = decimalSeparator === ',' ? '.' : ',';
+
+      return raw
+        .replace(new RegExp(`\\${thousandSeparator}`, 'g'), '')
+        .replace(decimalSeparator, '.');
+    }
+
+    if (raw.includes(',')) {
+      const parts = raw.split(',');
+      return parts.length > 1 ? `${parts[0]}.${parts[1]}` : raw;
+    }
+
+    return raw.replace(/\./g, '');
+  })();
 
   const numero = Number(normalized);
   if (Number.isNaN(numero)) return '$0';
