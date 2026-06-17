@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ActivityIndicator, FlatList, TouchableOpacity }
 import { Link } from 'expo-router';
 import { useAuth } from '../src/context/authContext';
 import pedidoService from '../src/services/pedidoService';
+import { formatCurrency } from '../src/utils/formatters';
 
 export default function MisPedidos() {
   const { isAuthenticated, isLoadingSession } = useAuth();
@@ -47,7 +48,7 @@ export default function MisPedidos() {
           <Text style={styles.itemSubtitle}>Estado: {estado}</Text>
         </View>
         <View style={styles.itemRight}>
-          <Text style={styles.itemTotal}>${Number(total).toFixed(2)}</Text>
+          <Text style={styles.itemTotal}>{formatCurrency(Number(total))}</Text>
           <Link href={`/pedidos/${id}`} asChild>
             <TouchableOpacity style={styles.viewButton}>
               <Text style={styles.viewText}>Ver</Text>

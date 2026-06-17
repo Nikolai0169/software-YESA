@@ -12,11 +12,35 @@ export const formatCurrency = (value) => {
   if (value === null || value === undefined || value === '') return '$0';
 
   const normalized = typeof value === 'string'
-    ? value.replace(/\s+/g, '')
-           .replace(/\$/g, '')
-           .replace(/\./g, '')
-           .replace(/,/g, '.')
-           .replace(/[^0-9.-]/g, '')
+    ? (() => {
+        const raw = value.replace(/\s+/g, '').replace(/[^0-9.,-]/g, '');
+        if (!raw) return '';
+        const hasComma = raw.includes(',');
+        const hasDot = raw.includes('.');
+
+        if (hasComma && hasDot) {
+          const lastComma = raw.lastIndexOf(',');
+          const lastDot = raw.lastIndexOf('.');
+          if (lastDot > lastComma) {
+            return raw.replace(/,/g, '');
+          }
+          return raw.replace(/\./g, '').replace(/,/g, '.');
+        }
+
+        if (hasComma) {
+          return raw.replace(/,/g, '.');
+        }
+
+        if (hasDot) {
+          const parts = raw.split('.');
+          if (parts.length > 2) {
+            return `${parts.slice(0, -1).join('')}.${parts[parts.length - 1]}`;
+          }
+          return raw;
+        }
+
+        return raw;
+      })()
     : String(value);
 
   const numero = Number(normalized);

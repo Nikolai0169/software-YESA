@@ -14,6 +14,10 @@ const FAQModal = ({ show, onHide, openSection, setShowFAQ, openContact = false }
   const [activeKey, setActiveKey] = useState(null);
   const [showContactForm, setShowContactForm] = useState(false);
   const [formMessage, setFormMessage] = useState('');
+  const [nombreValue, setNombreValue] = useState('');
+  const [emailValue, setEmailValue] = useState('');
+  const [asuntoValue, setAsuntoValue] = useState('');
+  const [mensajeValue, setMensajeValue] = useState('');
   const { user } = useAuth();
 
   const faqs = [
@@ -86,17 +90,30 @@ const FAQModal = ({ show, onHide, openSection, setShowFAQ, openContact = false }
     }
   }, [show, openContact]);
 
+  useEffect(() => {
+    if (!show) {
+      setShowContactForm(false);
+      setFormMessage('');
+      setAsuntoValue('');
+      setMensajeValue('');
+      if (!user) {
+        setNombreValue('');
+        setEmailValue('');
+      }
+    }
+  }, [show, user]);
+
+  useEffect(() => {
+    if (showContactForm && user) {
+      setNombreValue(user.nombre || '');
+      setEmailValue(user.email || '');
+    }
+  }, [showContactForm, user]);
+
   const navigate = useNavigate();
 
   const handleContactSupport = () => {
     setFormMessage('');
-    // Si no hay usuario autenticado, redirige a login
-    if (!user) {
-      // Cierra el modal de FAQ antes de navegar
-      onHide();
-      navigate('/login');
-      return;
-    }
     setShowContactForm(true);
   };
   
@@ -104,17 +121,25 @@ const FAQModal = ({ show, onHide, openSection, setShowFAQ, openContact = false }
 
   const handleSendMessage = async (e) => {
   e.preventDefault();
-  const formData = new FormData(e.target);
-  const data = {
-    nombre: formData.get('nombre'),
-    email: formData.get('email'),
-    asunto: formData.get('asunto'),
-    mensaje: formData.get('mensaje'),
-  };
 
   const token = localStorage.getItem('token');
-  const headers = { 'Content-Type': 'application/json' };
-  if (token) headers['Authorization'] = `Bearer ${token}`;
+  if (!token) {
+    setFormMessage('❌ Debes iniciar sesión para enviar la consulta. Serás redirigido al login.');
+    setTimeout(() => {
+      onHide();
+      navigate('/login');
+    }, 1400);
+    return;
+  }
+
+  const data = {
+    nombre: nombreValue,
+    email: emailValue,
+    asunto: asuntoValue,
+    mensaje: mensajeValue,
+  };
+
+  const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
 
   try {
     const response = await fetch('http://localhost:5000/api/support/contact', {
@@ -123,18 +148,26 @@ const FAQModal = ({ show, onHide, openSection, setShowFAQ, openContact = false }
       body: JSON.stringify(data),
     });
 
-    if (!response.ok) throw new Error('Error al enviar');
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || 'Error al enviar');
+    }
 
     setFormMessage('✅ Mensaje enviado correctamente. Nos pondremos en contacto pronto.');
     setTimeout(() => {
       setShowContactForm(false);
       setFormMessage('');
+      setAsuntoValue('');
+      setMensajeValue('');
     }, 2000);
   } catch (error) {
-    // Si el backend requiere autenticación, sugerir iniciar sesión
-    if (error.message && error.message.toLowerCase().includes('401')) {
-      setFormMessage('❌ Debes iniciar sesión para enviar una consulta.');
-      setTimeout(() => navigate('/login'), 1200);
+    const message = error.message || '';
+    if (message.toLowerCase().includes('401')) {
+      setFormMessage('❌ Debes iniciar sesión para enviar una consulta. Redirigiendo al login...');
+      setTimeout(() => {
+        onHide();
+        navigate('/login');
+      }, 1200);
       return;
     }
 
@@ -223,7 +256,8 @@ const FAQModal = ({ show, onHide, openSection, setShowFAQ, openContact = false }
                   type="text" 
                   className="form-control" 
                   id="nombre" 
-                  name="nombre" 
+                  value={nombreValue}
+                  onChange={(e) => setNombreValue(e.target.value)}
                   required 
                   placeholder="Tu nombre completo"
                 />
@@ -237,7 +271,8 @@ const FAQModal = ({ show, onHide, openSection, setShowFAQ, openContact = false }
                   type="email" 
                   className="form-control" 
                   id="email" 
-                  name="email" 
+                  value={emailValue}
+                  onChange={(e) => setEmailValue(e.target.value)}
                   required 
                   placeholder="tu@email.com"
                 />
@@ -250,7 +285,8 @@ const FAQModal = ({ show, onHide, openSection, setShowFAQ, openContact = false }
                 <select 
                   className="form-select" 
                   id="asunto" 
-                  name="asunto" 
+                  value={asuntoValue}
+                  onChange={(e) => setAsuntoValue(e.target.value)}
                   required
                 >
                   <option value="">Selecciona un asunto...</option>
@@ -270,7 +306,8 @@ const FAQModal = ({ show, onHide, openSection, setShowFAQ, openContact = false }
                 <textarea 
                   className="form-control" 
                   id="mensaje" 
-                  name="mensaje" 
+                  value={mensajeValue}
+                  onChange={(e) => setMensajeValue(e.target.value)}
                   rows="4" 
                   required 
                   placeholder="Cuéntanos con detalle tu pregunta o problema..."

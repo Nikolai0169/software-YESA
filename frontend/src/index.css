@@ -155,6 +155,34 @@ body.theme-dark .btn-yesa-primary .feature-icon i {
   color: #ffffff !important;
 }
 
+body.theme-dark .modal-content,
+body.theme-dark .modal-header,
+body.theme-dark .modal-body,
+body.theme-dark .modal-footer,
+body.theme-dark .accordion-button,
+body.theme-dark .accordion-body,
+body.theme-dark .accordion-item {
+  background: #0f172a !important;
+  color: #e2e8f0 !important;
+  border-color: rgba(255,255,255,0.12) !important;
+}
+
+body.theme-dark .accordion-button:not(.collapsed) {
+  background: rgba(255,255,255,0.08) !important;
+}
+
+body.theme-dark .modal-header {
+  border-bottom-color: rgba(255,255,255,0.12) !important;
+}
+
+body.theme-dark .modal-footer {
+  border-top-color: rgba(255,255,255,0.12) !important;
+}
+
+body.theme-dark .btn-close {
+  filter: invert(1);
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }

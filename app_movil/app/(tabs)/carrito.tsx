@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image } from 'react
 import { Link } from 'expo-router';
 import { useCarrito } from '../../src/context/carritoContext';
 import catalogoService from '../../src/services/catalogoService';
+import { formatCurrency } from '../../src/utils/formatters';
 
 export default function Carrito() {
   const { items, totalItems, total, loading, cambiarCantidad, eliminarItem, vaciarCarrito } = useCarrito();
@@ -16,7 +17,7 @@ export default function Carrito() {
         ) : null}
         <View style={styles.itemInfo}>
           <Text style={styles.itemTitle}>{item.nombre}</Text>
-          <Text style={styles.itemPrice}>${Number(item.precio || 0).toFixed(2)}</Text>
+          <Text style={styles.itemPrice}>{formatCurrency(Number(item.precio || 0))}</Text>
           <View style={styles.qtyRow}>
             <TouchableOpacity style={styles.qtyBtn} onPress={() => cambiarCantidad(item.id, Math.max(1, cantidad - 1))}>
               <Text style={styles.qtyBtnText}>-</Text>
@@ -30,7 +31,7 @@ export default function Carrito() {
             </TouchableOpacity>
           </View>
         </View>
-        <Text style={styles.itemSubtotal}>${Number(subtotal).toFixed(2)}</Text>
+        <Text style={styles.itemSubtotal}>{formatCurrency(subtotal)}</Text>
       </View>
     );
   };
@@ -50,7 +51,7 @@ export default function Carrito() {
           />
           <View style={styles.summaryRow}>
             <Text style={styles.summary}>Productos: {totalItems || 0}</Text>
-            <Text style={styles.summary}>Total: ${Number(total || 0).toFixed(2)}</Text>
+            <Text style={styles.summary}>Total: {formatCurrency(Number(total || 0))}</Text>
           </View>
           <Link href="/checkout" asChild>
             <TouchableOpacity style={styles.button}>

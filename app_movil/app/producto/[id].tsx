@@ -3,6 +3,7 @@ import { View, Text, Image, ScrollView, TouchableOpacity, ActivityIndicator, Sty
 import { useLocalSearchParams } from 'expo-router';
 import catalogoService from '../../src/services/catalogoService';
 import { useCarrito } from '../../src/context/carritoContext';
+import { formatCurrency } from '../../src/utils/formatters';
 
 export default function ProductoDetalleScreen() {
   const params = useLocalSearchParams();
@@ -56,7 +57,7 @@ export default function ProductoDetalleScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Image source={{ uri: imageUrl }} style={styles.image} resizeMode="cover" />
       <Text style={styles.title}>{producto.nombre || producto.titulo}</Text>
-      <Text style={styles.price}>${Number(producto.precio || 0).toLocaleString('es-CO')}</Text>
+      <Text style={styles.price}>{formatCurrency(Number(producto.precio || 0))}</Text>
       <Text style={styles.subtitle}>{producto.categoria?.nombre || producto.categoria || 'Categoría'}</Text>
       <Text style={styles.description}>{producto.descripcion || 'No hay descripción disponible.'}</Text>
       <Text style={styles.stock}>Stock disponible: {producto.stock ?? 0}</Text>

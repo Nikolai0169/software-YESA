@@ -127,15 +127,7 @@ export default function FAQScreen() {
           <Pressable
             style={[styles.contactButton, { backgroundColor: primary }]}
             onPress={() => {
-              // Si la sesión todavía se está restaurando, evitar navegar hasta que termine
               if (isLoadingSession) return;
-
-              if (!isAuthenticated) {
-                // Redirigir al login para que el usuario inicie sesión antes de enviar el formulario
-                router.push('/login');
-                return;
-              }
-
               setShowForm(true);
             }}
           >
@@ -150,6 +142,10 @@ export default function FAQScreen() {
                 <Ionicons name="close" size={24} color={primary} />
               </Pressable>
             </View>
+
+            {!isAuthenticated ? (
+              <ThemedText style={[styles.helpText, { color: textColor }]}>Puedes completar el formulario ahora; se te pedirá iniciar sesión cuando intentes enviar el mensaje.</ThemedText>
+            ) : null}
 
             <ThemedText style={[styles.label, { color: textColor }]}>Nombre</ThemedText>
             <TextInput
@@ -220,11 +216,11 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   scroll: { flex: 1 },
   content: { padding: 16, gap: 12, paddingBottom: 40 },
-  lead: { color: '#666' },
+  lead: { marginBottom: 10 },
   item: { borderRadius: 10, padding: 12, backgroundColor: '#fff', borderWidth: 1, borderColor: '#eee' },
   questionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   question: { fontWeight: '700', flex: 1 },
-  answer: { marginTop: 8, color: '#444' },
+  answer: { marginTop: 8 },
   
   // Estilos para contacto
   contactSeparator: { height: 1, backgroundColor: '#eee', marginVertical: 16 },
@@ -283,6 +279,6 @@ const styles = StyleSheet.create({
   },
   submitButtonDisabled: { backgroundColor: '#b896c1', opacity: 0.7 },
   submitButtonText: { color: '#fff', fontWeight: '600', fontSize: 16 },
-  
+  helpText: { marginBottom: 12, fontSize: 14 },
   cancelButton: { color: '#7d2181', textAlign: 'center', paddingVertical: 10, fontWeight: '600' },
 });

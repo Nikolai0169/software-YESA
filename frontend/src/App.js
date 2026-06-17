@@ -7,6 +7,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Button } from 'react-bootstrap';
 import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -168,7 +169,16 @@ function App() {
             </Routes>
           </main>
           
-          <Footer onOpenFAQ={() => {}} />
+          <Footer />
+          <Button
+            variant={theme === 'dark' ? 'light' : 'dark'}
+            className="theme-toggle-floating"
+            onClick={toggleTheme}
+            aria-label="Alternar modo oscuro"
+            title={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+          >
+            <i className={`bi ${theme === 'dark' ? 'bi-sun-fill' : 'bi-moon-stars-fill'}`} />
+          </Button>
         </div>
       </Router>
     </AuthProvider>

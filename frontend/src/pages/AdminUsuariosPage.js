@@ -12,6 +12,7 @@ function AdminUsuariosPage() {
   const [usuarioActual, setUsuarioActual] = useState({
     id: null,
     nombre: '',
+    apellido: '',
     email: '',
     password: '',
     telefono: '',
@@ -56,6 +57,10 @@ function AdminUsuariosPage() {
         await usuarioService.actualizarUsuario(usuarioActual.id, dataActualizar);
         alert('Usuario actualizado exitosamente');
       } else {
+        if (!usuarioActual.apellido) {
+          alert('El apellido es requerido para nuevos usuarios');
+          return;
+        }
         if (!usuarioActual.password) {
           alert('La contraseña es requerida para nuevos usuarios');
           return;
@@ -73,7 +78,7 @@ function AdminUsuariosPage() {
   };
 
   const handleEditar = (usuario) => {
-    setUsuarioActual({ ...usuario, password: '' });
+    setUsuarioActual({ ...usuario, password: '', apellido: usuario.apellido || '' });
     setEditando(true);
     setShowModal(true);
   };
@@ -121,6 +126,7 @@ function AdminUsuariosPage() {
     setUsuarioActual({
       id: null,
       nombre: '',
+      apellido: '',
       email: '',
       password: '',
       telefono: '',
@@ -141,6 +147,7 @@ function AdminUsuariosPage() {
       const busquedaLower = filtros.busqueda.toLowerCase().trim();
       const pasaBusqueda = !busquedaLower || 
         usuario.nombre.toLowerCase().includes(busquedaLower) ||
+        (usuario.apellido && usuario.apellido.toLowerCase().includes(busquedaLower)) ||
         usuario.email.toLowerCase().includes(busquedaLower);
       const pasaRol = filtros.rol === 'todos' || usuario.rol === filtros.rol;
       const pasaEstado = filtros.estado === 'todos' ||
@@ -398,8 +405,18 @@ function AdminUsuariosPage() {
                       <input type="text" className="form-control" value={usuarioActual.nombre} onChange={(e) => setUsuarioActual({...usuarioActual, nombre: e.target.value})} required />
                     </div>
                     <div className="col-md-6 mb-3">
+                      <label className="form-label">Apellido *</label>
+                      <input type="text" className="form-control" value={usuarioActual.apellido} onChange={(e) => setUsuarioActual({...usuarioActual, apellido: e.target.value})} required />
+                    </div>
+                  </div>
+                  <div className="row">
+                    <div className="col-md-6 mb-3">
                       <label className="form-label">Email *</label>
                       <input type="email" className="form-control" value={usuarioActual.email} onChange={(e) => setUsuarioActual({...usuarioActual, email: e.target.value})} required />
+                    </div>
+                    <div className="col-md-6 mb-3">
+                      <label className="form-label">Contraseña {editando ? '(dejar vacío para no cambiar)' : '*'}</label>
+                      <input type="password" className="form-control" value={usuarioActual.password} onChange={(e) => setUsuarioActual({...usuarioActual, password: e.target.value})} required={!editando} />
                     </div>
                   </div>
                   <div className="row">

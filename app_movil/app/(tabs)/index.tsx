@@ -13,6 +13,7 @@ import {
   Image,
   Pressable,
 } from 'react-native';
+import { formatCurrency } from '../../src/utils/formatters';
 import { Link, useRouter } from 'expo-router';
 import { useCarrito } from '../../src/context/carritoContext';
 import catalogoService from '../../src/services/catalogoService';
@@ -253,7 +254,7 @@ export default function Index() {
                 <Image source={{ uri: catalogoService.buildImageUrl(selectedProduct.imagen) }} style={styles.modalImage} />
               ) : null}
               <Text style={styles.modalDescription}>{selectedProduct?.descripcion || 'Sin descripción disponible.'}</Text>
-              <Text style={styles.modalPrice}>${selectedProduct?.precio || selectedProduct?.precioVenta || '0'}</Text>
+              <Text style={styles.modalPrice}>{formatCurrency(Number(selectedProduct?.precio || selectedProduct?.precioVenta || 0))}</Text>
             </ScrollView>
             <View style={styles.modalActions}>
               <TouchableOpacity style={styles.modalButton} onPress={() => handleOpenProducto(String(selectedProduct?.id || selectedProduct?._id || selectedProduct?.idProducto || selectedProduct?._idProducto))}>

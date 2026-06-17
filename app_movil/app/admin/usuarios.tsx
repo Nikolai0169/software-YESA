@@ -15,7 +15,7 @@ import { Colors } from '../../constants/theme';
 
 export default function UsuariosAdmin() {
   const { isChecking, isAuthorized } = useAdminRole();
-  const [usuarios, setUsuarios] = useState<{ id: number | string; nombre?: string; email?: string; activo?: boolean }[]>([]);
+  const [usuarios, setUsuarios] = useState<{ id: number | string; nombre?: string; apellido?: string; email?: string; activo?: boolean }[]>([]);
   const [loading, setLoading] = useState(true);
   const [buscar, setBuscar] = useState('');
 
@@ -43,17 +43,18 @@ export default function UsuariosAdmin() {
     if (termino === '') return usuarios;
     return usuarios.filter((user) => {
       const nombre = String(user.nombre || '').toLowerCase();
+      const apellido = String(user.apellido || '').toLowerCase();
       const email = String(user.email || '').toLowerCase();
-      return nombre.includes(termino) || email.includes(termino);
+      return nombre.includes(termino) || apellido.includes(termino) || email.includes(termino);
     });
   }, [usuarios, buscar]);
 
-  function confirmToggle(usuario: { id: number | string; nombre?: string; email?: string; activo?: boolean }) {
+  function confirmToggle(usuario: { id: number | string; nombre?: string; apellido?: string; email?: string; activo?: boolean }) {
     const active = usuario.activo !== false;
     const action = active ? 'desactivar' : 'activar';
     Alert.alert(
       'Confirmar acción',
-      `¿Quieres ${action} al usuario "${usuario.nombre || usuario.email || 'Sin nombre'}"?`,
+      `¿Quieres ${action} al usuario "${getNombreCompleto(usuario)}"?`,
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -73,10 +74,10 @@ export default function UsuariosAdmin() {
     );
   }
 
-  function confirmDelete(usuario: { id: number | string; nombre?: string; email?: string }) {
+  function confirmDelete(usuario: { id: number | string; nombre?: string; apellido?: string; email?: string }) {
     Alert.alert(
       'Eliminar usuario',
-      `¿Estás seguro de eliminar al usuario "${usuario.nombre || usuario.email || 'Sin nombre'}"?`,
+      `¿Estás seguro de eliminar al usuario "${getNombreCompleto(usuario)}"?`,
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -97,12 +98,19 @@ export default function UsuariosAdmin() {
     );
   }
 
-  const renderUsuario = (usuario: { id: number | string; nombre?: string; email?: string; activo?: boolean }) => {
+  const getNombreCompleto = (usuario: { nombre?: string; apellido?: string; email?: string }) => {
+    const nombre = String(usuario.nombre || '').trim();
+    const apellido = String(usuario.apellido || '').trim();
+    const fullName = [nombre, apellido].filter(Boolean).join(' ');
+    return fullName || usuario.email || 'Sin nombre';
+  };
+
+  const renderUsuario = (usuario: { id: number | string; nombre?: string; apellido?: string; email?: string; activo?: boolean }) => {
     const active = usuario.activo !== false;
     return (
       <View key={String(usuario.id)} style={styles.itemContainer}>
         <View style={styles.itemInfo}>
-          <Text style={styles.itemTitle}>{usuario.nombre || usuario.email}</Text>
+          <Text style={styles.itemTitle}>{getNombreCompleto(usuario)}</Text>
           <Text style={styles.itemSubtitle}>{usuario.email}</Text>
           <Text style={[styles.itemStatus, active ? styles.statusActive : styles.statusInactive]}>
             {active ? 'Activo' : 'Inactivo'}
