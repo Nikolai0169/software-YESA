@@ -65,7 +65,7 @@ const { runSeeders } = require('./seeders/adminSeeder');
 // 'app' es el objeto principal del servidor: se le agregan middlewares, rutas y se pone a escuchar
 const app = express();
 
-
+let server = null;
 
 // Promesa que indica cuándo el servidor backend está listo para procesar peticiones.
 // Esperamos a esta promesa en un middleware global para evitar que tests y peticiones
@@ -343,7 +343,8 @@ const startServer = async () => {
     // app.listen(puerto, callback) → pone el servidor a escuchar en el puerto especificado
     // El callback se ejecuta cuando el servidor está listo para recibir peticiones
     await new Promise((resolve) => {
-      app.listen(PORT, () => {
+      server = app.listen(PORT, () => {
+        app.server = server;
         // Muestra un banner informativo en la consola del servidor
         console.log('\n╔════════════════════════════════════════════════╗');
         console.log(`║  ✅ Servidor corriendo en puerto ${PORT}          ║`);
@@ -393,5 +394,7 @@ serverReadyPromise = startServer();
 
 // Exporta la app de Express para poder usarla en los tests (jest + supertest)
 // En los tests se hace: const request = require('supertest')(app) sin necesidad de app.listen()
-// module.exports → sistema de exportación de Node.js (CommonJS)
+// También exponemos la promesa de arranque para que los tests esperen a que la BD esté lista.
 module.exports = app;
+module.exports.serverReadyPromise = serverReadyPromise;
+module.exports.server = server;

@@ -69,7 +69,8 @@ const getCotizacionById = async (req, res) => {
 const actualizarCotizacion = async (req, res) => {
   try {
     const { id } = req.params;
-    const { estado, precio, notas } = req.body;
+    const body = req.body || {};
+    const { estado, precio, notas } = body;
 
     const cotizacion = await Cotizacion.findByPk(id);
     if (!cotizacion) {
@@ -79,18 +80,27 @@ const actualizarCotizacion = async (req, res) => {
       });
     }
 
-    if (precio !== undefined && Number(precio) <= 0) {
+    const precioNumerico = precio !== undefined && precio !== null ? Number(precio) : undefined;
+
+    if (precioNumerico !== undefined && Number.isNaN(precioNumerico)) {
+      return res.status(400).json({
+        success: false,
+        message: 'El precio de cotización debe ser un número válido',
+      });
+    }
+
+    if (precioNumerico !== undefined && precioNumerico <= 0) {
       return res.status(400).json({
         success: false,
         message: 'El precio de cotización debe ser mayor a 0',
       });
     }
 
-    const estadoActualizado = estado || (precio !== undefined && cotizacion.estado === 'pendiente' ? 'cotizado' : cotizacion.estado);
+    const estadoActualizado = estado || (precioNumerico !== undefined && cotizacion.estado === 'pendiente' ? 'cotizado' : cotizacion.estado);
 
     await cotizacion.update({
       estado: estadoActualizado,
-      precio: precio !== undefined ? precio : cotizacion.precio,
+      precio: precioNumerico !== undefined ? precioNumerico : cotizacion.precio,
       notas: notas !== undefined ? notas : cotizacion.notas,
     });
 

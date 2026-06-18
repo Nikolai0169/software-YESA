@@ -50,6 +50,9 @@ const DetallePedidoPersonalizado = require('./DetallePedidoPersonalizado');
 // Importa el modelo Cotizacion desde models/Cotizacion.js → tabla 'cotizaciones'
 const Cotizacion = require('./Cotizacion');
 
+// Importa el modelo Diseño desde models/Diseño.js → tabla 'disenos'
+const Diseño = require('./Diseño');
+
 // Importa el modelo ContactoSoporte desde models/ContactoSoporte.js → tabla 'contacto_soporte'
 const ContactoSoporte = require('./ContactoSoporte');
 

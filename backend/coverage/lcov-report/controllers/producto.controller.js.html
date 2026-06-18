@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">7.65% </span>
+                <span class="strong">7.17% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>15/196</span>
+                <span class='fraction'>15/209</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/162</span>
+                <span class='fraction'>0/168</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/16</span>
+                <span class='fraction'>0/17</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">8.28% </span>
+                <span class="strong">7.85% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>15/181</span>
+                <span class='fraction'>15/191</span>
             </div>
         
             
@@ -614,7 +614,25 @@
 <a name='L549'></a><a href='#L549'>549</a>
 <a name='L550'></a><a href='#L550'>550</a>
 <a name='L551'></a><a href='#L551'>551</a>
-<a name='L552'></a><a href='#L552'>552</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L552'></a><a href='#L552'>552</a>
+<a name='L553'></a><a href='#L553'>553</a>
+<a name='L554'></a><a href='#L554'>554</a>
+<a name='L555'></a><a href='#L555'>555</a>
+<a name='L556'></a><a href='#L556'>556</a>
+<a name='L557'></a><a href='#L557'>557</a>
+<a name='L558'></a><a href='#L558'>558</a>
+<a name='L559'></a><a href='#L559'>559</a>
+<a name='L560'></a><a href='#L560'>560</a>
+<a name='L561'></a><a href='#L561'>561</a>
+<a name='L562'></a><a href='#L562'>562</a>
+<a name='L563'></a><a href='#L563'>563</a>
+<a name='L564'></a><a href='#L564'>564</a>
+<a name='L565'></a><a href='#L565'>565</a>
+<a name='L566'></a><a href='#L566'>566</a>
+<a name='L567'></a><a href='#L567'>567</a>
+<a name='L568'></a><a href='#L568'>568</a>
+<a name='L569'></a><a href='#L569'>569</a>
+<a name='L570'></a><a href='#L570'>570</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -635,6 +653,24 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -1184,13 +1220,31 @@ const fs = require('fs').promises;
 // ✅ FUNCIÓN AUXILIAR PARA CONSTRUIR URLs DE IMÁGENES
 const construirURLProducto = <span class="fstat-no" title="function not covered" >(p</span>roducto) =&gt; {
 <span class="cstat-no" title="statement not covered" >  if (!producto) <span class="cstat-no" title="statement not covered" >return producto;</span></span>
-  
+&nbsp;
   const baseURL = <span class="cstat-no" title="statement not covered" >process.env.BACKEND_URL || 'http://localhost:5000';</span>
+&nbsp;
+  const normalizar = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(i</span>magen) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    if (!imagen) <span class="cstat-no" title="statement not covered" >return imagen;</span></span>
+<span class="cstat-no" title="statement not covered" >    if (imagen.startsWith('http')) <span class="cstat-no" title="statement not covered" >return imagen;</span></span>
+    // Quitar barras iniciales
+    const limpia = <span class="cstat-no" title="statement not covered" >imagen.replace(/^\/+/, '');</span>
+    // Si ya contiene la carpeta uploads/ -&gt; evitar duplicarla
+<span class="cstat-no" title="statement not covered" >    if (limpia.startsWith('uploads/')) <span class="cstat-no" title="statement not covered" >return `${baseURL}/${limpia}`;</span></span>
+<span class="cstat-no" title="statement not covered" >    return `${baseURL}/uploads/${limpia}`;</span>
+  };
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (producto.imagenes &amp;&amp; typeof producto.imagenes === 'string') {</span>
+<span class="cstat-no" title="statement not covered" >    try {</span>
+<span class="cstat-no" title="statement not covered" >      producto.imagenes = JSON.parse(producto.imagenes);</span>
+    } catch (e) {
+<span class="cstat-no" title="statement not covered" >      producto.imagenes = [];</span>
+    }
+  }
 &nbsp;
 <span class="cstat-no" title="statement not covered" >  if (producto.imagenes &amp;&amp; Array.isArray(producto.imagenes)) {</span>
 <span class="cstat-no" title="statement not covered" >    producto.imagenes = producto.imagenes.map(<span class="fstat-no" title="function not covered" >(i</span>magen) =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >      if (!imagen) <span class="cstat-no" title="statement not covered" >return imagen;</span></span>
-<span class="cstat-no" title="statement not covered" >      return imagen.startsWith('http') ? imagen : `${baseURL}/uploads/${imagen}`;</span>
+<span class="cstat-no" title="statement not covered" >      return normalizar(imagen);</span>
     });
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    if (!producto.imagen &amp;&amp; producto.imagenes.length) {</span>
@@ -1198,8 +1252,8 @@ const construirURLProducto = <span class="fstat-no" title="function not covered"
     }
   }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  if (producto.imagen &amp;&amp; !producto.imagen.startsWith('http')) {</span>
-<span class="cstat-no" title="statement not covered" >    producto.imagen = `${baseURL}/uploads/${producto.imagen}`;</span>
+<span class="cstat-no" title="statement not covered" >  if (producto.imagen) {</span>
+<span class="cstat-no" title="statement not covered" >    producto.imagen = normalizar(producto.imagen);</span>
   }
 &nbsp;
 <span class="cstat-no" title="statement not covered" >  return producto;</span>
@@ -1723,7 +1777,7 @@ module.exports = {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-09T15:46:10.792Z
+                at 2026-06-18T20:28:27.463Z
             </div>
         <script src="../prettify.js"></script>
         <script>

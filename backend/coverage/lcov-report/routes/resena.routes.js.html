@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for routes/personalizacion.js</title>
+    <title>Code coverage report for routes/resena.routes.js</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../prettify.css" />
     <link rel="stylesheet" href="../base.css" />
@@ -19,13 +19,13 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../index.html">All files</a> / <a href="index.html">routes</a> personalizacion.js</h1>
+        <h1><a href="../index.html">All files</a> / <a href="index.html">routes</a> resena.routes.js</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>10/10</span>
+                <span class='fraction'>6/6</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>10/10</span>
+                <span class='fraction'>6/6</span>
             </div>
         
             
@@ -75,40 +75,28 @@
 <a name='L10'></a><a href='#L10'>10</a>
 <a name='L11'></a><a href='#L11'>11</a>
 <a name='L12'></a><a href='#L12'>12</a>
-<a name='L13'></a><a href='#L13'>13</a>
-<a name='L14'></a><a href='#L14'>14</a>
-<a name='L15'></a><a href='#L15'>15</a>
-<a name='L16'></a><a href='#L16'>16</a>
-<a name='L17'></a><a href='#L17'>17</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L13'></a><a href='#L13'>13</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const express = require("express");
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/** Rutas de reseñas */
+const express = require('express');
 const router = express.Router();
-const personalizacionController = require("../controllers/personalizacionController");
-// Nota: permitimos cotizaciones anónimas, pero si el cliente envía token se adjunta el usuario
-const { verificarAuth, verificarAuthOpcional } = require('../middleware/auth');
+const { crearResena, obtenerResenasPorProducto } = require('../controllers/resena.controller');
 &nbsp;
-// Endpoints
-router.post("/guardar", personalizacionController.guardarDiseno);
-router.post("/cotizar", verificarAuthOpcional, personalizacionController.cotizarProducto);
-router.get("/modelos", personalizacionController.obtenerModelos);
+// Public: crear reseña
+router.post('/', crearResena);
 &nbsp;
-// Rutas para que el usuario vea sus cotizaciones
-router.get('/mis-cotizaciones', verificarAuth, personalizacionController.obtenerMisCotizaciones);
-router.get('/cotizaciones/:id', verificarAuth, personalizacionController.obtenerCotizacionPorUsuario);
+// Public: obtener reseñas de un producto
+router.get('/producto/:id', obtenerResenasPorProducto);
 &nbsp;
 module.exports = router;
 &nbsp;</pre></td></tr></table></pre>
