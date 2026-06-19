@@ -8,7 +8,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Accordion, Button } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const FAQModal = ({ show, onHide, openSection, setShowFAQ, openContact = false }) => {
   const [activeKey, setActiveKey] = useState(null);
@@ -18,7 +18,8 @@ const FAQModal = ({ show, onHide, openSection, setShowFAQ, openContact = false }
   const [emailValue, setEmailValue] = useState('');
   const [asuntoValue, setAsuntoValue] = useState('');
   const [mensajeValue, setMensajeValue] = useState('');
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  const location = useLocation();
 
   const faqs = [
     {
@@ -110,10 +111,35 @@ const FAQModal = ({ show, onHide, openSection, setShowFAQ, openContact = false }
     }
   }, [showContactForm, user]);
 
+  useEffect(() => {
+    if (show && isAuthenticated && new URLSearchParams(location.search).get('support') === '1') {
+      setShowContactForm(true);
+      if (user) {
+        setNombreValue(user.nombre || '');
+        setEmailValue(user.email || '');
+      }
+    }
+  }, [show, isAuthenticated, location.search, user]);
+
   const navigate = useNavigate();
 
   const handleContactSupport = () => {
     setFormMessage('');
+
+    if (!isAuthenticated) {
+      onHide();
+      navigate('/login', {
+        state: {
+          from: {
+            pathname: location.pathname,
+            search: location.search,
+          },
+          returnToSupport: true,
+        },
+      });
+      return;
+    }
+
     setShowContactForm(true);
   };
   

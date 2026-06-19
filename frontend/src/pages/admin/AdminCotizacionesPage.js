@@ -1,18 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Card, Button, Row, Col, Badge, Spinner, Alert, Form, InputGroup, Pagination } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import { obtenerCotizaciones, actualizarCotizacion } from '../../services/api';
+import { obtenerCotizaciones, actualizarCotizacion, eliminarCotizaciones, eliminarCotizacion } from '../../services/api';
 import { formatCurrency } from '../../utils/helpers';
 
 // Pantalla de administración para revisar cotizaciones, asignar precios y cambiar su estado.
 const AdminCotizacionesPage = () => {
   const [cotizaciones, setCotizaciones] = useState([]);
   const [priceInputs, setPriceInputs] = useState({});
-  const [savingPriceIds, setSavingPriceIds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [busqueda, setBusqueda] = useState('');
+  const [statusInputs, setStatusInputs] = useState({});
+  const [savingPriceIds, setSavingPriceIds] = useState([]);
+  const [deletingIds, setDeletingIds] = useState([]);
+  const [deletingRejected, setDeletingRejected] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,6 +31,12 @@ const AdminCotizacionesPage = () => {
             acc[cotizacion.id] = cotizacion.precio !== null && cotizacion.precio !== undefined
               ? String(cotizacion.precio)
               : '';
+            return acc;
+          }, {})
+        );
+        setStatusInputs(
+          lista.reduce((acc, cotizacion) => {
+            acc[cotizacion.id] = cotizacion.estado || 'pendiente';
             return acc;
           }, {})
         );
@@ -45,9 +55,10 @@ const AdminCotizacionesPage = () => {
     setError(null);
     setSuccessMessage(null);
     const inputValue = priceInputs[cotizacionId];
-    const precio = parseFloat(inputValue);
+    const precio = inputValue === '' || inputValue === null || inputValue === undefined ? undefined : parseFloat(inputValue);
+    const estadoSeleccionado = statusInputs[cotizacionId] || 'pendiente';
 
-    if (Number.isNaN(precio) || precio <= 0) {
+    if (precio !== undefined && (Number.isNaN(precio) || precio <= 0)) {
       setError('Ingresa un precio válido mayor a 0.');
       return;
     }
@@ -55,21 +66,107 @@ const AdminCotizacionesPage = () => {
     setSavingPriceIds((prev) => [...prev, cotizacionId]);
 
     try {
-      const response = await actualizarCotizacion(cotizacionId, { precio, estado: 'cotizado' });
+      const payload = { estado: estadoSeleccionado };
+      if (precio !== undefined) {
+        payload.precio = precio;
+      }
+
+      const response = await actualizarCotizacion(cotizacionId, payload);
       setCotizaciones((prev) => prev.map((item) => (item.id === cotizacionId ? response.cotizacion : item)));
-      setSuccessMessage('Precio guardado correctamente. El estado se actualizó a cotizado.');
+      setSuccessMessage(`Cotización actualizada correctamente. Estado: ${estadoSeleccionado}.`);
     } catch (err) {
       console.error('Error guardando precio:', err);
-      setError('No se pudo guardar el precio. Intenta nuevamente.');
+      setError('No se pudo actualizar la cotización. Intenta nuevamente.');
     } finally {
       setSavingPriceIds((prev) => prev.filter((id) => id !== cotizacionId));
     }
   };
 
+  const handleDeleteRejectedQuotes = async () => {
+    const rechazadas = cotizaciones.filter((item) => item.estado === 'rechazado');
+    if (rechazadas.length === 0) {
+      setError('No hay cotizaciones rechazadas para eliminar.');
+      return;
+    }
+
+    if (!window.confirm(`¿Eliminar ${rechazadas.length} cotización(es) rechazada(s)?`)) {
+      return;
+    }
+
+    setDeletingRejected(true);
+    try {
+      const response = await eliminarCotizaciones({ ids: rechazadas.map((item) => item.id) });
+      setCotizaciones((prev) => prev.filter((item) => item.estado !== 'rechazado'));
+      setSuccessMessage(response.message || 'Cotizaciones rechazadas eliminadas correctamente.');
+    } catch (err) {
+      console.error('Error eliminando cotizaciones rechazadas:', err);
+      setError('No se pudieron eliminar las cotizaciones rechazadas.');
+    } finally {
+      setDeletingRejected(false);
+    }
+  };
+
+  const handleDeleteQuote = async (cotizacionId) => {
+    const cotizacion = cotizaciones.find((item) => item.id === cotizacionId);
+    if (!cotizacion) return;
+
+    if (cotizacion.estado !== 'rechazado') {
+      setError('Solo se pueden eliminar cotizaciones con estado rechazado.');
+      return;
+    }
+
+    if (!window.confirm('¿Eliminar esta cotización rechazada?')) {
+      return;
+    }
+
+    setDeletingIds((prev) => [...prev, cotizacionId]);
+    try {
+      const response = await eliminarCotizacion(cotizacionId);
+      setCotizaciones((prev) => prev.filter((item) => item.id !== cotizacionId));
+      setSuccessMessage(response.message || 'Cotización eliminada correctamente.');
+    } catch (err) {
+      console.error('Error eliminando cotización:', err);
+      setError('No se pudo eliminar la cotización.');
+    } finally {
+      setDeletingIds((prev) => prev.filter((id) => id !== cotizacionId));
+    }
+  };
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [busqueda]);
+
+  const cotizacionesFiltradas = cotizaciones.filter((cotizacion) => {
+    const texto = busqueda.trim().toLowerCase();
+    if (!texto) return true;
+
+    const camposTexto = [
+      cotizacion.id,
+      cotizacion.nombre,
+      cotizacion.modelo,
+      cotizacion.estado,
+      cotizacion.usuario?.nombre,
+      cotizacion.usuario?.email,
+      cotizacion.usuarioEmail,
+      cotizacion.notas,
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
+
+    return camposTexto.includes(texto);
+  });
+
   const ITEMS_PER_PAGE = 6;
-  const totalPages = Math.ceil(cotizaciones.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(cotizacionesFiltradas.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const visibleCotizaciones = cotizaciones.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const visibleCotizaciones = cotizacionesFiltradas.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
@@ -104,9 +201,14 @@ const AdminCotizacionesPage = () => {
             Gestión de presupuestos y revisión de cotizaciones generadas desde el módulo de personalización.
           </p>
         </div>
-        <Button variant="outline-secondary" onClick={() => navigate('/admin/dashboard')}>
-          <i className="bi bi-arrow-left me-2"></i>Volver al dashboard
-        </Button>
+        <div className="d-flex gap-2 flex-wrap">
+          <Button variant="outline-danger" onClick={handleDeleteRejectedQuotes} disabled={deletingRejected || !cotizaciones.some((item) => item.estado === 'rechazado')}>
+            {deletingRejected ? 'Eliminando...' : 'Eliminar rechazadas'}
+          </Button>
+          <Button variant="outline-secondary" onClick={() => navigate('/admin/dashboard')}>
+            <i className="bi bi-arrow-left me-2"></i>Volver al dashboard
+          </Button>
+        </div>
       </div>
 
       <Card className="shadow-sm border-0">
@@ -126,9 +228,34 @@ const AdminCotizacionesPage = () => {
             <Alert variant="secondary">
               No hay cotizaciones cargadas. Las solicitudes de cotización desde personalización y diseños guardados deberían aparecer aquí.
             </Alert>
+          ) : cotizacionesFiltradas.length === 0 ? (
+            <Alert variant="secondary">
+              No se encontraron cotizaciones para la búsqueda "{busqueda}".
+            </Alert>
           ) : (
             <>
-              <Row className="g-4 mt-4">
+              <Row className="g-3 mb-4 align-items-end">
+                <Col md={8}>
+                  <Form.Label className="small mb-1">Buscar</Form.Label>
+                  <InputGroup>
+                    <InputGroup.Text><i className="bi bi-search"></i></InputGroup.Text>
+                    <Form.Control
+                      placeholder="ID, nombre, usuario, estado..."
+                      value={busqueda}
+                      onChange={(e) => setBusqueda(e.target.value)}
+                    />
+                  </InputGroup>
+                </Col>
+                <Col md={4} className="text-md-end">
+                  <small className="text-muted">
+                    {busqueda.trim()
+                      ? `Mostrando ${cotizacionesFiltradas.length} resultado(s)`
+                      : `Mostrando ${cotizacionesFiltradas.length} cotización(es)`}
+                  </small>
+                </Col>
+              </Row>
+
+              <Row className="g-4 mt-2">
                 {visibleCotizaciones.map((cotizacion) => (
                 <Col key={cotizacion.id} xs={12} md={6} lg={4}>
                   <Card className="h-100 shadow-sm border border-2 border-dark">
@@ -163,6 +290,22 @@ const AdminCotizacionesPage = () => {
                       </div>
 
                       <div className="mb-3">
+                        <span className="d-block text-muted small mb-1">Estado</span>
+                        <Form.Select
+                          value={statusInputs[cotizacion.id] || cotizacion.estado || 'pendiente'}
+                          onChange={(e) => setStatusInputs((prev) => ({
+                            ...prev,
+                            [cotizacion.id]: e.target.value,
+                          }))}
+                        >
+                          <option value="pendiente">Pendiente</option>
+                          <option value="cotizado">Cotizado</option>
+                          <option value="aprobado">Aprobado</option>
+                          <option value="rechazado">Rechazado</option>
+                        </Form.Select>
+                      </div>
+
+                      <div className="mb-3">
                         <span className="d-block text-muted small mb-1">Asignar precio</span>
                         <InputGroup>
                           <Form.Control
@@ -181,14 +324,22 @@ const AdminCotizacionesPage = () => {
                             onClick={() => handleSavePrice(cotizacion.id)}
                             disabled={savingPriceIds.includes(cotizacion.id)}
                           >
-                            {savingPriceIds.includes(cotizacion.id) ? 'Asignando...' : 'Asignar'}
+                            {savingPriceIds.includes(cotizacion.id) ? 'Asignando...' : 'Guardar'}
                           </Button>
                         </InputGroup>
                       </div>
 
-                      <div className="mb-3 d-flex gap-2">
+                      <div className="mb-3 d-flex gap-2 flex-wrap">
                         <Button variant="outline-info" size="sm" onClick={() => navigate(`/admin/cotizaciones/${cotizacion.id}`)}>
                           Ver detalle
+                        </Button>
+                        <Button
+                          variant="outline-danger"
+                          size="sm"
+                          onClick={() => handleDeleteQuote(cotizacion.id)}
+                          disabled={deletingIds.includes(cotizacion.id) || cotizacion.estado !== 'rechazado'}
+                        >
+                          {deletingIds.includes(cotizacion.id) ? 'Eliminando...' : 'Eliminar'}
                         </Button>
                       </div>
 

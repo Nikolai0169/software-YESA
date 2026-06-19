@@ -85,7 +85,7 @@ const AdminDashboardPage = () => {
         api.get('/admin/productos?limite=1000'),
         api.get('/admin/usuarios'),
         api.get('/admin/pedidos?limite=10'),
-        isAdmin ? api.get('/cotizaciones').catch(() => ({ data: { cotizaciones: [] } })) : Promise.resolve({ data: { cotizaciones: [] } }),
+        isAdmin ? api.get('/admin/cotizaciones').catch(() => ({ data: { cotizaciones: [] } })) : Promise.resolve({ data: { cotizaciones: [] } }),
         isAdmin ? api.get('/support/contactos').catch(() => ({ data: { data: [] } })) : Promise.resolve({ data: { data: [] } }),
       ]);
 

@@ -292,6 +292,19 @@ router.get('/cotizaciones/:id', cotizacionController.getCotizacionById);
 // Acceso: solo administrador
 router.put('/cotizaciones/:id', soloAdministrador, cotizacionController.actualizarCotizacion);
 
+// DELETE /api/admin/cotizaciones/rechazadas → Elimina todas las cotizaciones con estado rechazado
+// Acceso: solo administrador
+router.delete('/cotizaciones/rechazadas', soloAdministrador, cotizacionController.eliminarCotizaciones);
+
+// DELETE /api/admin/cotizaciones → Elimina cotizaciones por ids cuando están rechazadas
+// Body esperado: { ids: [1, 2, 3] }
+// Acceso: solo administrador
+router.delete('/cotizaciones', soloAdministrador, cotizacionController.eliminarCotizaciones);
+
+// DELETE /api/admin/cotizaciones/:id → Elimina una cotización por id si está rechazada
+// Acceso: solo administrador
+router.delete('/cotizaciones/:id', soloAdministrador, cotizacionController.eliminarCotizacion);
+
 // ==========================================
 // EXPORTAR ROUTER
 // ==========================================

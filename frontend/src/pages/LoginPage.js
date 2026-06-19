@@ -22,6 +22,21 @@ const LoginPage = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  const buildRedirectPath = (path, shouldOpenSupport) => {
+    if (!path) {
+      return shouldOpenSupport ? '/catalogo?support=1' : '/catalogo';
+    }
+
+    const normalizedPath = typeof path === 'string' ? path : path.pathname + (path.search || '');
+    const url = new URL(normalizedPath, window.location.origin);
+
+    if (shouldOpenSupport) {
+      url.searchParams.set('support', '1');
+    }
+
+    return `${url.pathname}${url.search}`;
+  };
+
   useEffect(() => {
     // Verificar si hay items en el carrito local
     const carritoLocal = JSON.parse(localStorage.getItem('carrito_local') || '[]');
@@ -36,11 +51,14 @@ const LoginPage = () => {
     try {
       const response = await login(email, password);
       
+      const shouldReturnToSupport = location.state?.returnToSupport;
+      const redirectPath = buildRedirectPath(from, shouldReturnToSupport);
+
       // Redirigir según el rol y ruta de origen
       if (response.data.usuario.rol === 'cliente') {
-        navigate(from || '/catalogo');
+        navigate(redirectPath || '/catalogo', { replace: true });
       } else {
-        navigate('/admin/dashboard');
+        navigate(shouldReturnToSupport ? redirectPath : '/admin/dashboard', { replace: true });
       }
     } catch (err) {
       setError(err.message || 'Error al iniciar sesión');

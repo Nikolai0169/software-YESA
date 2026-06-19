@@ -193,6 +193,16 @@ export const actualizarCotizacion = async (id, data) => {
   return response.data;
 };
 
+export const eliminarCotizaciones = async (data = {}) => {
+  const response = await apiClient.delete('/admin/cotizaciones', { data });
+  return response.data;
+};
+
+export const eliminarCotizacion = async (id) => {
+  const response = await apiClient.delete(`/admin/cotizaciones/${id}`);
+  return response.data;
+};
+
 // Obtiene las cotizaciones asociadas al usuario autenticado.
 export const obtenerMisCotizaciones = async () => {
   const response = await apiClient.get('/personalizacion/mis-cotizaciones');

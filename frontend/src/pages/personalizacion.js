@@ -39,6 +39,7 @@ const PersonalizacionPage = () => {
   const [composedTextureUrl, setComposedTextureUrl] = useState(null);
   const [cotizacion, setCotizacion] = useState(null);
   const [cotizando, setCotizando] = useState(false);
+  const [nombreCotizacion, setNombreCotizacion] = useState('');
   const { isAuthenticated, isCliente } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -160,6 +161,7 @@ const PersonalizacionPage = () => {
     const pendingDesign = getPendingDesignToEdit();
     const designToEdit = pendingDesign || getDesignToEdit();
     if (designToEdit) {
+      setNombreCotizacion(designToEdit.nombre || '');
       const model = designToEdit.modelo || 'taza';
       setCurrentDesignId(designToEdit.id || null);
       setCurrentDesignName(
@@ -414,6 +416,12 @@ const PersonalizacionPage = () => {
       return;
     }
 
+    const nombreFinal = nombreCotizacion.trim();
+    if (!nombreFinal) {
+      alert('Ingresa un nombre para tu diseño antes de cotizar.');
+      return;
+    }
+
     try {
       setCotizando(true);
       setCotizacion(null);
@@ -441,7 +449,7 @@ const PersonalizacionPage = () => {
         textureOffsetY: textureOffset?.y || 0,
         textureScale: textureScale || 1,
         zoom: zoomLevel,
-        nombre: currentDesignName || `Diseño personalizado - ${new Date().toLocaleDateString()}`,
+        nombre: nombreFinal,
       };
       const result = await cotizarProducto(disenoData);
       setCotizacion({ mensaje: result.mensaje || 'Cotización enviada y pendiente' });
@@ -904,6 +912,17 @@ const PersonalizacionPage = () => {
 
                 {!isFullscreen && (
                   <>
+                    <div className="mt-4 w-100">
+                      <label className="form-label small fw-semibold">Nombre del diseño para la cotización</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Ej: Taza personalizada para regalo"
+                        value={nombreCotizacion}
+                        onChange={(e) => setNombreCotizacion(e.target.value)}
+                      />
+                    </div>
+
                     <div className="personalizacion-actions d-flex flex-wrap justify-content-center gap-2 mt-4">
                       <button
                       type="button"

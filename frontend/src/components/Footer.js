@@ -5,13 +5,41 @@
  * Pie de página del sitio
  */
 
-import React, { memo, useState } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import { Container, Row, Col, Button } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import FAQModal from './FAQModal';
 
 const Footer = memo(() => {
   const [showFAQ, setShowFAQ] = useState(false);
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (new URLSearchParams(location.search).get('support') === '1') {
+      setShowFAQ(true);
+    }
+  }, [location.search]);
+
+  const handleContactSupport = () => {
+    if (!isAuthenticated) {
+      navigate('/login', {
+        state: {
+          from: {
+            pathname: location.pathname,
+            search: location.search,
+          },
+          returnToSupport: true,
+        },
+      });
+      return;
+    }
+
+    setShowFAQ(true);
+  };
+
   return (
     <footer className="bg-black text-light mt-5 py-4" style={{ position: 'relative' }}>
       <Container>
@@ -74,9 +102,7 @@ const Footer = memo(() => {
                     background: 'none',
                     cursor: 'pointer'
                   }}
-                  onClick={() => {
-                    setShowFAQ(true);
-                  }}
+                  onClick={handleContactSupport}
                 >
                   Contactar Soporte
                 </Button>
