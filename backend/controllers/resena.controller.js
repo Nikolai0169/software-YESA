@@ -1,11 +1,11 @@
-/**
- * Controlador de reseñas
- */
 const Resena = require('../models/Resena');
 
 exports.crearResena = async (req, res) => {
+  console.log('📝 Body recibido:', req.body);
+  console.log('📝 Params recibido:', req.params);
   try {
-    const { productoId, nombre, email, calificacion, comentario } = req.body;
+    const { productoId: bodyProductoId, nombre, email, calificacion, comentario } = req.body;
+    const productoId = req.params.id || bodyProductoId;
     const usuarioId = req.usuario?.id || null;
 
     if (!productoId || calificacion === undefined || !comentario) {
@@ -14,10 +14,7 @@ exports.crearResena = async (req, res) => {
 
     const calificacionNumerica = Number(calificacion);
     if (Number.isNaN(calificacionNumerica) || calificacionNumerica < 0.5 || calificacionNumerica > 5) {
-      return res.status(400).json({
-        success: false,
-        message: 'La calificación debe ser un número entre 0.5 y 5',
-      });
+      return res.status(400).json({ success: false, message: 'La calificación debe ser un número entre 0.5 y 5' });
     }
 
     const nueva = await Resena.create({
@@ -39,7 +36,7 @@ exports.crearResena = async (req, res) => {
 
 exports.obtenerResenasPorProducto = async (req, res) => {
   try {
-    const { id } = req.params; // producto id
+    const { id } = req.params;
     const resenas = await Resena.findAll({ where: { productoId: id, aprobado: true }, order: [['createdAt', 'DESC']] });
     return res.status(200).json({ success: true, data: resenas });
   } catch (error) {

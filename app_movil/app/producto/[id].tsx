@@ -4,6 +4,7 @@ import { useLocalSearchParams } from 'expo-router';
 import catalogoService from '../../src/services/catalogoService';
 import { useCarrito } from '../../src/context/carritoContext';
 import { formatCurrency } from '../../src/utils/formatters';
+import ResenaForm from '../../src/components/ResenaForm';
 
 const renderRatingStars = (rating: number) => {
   const filledStars = Math.round(rating);
@@ -22,7 +23,7 @@ export default function ProductoDetalleScreen() {
   const [resenasError, setResenasError] = useState('');
 
   useEffect(() => {
-    if (!productoId) return;
+        if (!productoId) return;
     const loadProducto = async () => {
       setLoading(true);
       setError('');
@@ -40,7 +41,6 @@ export default function ProductoDetalleScreen() {
 
   useEffect(() => {
     if (!productoId) return;
-
     const loadResenas = async () => {
       setResenasLoading(true);
       setResenasError('');
@@ -54,7 +54,6 @@ export default function ProductoDetalleScreen() {
         setResenasLoading(false);
       }
     };
-
     loadResenas();
   }, [productoId]);
 
@@ -113,7 +112,17 @@ export default function ProductoDetalleScreen() {
             </View>
           ))
         )}
+        <ResenaForm
+          productoId={productoId}
+          onResenaCreada={() => {
+            catalogoService.getResenasPorProducto(productoId).then((data) => {
+              setResenas(Array.isArray(data) ? data : []);
+            });
+          }}
+        />
+        
       </View>
+    
 
       <View style={styles.extraInfo}>
         <Text style={styles.extraTitle}>Visor 3D</Text>
@@ -124,138 +133,30 @@ export default function ProductoDetalleScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8f5ff',
-  },
-  content: {
-    padding: 20,
-  },
-  image: {
-    width: '100%',
-    height: 320,
-    borderRadius: 24,
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#111827',
-  },
-  price: {
-    marginTop: 12,
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#7c3aed',
-  },
-  subtitle: {
-    marginTop: 8,
-    color: '#6b7280',
-    fontSize: 16,
-  },
-  description: {
-    marginTop: 20,
-    lineHeight: 24,
-    color: '#374151',
-    fontSize: 16,
-  },
-  stock: {
-    marginTop: 16,
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#4b5563',
-  },
-  button: {
-    marginTop: 24,
-    backgroundColor: '#7c3aed',
-    borderRadius: 16,
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#fff',
-    fontWeight: '700',
-    fontSize: 16,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#f8f5ff',
-  },
-  errorText: {
-    color: '#b91c1c',
-    fontSize: 16,
-    textAlign: 'center',
-  },
-  reviewSection: {
-    marginTop: 28,
-  },
-  reviewTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    marginBottom: 12,
-  },
-  reviewLoader: {
-    marginTop: 8,
-  },
-  reviewError: {
-    color: '#b91c1c',
-    marginTop: 8,
-  },
-  reviewEmpty: {
-    color: '#6b7280',
-    marginTop: 8,
-    fontSize: 15,
-  },
-  reviewCard: {
-    backgroundColor: '#fff',
-    borderRadius: 18,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  reviewHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  reviewAuthor: {
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  reviewDate: {
-    fontSize: 12,
-    color: '#6b7280',
-  },
-  reviewStars: {
-    fontSize: 14,
-    color: '#f59e0b',
-    marginBottom: 8,
-  },
-  reviewComment: {
-    fontSize: 15,
-    lineHeight: 22,
-    color: '#374151',
-  },
-  extraInfo: {
-    marginTop: 28,
-    padding: 18,
-    borderRadius: 20,
-    backgroundColor: '#eef2ff',
-  },
-  extraTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-  extraText: {
-    color: '#4b5563',
-    lineHeight: 22,
-  },
+  container: { flex: 1, backgroundColor: '#f8f5ff' },
+  content: { padding: 20 },
+  image: { width: '100%', height: 320, borderRadius: 24, marginBottom: 24 },
+  title: { fontSize: 28, fontWeight: '800', color: '#111827' },
+  price: { marginTop: 12, fontSize: 24, fontWeight: '700', color: '#7c3aed' },
+  subtitle: { marginTop: 8, color: '#6b7280', fontSize: 16 },
+  description: { marginTop: 20, lineHeight: 24, color: '#374151', fontSize: 16 },
+  stock: { marginTop: 16, fontSize: 15, fontWeight: '600', color: '#4b5563' },
+  button: { marginTop: 24, backgroundColor: '#7c3aed', borderRadius: 16, paddingVertical: 16, alignItems: 'center' },
+  buttonText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20, backgroundColor: '#f8f5ff' },
+  errorText: { color: '#b91c1c', fontSize: 16, textAlign: 'center' },
+  reviewSection: { marginTop: 28 },
+  reviewTitle: { fontSize: 20, fontWeight: '700', marginBottom: 12 },
+  reviewLoader: { marginTop: 8 },
+  reviewError: { color: '#b91c1c', marginTop: 8 },
+  reviewEmpty: { color: '#6b7280', marginTop: 8, fontSize: 15 },
+  reviewCard: { backgroundColor: '#fff', borderRadius: 18, padding: 16, marginBottom: 12, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
+  reviewHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  reviewAuthor: { fontSize: 16, fontWeight: '700' },
+  reviewDate: { fontSize: 12, color: '#6b7280' },
+  reviewStars: { fontSize: 14, color: '#f59e0b', marginBottom: 8 },
+  reviewComment: { fontSize: 15, lineHeight: 22, color: '#374151' },
+  extraInfo: { marginTop: 28, padding: 18, borderRadius: 20, backgroundColor: '#eef2ff' },
+  extraTitle: { fontSize: 16, fontWeight: '700', marginBottom: 8 },
+  extraText: { color: '#4b5563', lineHeight: 22 },
 });
