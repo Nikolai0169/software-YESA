@@ -32,14 +32,13 @@ const capitalizeFirst = (text) => {
 const isDefaultDesignName = (name) =>
   name && name.toLowerCase().startsWith('diseño personalizado');
 
-// Página para visualizar diseños 3D guardados, seleccionarlos y enviarlos a cotización.
 const SavedDesignsPage = () => {
   const [designs, setDesigns] = useState([]);
   const [selectedDesignIds, setSelectedDesignIds] = useState([]);
   const [quoteSummary, setQuoteSummary] = useState(null);
   const [quotedDesigns, setQuotedDesigns] = useState([]);
   const [quotingSelected, setQuotingSelected] = useState(false);
-  const { isAuthenticated, isCliente } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     setDesigns(getSavedDesigns());
@@ -68,6 +67,12 @@ const SavedDesignsPage = () => {
   };
 
   const handleQuoteSelected = async () => {
+    if (!isAuthenticated) {
+      alert('Debes iniciar sesión para cotizar tus diseños guardados.');
+      navigate('/login');
+      return;
+    }
+
     if (selectedDesignIds.length === 0) return;
 
     const selectedDesigns = designs.filter((design) => selectedDesignIds.includes(design.id));
@@ -80,6 +85,7 @@ const SavedDesignsPage = () => {
       colorAsa: design.colorAsa,
       textInterior: design.textInterior,
       textExterior: design.textExterior,
+      hasTexture: Boolean(design.textureUrl || design.texture),
       textureUrl: design.textureUrl || design.texture || null,
       overlayText: design.overlayText || '',
       overlayTextFontFamily: design.overlayTextFontFamily || 'sans-serif',
@@ -152,17 +158,21 @@ const SavedDesignsPage = () => {
                 <Button
                     variant="outline-success"
                     onClick={handleQuoteSelected}
-                    disabled={quotingSelected}
+                    disabled={quotingSelected || !isAuthenticated}
                   >
-                  {quotingSelected ? `Cotizando... (${selectedDesignIds.length})` : `Cotizar seleccionados (${selectedDesignIds.length})`}
+                  {quotingSelected
+                    ? `Cotizando... (${selectedDesignIds.length})`
+                    : isAuthenticated
+                      ? `Cotizar seleccionados (${selectedDesignIds.length})`
+                      : 'Inicia sesión para cotizar'}
                 </Button>
               )}
             </div>
           </div>
 
             {!isAuthenticated && selectedDesignIds.length > 0 && (
-              <div className="alert alert-info mt-4">
-                Estás sin sesión: las cotizaciones de diseños guardados se enviarán como anónimas.
+              <div className="alert alert-warning mt-4">
+                Debes iniciar sesión para cotizar tus diseños guardados.
               </div>
             )}
 
@@ -364,9 +374,9 @@ const SavedDesignsPage = () => {
                         <div className="mt-auto">
                           <p className="text-muted small mb-0">Guardado: {formatDate(design.savedAt)}</p>
                         </div>
-                    </Card.Body>
-                  </Card>
-                </Col>
+                      </Card.Body>
+                    </Card>
+                  </Col>
                 );
               })}
             </Row>

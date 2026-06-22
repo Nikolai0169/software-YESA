@@ -113,16 +113,19 @@ const handleEnviarRespuesta = async () => {
   }
 };
 
-  const handleEliminar = async (id) => {
-    if (!window.confirm('¿Estás seguro de eliminar este mensaje?')) return;
+  const handleCerrarTicket = async (id) => {
+    if (!window.confirm('¿Estás seguro de cerrar este ticket?')) return;
 
     try {
       await api.delete(`/support/contactos/${id}`);
-      setMensaje({ tipo: 'success', texto: 'Mensaje eliminado exitosamente' });
+      setMensaje({ tipo: 'success', texto: 'Ticket cerrado correctamente' });
       await loadContactos();
+      if (contactoSeleccionado?.id === id) {
+        setContactoSeleccionado(null);
+      }
     } catch (error) {
-      console.error('Error al eliminar:', error);
-      setMensaje({ tipo: 'danger', texto: 'Error al eliminar el mensaje' });
+      console.error('Error al cerrar ticket:', error);
+      setMensaje({ tipo: 'danger', texto: error.response?.data?.message || 'Error al cerrar el ticket' });
     }
   };
 
@@ -130,12 +133,14 @@ const handleEnviarRespuesta = async () => {
     const variants = {
       pendiente: 'warning',
       revisado: 'info',
-      respondido: 'success'
+      respondido: 'success',
+      cerrado: 'secondary'
     };
     const textos = {
       pendiente: 'Pendiente',
       revisado: 'Revisado',
-      respondido: 'Respondido'
+      respondido: 'Respondido',
+      cerrado: 'Cerrado'
     };
     return <Badge bg={variants[estado] || 'secondary'}>{textos[estado] || estado}</Badge>;
   };
@@ -155,6 +160,7 @@ const handleEnviarRespuesta = async () => {
   const totalContactos = contactos.length;
   const pendientes = contactos.filter(c => c.estado === 'pendiente').length;
   const respondidos = contactos.filter(c => c.estado === 'respondido').length;
+  const cerrados = contactos.filter(c => c.estado === 'cerrado').length;
 
   if (loading) {
     return <LoadingSpinner message="Cargando mensajes de soporte..." />;
@@ -230,13 +236,19 @@ const handleEnviarRespuesta = async () => {
             </Card.Body>
           </Card>
         </Col>
+                <Col md={4}>
+                  <Card className="text-white bg-secondary shadow-sm">
+                    <Card.Body>
+                      <Card.Title>Cerrados</Card.Title>
+                      <p className="display-6">{cerrados}</p>
+                    </Card.Body>
+                  </Card>
+                </Col>
       </Row>
 
-      {/* Filtros */}
-      <Card className="mb-4 shadow-sm">
+      <Card className="shadow-sm mb-4">
         <Card.Body>
-          <h5 className="mb-3"><i className="bi bi-funnel me-2"></i>Filtros</h5>
-          <Row className="g-3 align-items-end">
+          <Row className="g-3 align-items-end mb-4">
             <Col md={4}>
               <Form.Label className="small mb-1">Buscar</Form.Label>
               <InputGroup>
@@ -259,6 +271,7 @@ const handleEnviarRespuesta = async () => {
                 <option value="pendiente">Pendiente</option>
                 <option value="revisado">Revisado</option>
                 <option value="respondido">Respondido</option>
+                <option value="cerrado">Cerrado</option>
               </Form.Select>
             </Col>
             <Col md={3}>
@@ -349,14 +362,16 @@ const handleEnviarRespuesta = async () => {
                           >
                             <i className="bi bi-reply"></i>
                           </Button>
-                          <Button
-                            variant="outline-danger"
-                            size="sm"
-                            onClick={() => handleEliminar(contacto.id)}
-                            title="Eliminar"
-                          >
-                            <i className="bi bi-trash"></i>
-                          </Button>
+                          {contacto.estado === 'respondido' && (
+                            <Button
+                              variant="outline-danger"
+                              size="sm"
+                              onClick={() => handleCerrarTicket(contacto.id)}
+                              title="Cerrar ticket"
+                            >
+                              <i className="bi bi-x-circle"></i>
+                            </Button>
+                          )}
                         </div>
                       </td>
                     </tr>

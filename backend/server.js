@@ -66,10 +66,10 @@ const { runSeeders } = require('./seeders/adminSeeder');
 const app = express();
 
 let server = null;
+const isTestEnv = process.env.NODE_ENV === 'test';
 
-// Promesa que indica cuándo el servidor backend está listo para procesar peticiones.
-// Esperamos a esta promesa en un middleware global para evitar que tests y peticiones
-// lleguen antes de que la base de datos se sincronice y los seeders terminen.
+// Promesa que indica cuándo la aplicación backend está lista para procesar peticiones.
+// En modo test sólo inicializa la BD y los seeders, sin arrancar el servidor HTTP.
 let serverReadyPromise = Promise.resolve();
 
 // Lee el puerto desde la variable de entorno PORT (.env) o usa 5000 como valor por defecto
@@ -291,61 +291,59 @@ app.use((err, req, res, next) => {
  *   4. Ejecuta los seeders (runSeeders → crea el admin inicial)
  *   5. Pone a escuchar el servidor en el puerto configurado (app.listen)
  */
-const startServer = async () => {
+const initializeApp = async () => {
   try {
-    // Mensaje inicial en consola
-    console.log('🚀 Iniciando servidor YESA Backend...\n');
-    
-    // PASO 1: Probar la conexión a MySQL
-    // testConnection() intenta conectarse a MySQL con las credenciales del .env
-    // Retorna true si la conexión es exitosa, false si falla
-    console.log('📡 Conectando a MySQL...');
-    const dbConnected = await testConnection();
-    
-    // Si no hay conexión a MySQL, no tiene sentido continuar
-    if (!dbConnected) {
-      console.error('❌ No se pudo conectar a MySQL. Verifica XAMPP y el archivo .env');
-      process.exit(1);                             // Termina el proceso con código de error (1)
+    if (!isTestEnv) {
+      console.log('🚀 Iniciando servidor YESA Backend...\n');
+      console.log('📡 Conectando a MySQL...');
     }
-    
-    // PASO 2: Sincronizar modelos con la base de datos
-    // syncDatabase() ejecuta CREATE TABLE IF NOT EXISTS para cada modelo
-    console.log('\n📊 Sincronizando modelos con la base de datos...');
-    
-    // Inicializar asociaciones → las relaciones (FK) entre los modelos
-    // Esto se debe hacer ANTES de syncDatabase para que las FK se creen correctamente
-    initAssociations();
-    
-    // Determinar si se deben alterar o recrear las tablas existentes
-    // En desarrollo y pruebas (NODE_ENV=development|test): alter=true → sincroniza cambios en los modelos
-    // En pruebas unitarias: force=true → recrea las tablas para asegurar un esquema limpio
-    // En producción: force=false y alter=false → no modifica la estructura automáticamente
-    const alterTables = process.env.NODE_ENV !== 'production';
-    const forceSync = process.env.NODE_ENV === 'test';
-    
-    // syncDatabase(force, alter):
-    //   force=true  → DROP TABLE + CREATE TABLE (pierde datos existentes)
-    //   alter=true  → ALTER TABLE para ajustar columnas sin perder datos
-    const dbSynced = await syncDatabase(forceSync, alterTables);
-    
-    // Si la sincronización falla, no se puede iniciar el servidor
-    if (!dbSynced) {
-      console.error('❌ Error al sincronizar la base de datos');
+    const dbConnected = await testConnection();
+
+    if (!dbConnected) {
+      const errorMessage = '❌ No se pudo conectar a MySQL. Verifica XAMPP y el archivo .env';
+      if (isTestEnv) {
+        throw new Error(errorMessage);
+      }
+      console.error(errorMessage);
       process.exit(1);
     }
-    
-    // PASO 3: Ejecutar seeders (datos iniciales)
-    // runSeeders() crea el usuario administrador por defecto si no existe
-    // Esto asegura que siempre haya al menos un admin para acceder al sistema
+
+    if (!isTestEnv) {
+      console.log('\n📊 Sincronizando modelos con la base de datos...');
+    }
+
+    initAssociations();
+
+    const alterTables = process.env.NODE_ENV !== 'production';
+    const forceSync = process.env.NODE_ENV === 'test';
+    const dbSynced = await syncDatabase(forceSync, alterTables);
+
+    if (!dbSynced) {
+      const errorMessage = '❌ Error al sincronizar la base de datos';
+      if (isTestEnv) {
+        throw new Error(errorMessage);
+      }
+      console.error(errorMessage);
+      process.exit(1);
+    }
+
     await runSeeders();
-    
-    // PASO 4: Iniciar el servidor HTTP con Express
-    // app.listen(puerto, callback) → pone el servidor a escuchar en el puerto especificado
-    // El callback se ejecuta cuando el servidor está listo para recibir peticiones
+  } catch (error) {
+    if (isTestEnv) {
+      throw error;
+    }
+    console.error('❌ Error fatal al inicializar el servidor:', error.message);
+    process.exit(1);
+  }
+};
+
+const startServer = async () => {
+  try {
+    await initializeApp();
+
     await new Promise((resolve) => {
       server = app.listen(PORT, () => {
         app.server = server;
-        // Muestra un banner informativo en la consola del servidor
         console.log('\n╔════════════════════════════════════════════════╗');
         console.log(`║  ✅ Servidor corriendo en puerto ${PORT}          ║`);
         console.log(`║  🌐 URL: http://localhost:${PORT}                ║`);
@@ -357,11 +355,9 @@ const startServer = async () => {
         resolve();
       });
     });
-    
   } catch (error) {
-    // Si ocurre cualquier error no esperado durante el arranque
     console.error('❌ Error fatal al iniciar el servidor:', error.message);
-    process.exit(1);                               // Termina el proceso con código de error
+    process.exit(1);
   }
 };
 
@@ -387,10 +383,9 @@ process.on('unhandledRejection', (err) => {
 // ==========================================
 // INICIAR EL SERVIDOR
 // ==========================================
-// Llama a la función startServer() para comenzar todo el proceso de arranque
-// Esta promesa se usa también en el middleware global para que las pruebas esperen
-// hasta que la base de datos esté lista.
-serverReadyPromise = startServer();
+// Llama a la función adecuada según el entorno
+// En pruebas sólo inicializa la BD y los seeders sin arrancar un servidor HTTP.
+serverReadyPromise = isTestEnv ? initializeApp() : startServer();
 
 // Exporta la app de Express para poder usarla en los tests (jest + supertest)
 // En los tests se hace: const request = require('supertest')(app) sin necesidad de app.listen()

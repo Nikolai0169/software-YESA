@@ -65,7 +65,8 @@ const crearPedido = async (req, res) => {
   try {
     // Extrae datos del body JSON enviado por el frontend.
     // metodoPago tiene valor por defecto 'efectivo' si no se envía.
-    const { direccionEnvio, telefono, metodoPago = 'efectivo', notasAdicionales, cotizacionId } = req.body;
+    const { direccionEnvio, telefono, metodoPago = 'efectivo', notasAdicionales, notas, cotizacionId } = req.body;
+    const notasPedido = notasAdicionales ?? notas ?? null;
     
     // VALIDACIÓN 1: La dirección de envío es obligatoria
     if (!direccionEnvio || direccionEnvio.trim() === '') {
@@ -136,7 +137,7 @@ const crearPedido = async (req, res) => {
         direccionEnvio,
         telefono,
         metodoPago,
-        notasAdicionales,
+        notas: notasPedido,
       }, { transaction: t });
 
       // Crear detalles del pedido basado en los items de la cotización
@@ -281,7 +282,7 @@ const crearPedido = async (req, res) => {
       direccionEnvio,                // Dirección enviada por el usuario
       telefono,                      // Teléfono de contacto
       metodoPago,                    // 'efectivo', 'tarjeta' o 'transferencia'
-      notasAdicionales               // Notas opcionales
+      notas: notasPedido             // Notas opcionales
     }, { transaction: t });          // Parte de la transacción
     
     // CREAR DETALLES DEL PEDIDO Y ACTUALIZAR STOCK

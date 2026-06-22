@@ -5,6 +5,24 @@ import reviewService from '../services/reviewService';
 import catalogoService from '../services/catalogoService';
 import LoadingSpinner from '../components/LoadingSpinner';
 
+const renderRatingStars = (rating = 0) => {
+  const stars = [];
+  const fullStars = Math.floor(rating);
+  const hasHalfStar = rating - fullStars >= 0.5;
+
+  for (let i = 0; i < 5; i += 1) {
+    if (i < fullStars) {
+      stars.push(<i key={i} className="bi bi-star-fill text-warning" />);
+    } else if (i === fullStars && hasHalfStar) {
+      stars.push(<i key={i} className="bi bi-star-half text-warning" />);
+    } else {
+      stars.push(<i key={i} className="bi bi-star text-warning" />);
+    }
+  }
+
+  return stars;
+};
+
 const ProductReviewsPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -24,10 +42,20 @@ const ProductReviewsPage = () => {
       ]);
 
       setProducto(productoResponse.data.producto || productoResponse.data);
-      setResenas(resenasResponse || []);
+
+      const normalizedResenas = Array.isArray(resenasResponse)
+        ? resenasResponse
+        : Array.isArray(resenasResponse?.data)
+          ? resenasResponse.data
+          : [];
+
+      setResenas(normalizedResenas);
     } catch (error) {
       console.error('Error al cargar reseñas:', error);
-      setMensaje({ tipo: 'danger', texto: error.message || 'No se pudo cargar las reseñas.' });
+      setMensaje({
+        tipo: 'danger',
+        texto: error?.response?.data?.message || error?.message || 'No se pudo cargar las reseñas.',
+      });
     } finally {
       setLoading(false);
     }
@@ -89,12 +117,7 @@ const ProductReviewsPage = () => {
                       <small className="text-muted">{new Date(resena.createdAt).toLocaleDateString('es-CO')}</small>
                     </div>
                     <div>
-                      {Array.from({ length: 5 }).map((_, index) => (
-                        <i
-                          key={index}
-                          className={`bi ${index < (resena.calificacion || 0) ? 'bi-star-fill text-warning' : 'bi-star text-warning'}`}
-                        />
-                      ))}
+                      {renderRatingStars(Number(resena.calificacion || 0))}
                     </div>
                   </div>
                   <p className="text-muted small">{resena.comentario}</p>

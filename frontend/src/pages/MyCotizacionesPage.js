@@ -10,7 +10,7 @@ const getEstadoBadge = (estado) => {
   switch (estado) {
     case 'pendiente': return 'warning';
     case 'cotizado': return 'info';
-    case 'aprobado': return 'success';
+    case 'aceptado': return 'success';
     case 'rechazado': return 'danger';
     default: return 'secondary';
   }

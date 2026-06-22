@@ -1,42 +1,20 @@
-const Diseño = require('../models/Diseño');
+const Producto = require("../models/Producto");
 const Cotizacion = require('../models/Cotizacion');
 
 // Guardar diseño
 exports.guardarDiseno = async (req, res) => {
   try {
-    const payload = req.body || {};
-    const nuevoDiseno = await Diseño.create({
-      usuarioId: req.usuario ? req.usuario.id : null,
-      usuarioEmail: req.usuario ? req.usuario.email : null,
-      nombre: payload.nombre || payload.titulo || 'Diseño personalizado',
-      modelo: payload.modelo || 'taza',
-      imagen: payload.imagen || payload.image || null,
-      color: payload.color || null,
-      especificaciones: payload.especificaciones || payload.especificaciones || null,
-      estado: payload.estado || 'guardado',
-      metadata: payload.metadata || payload,
-      colorInterior: payload.colorInterior || null,
-      colorBase: payload.colorBase || null,
-      colorExterior: payload.colorExterior || null,
-      colorAsa: payload.colorAsa || null,
-      textInterior: payload.textInterior || null,
-      textExterior: payload.textExterior || null,
-      textureUrl: payload.textureUrl || payload.texture || null,
-      overlayText: payload.overlayText || '',
-      overlayTextFontFamily: payload.overlayTextFontFamily || 'sans-serif',
-      overlayTextFontSize: payload.overlayTextFontSize || 24,
-      overlayTextColor: payload.overlayTextColor || '#ffffff',
-      textureOffsetX: payload.textureOffsetX || 0,
-      textureOffsetY: payload.textureOffsetY || 0,
-      textureScale: payload.textureScale || 1,
-      zoom: payload.zoom || 1,
-      notas: payload.notas || null,
+    const { imagen, color, especificaciones } = req.body;
+    const nuevoDiseno = await Producto.create({
+      imagen,
+      color,
+      especificaciones,
+      estado: "guardado",
     });
-
-    res.json({ mensaje: 'Diseño guardado correctamente', diseno: nuevoDiseno });
+    res.json({ mensaje: "Diseño guardado correctamente", diseno: nuevoDiseno });
   } catch (error) {
     console.error('Error al guardar diseño:', error);
-    res.status(500).json({ error: 'Error al guardar el diseño' });
+    res.status(500).json({ error: "Error al guardar el diseño" });
   }
 };
 
@@ -66,12 +44,13 @@ exports.cotizarProducto = async (req, res) => {
       textureOffsetY: design.textureOffsetY,
       textureScale: design.textureScale,
       zoom: design.zoom,
-      notas: design.notas,
+      notas: design.notas || null,
     }));
 
+    const cotizacionNotas = firstDesign.notas ? firstDesign.notas : `Cotización con ${disenos.length} diseño(s) pendiente(s) de revisión`;
+
     const nuevaCotizacion = await Cotizacion.create({
-      usuarioId: req.usuario ? req.usuario.id : null,
-      usuarioEmail: req.usuario ? req.usuario.email : null,
+      usuarioId: req.usuario.id,
       nombre: isMultiple
         ? `Cotización múltiple (${disenos.length} diseños)`
         : firstDesign.nombre || 'Cotización de producto personalizado',
@@ -94,7 +73,7 @@ exports.cotizarProducto = async (req, res) => {
       items,
       precio: 0,
       estado: 'pendiente',
-      notas: `Cotización con ${disenos.length} diseño(s) pendiente(s) de revisión`,
+      notas: cotizacionNotas,
     });
 
     res.json({ mensaje: 'Cotización enviada y pendiente', cotizacion: nuevaCotizacion });

@@ -3,9 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Card, Button, Row, Col, Badge, Spinner, Alert } from 'react-bootstrap';
 import Personalizacion3D from '../../components/Personalizacion3D';
 import { obtenerCotizacion } from '../../services/api';
-import { formatCurrency, getEstadoBadge } from '../../utils/helpers';
+import { formatCurrency } from '../../utils/helpers';
 
-// Vista administrativa con el detalle completo de una cotización y su diseño personalizado asociado.
 const AdminCotizacionDetallePage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -33,6 +32,21 @@ const AdminCotizacionDetallePage = () => {
   const designItems = Array.isArray(cotizacion?.items) ? cotizacion.items : [cotizacion];
   const previewSource = designItems[0] || {};
   const multipleDesigns = designItems.length > 1;
+
+  const getCotizacionEstadoBadge = (estado) => {
+    switch (estado) {
+      case 'pendiente':
+        return 'warning';
+      case 'cotizado':
+        return 'info';
+      case 'aceptado':
+        return 'success';
+      case 'rechazado':
+        return 'danger';
+      default:
+        return 'secondary';
+    }
+  };
 
   const renderDesignPreviewCard = (item, index) => (
     <Col xs={12} md={6} key={`item-preview-${index}`}>
@@ -117,14 +131,14 @@ const AdminCotizacionDetallePage = () => {
                     <div className="text-muted small mt-1">Incluye {designItems.length} diseños</div>
                   )}
                 </div>
-                <Badge bg={getEstadoBadge(cotizacion.estado)} className="text-capitalize">
+                <Badge bg={getCotizacionEstadoBadge(cotizacion.estado)} className="text-capitalize">
                   {cotizacion.estado}
                 </Badge>
               </div>
               <div className="text-muted small">
                 <span>Precio: <strong>{cotizacion.precio !== undefined && cotizacion.precio !== null ? formatCurrency(cotizacion.precio) : 'Pendiente'}</strong></span>
-                {cotizacion.usuario?.nombre || cotizacion.usuario?.email || cotizacion.usuarioEmail ? (
-                  <span className="ms-3">Usuario: <strong>{cotizacion.usuario?.nombre || cotizacion.usuario?.email || cotizacion.usuarioEmail}</strong></span>
+                {cotizacion.usuario?.nombre || cotizacion.usuario?.email ? (
+                  <span className="ms-3">Usuario: <strong>{cotizacion.usuario?.nombre || cotizacion.usuario?.email}</strong></span>
                 ) : null}
                 <div className="mt-2">Fecha: {new Date(cotizacion.createdAt).toLocaleString('es-CO')}</div>
                 {cotizacion.notas && <div className="mt-2">Notas: {cotizacion.notas}</div>}

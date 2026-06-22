@@ -17,6 +17,7 @@ let subcategoriaId = 0;
 let productoId = 0;
 let usuarioId = 0;
 let pedidoId = 0;
+let contactoSoporteId = 0;
 
 describe('🧪 TESTS DE API YESA', () => {
 
@@ -544,12 +545,13 @@ describe('🧪 TESTS DE API YESA', () => {
         .send({
           direccionEnvio: 'Calle Test 123',
           telefono: '3001234567',
-          notas: 'Pedido de prueba'
+          notasAdicionales: 'Pedido de prueba'
         });
       
       expect(response.status).toBe(201);
       expect(response.body.success).toBe(true);
       expect(response.body.data).toHaveProperty('pedido');
+      expect(response.body.data.pedido).toHaveProperty('notas', 'Pedido de prueba');
       
       if (response.body.data.pedido) {
         pedidoId = response.body.data.pedido.id;
@@ -587,6 +589,64 @@ describe('🧪 TESTS DE API YESA', () => {
         expect(response.body.success).toBe(true);
         expect(response.body.data).toHaveProperty('pedido');
       }
+    });
+
+    test('✅ Cliente debe crear una consulta de soporte y admin debe responder y cerrar el ticket', async () => {
+      const createResponse = await request(app)
+        .post('/api/support/contact')
+        .set('Authorization', `Bearer ${clienteToken}`)
+        .send({
+          nombre: 'Cliente Test Soporte',
+          email: 'cliente1@yesa.com',
+          asunto: 'pedido',
+          mensaje: 'Necesito ayuda con mi orden'
+        });
+
+      expect(createResponse.status).toBe(201);
+      expect(createResponse.body.success).toBe(true);
+      expect(createResponse.body.data).toHaveProperty('id');
+
+      contactoSoporteId = createResponse.body.data.id;
+
+      const responderResponse = await request(app)
+        .put(`/api/support/contactos/${contactoSoporteId}/responder`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ respuesta: 'Tu orden está en camino' });
+
+      expect(responderResponse.status).toBe(200);
+      expect(responderResponse.body.success).toBe(true);
+      expect(responderResponse.body.data).toHaveProperty('estado', 'respondido');
+
+      const cerrarResponse = await request(app)
+        .delete(`/api/support/contactos/${contactoSoporteId}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(cerrarResponse.status).toBe(200);
+      expect(cerrarResponse.body.success).toBe(true);
+      expect(cerrarResponse.body.data).toHaveProperty('estado', 'cerrado');
+    });
+
+    test('❌ No debe cerrar un ticket de soporte sin haberle respondido', async () => {
+      const pendingResponse = await request(app)
+        .post('/api/support/contact')
+        .set('Authorization', `Bearer ${clienteToken}`)
+        .send({
+          nombre: 'Cliente Test Soporte 2',
+          email: 'cliente1@yesa.com',
+          asunto: 'Pago con tarjeta',
+          mensaje: 'Necesito soporte de pago'
+        });
+
+      expect(pendingResponse.status).toBe(201);
+      const pendingId = pendingResponse.body.data.id;
+
+      const closeResponse = await request(app)
+        .delete(`/api/support/contactos/${pendingId}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(closeResponse.status).toBe(400);
+      expect(closeResponse.body.success).toBe(false);
+      expect(closeResponse.body.message).toMatch(/Solo se pueden cerrar tickets luego de haberlos respondido/);
     });
 
     // TODO: Test con timeout y error de transacción rollback

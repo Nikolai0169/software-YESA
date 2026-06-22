@@ -40,6 +40,7 @@ const PersonalizacionPage = () => {
   const [cotizacion, setCotizacion] = useState(null);
   const [cotizando, setCotizando] = useState(false);
   const [nombreCotizacion, setNombreCotizacion] = useState('');
+  const [notasCotizacion, setNotasCotizacion] = useState('');
   const { isAuthenticated, isCliente } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -450,6 +451,7 @@ const PersonalizacionPage = () => {
         textureScale: textureScale || 1,
         zoom: zoomLevel,
         nombre: nombreFinal,
+        notas: notasCotizacion.trim() || undefined,
       };
       const result = await cotizarProducto(disenoData);
       setCotizacion({ mensaje: result.mensaje || 'Cotización enviada y pendiente' });
@@ -921,6 +923,18 @@ const PersonalizacionPage = () => {
                         value={nombreCotizacion}
                         onChange={(e) => setNombreCotizacion(e.target.value)}
                       />
+                    </div>
+
+                    <div className="mt-3 w-100">
+                      <label className="form-label small fw-semibold">Notas para la cotización</label>
+                      <textarea
+                        className="form-control"
+                        rows={3}
+                        placeholder="Agrega detalles o comentarios para el equipo de cotización"
+                        value={notasCotizacion}
+                        onChange={(e) => setNotasCotizacion(e.target.value)}
+                      />
+                      <small className="text-muted">Estas notas se enviarán junto con tu cotización.</small>
                     </div>
 
                     <div className="personalizacion-actions d-flex flex-wrap justify-content-center gap-2 mt-4">

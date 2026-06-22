@@ -648,6 +648,96 @@ body {
   margin-bottom: 0;
 }
 
+body.theme-dark .personalizacion-page {
+  background: #020617;
+}
+
+body.theme-dark .personalizacion-card,
+body.theme-dark .personalizacion-actions,
+body.theme-dark .text-editor-dialog,
+body.theme-dark .saved-design-preview,
+body.theme-dark .saved-design-preview-frame {
+  background: rgba(15, 23, 42, 0.95) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #f8fafc !important;
+}
+
+body.theme-dark .personalizacion-card {
+  box-shadow: 0 24px 40px rgba(0, 0, 0, 0.35);
+}
+
+body.theme-dark .personalizacion-title,
+body.theme-dark .personlizacion-section h2 {
+  color: #f8fafc !important;
+}
+
+body.theme-dark .personalizacion-preview-controls {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  color: #f8fafc !important;
+}
+
+body.theme-dark .personalizacion-preview-overlay {
+  background: rgba(0, 0, 0, 0.45) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+body.theme-dark .personalizacion-preview-overlay .btn {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #f8fafc !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+body.theme-dark .personalizacion-preview-overlay .btn:hover,
+body.theme-dark .personalizacion-preview-overlay .btn:focus {
+  background: rgba(255, 255, 255, 0.14) !important;
+  color: #f8fafc !important;
+}
+
+body.theme-dark .personalizacion-image-position-widget {
+  background: rgba(15, 23, 42, 0.88) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+body.theme-dark .personalizacion-preview-controls .form-control-color,
+body.theme-dark .personalizacion-preview-controls select,
+body.theme-dark .personalizacion-preview-controls .form-control,
+body.theme-dark .text-editor-body textarea,
+body.theme-dark .form-select,
+body.theme-dark .form-control {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #f8fafc !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+body.theme-dark .form-control::placeholder,
+body.theme-dark .text-muted,
+body.theme-dark .personalizacion-preview-controls label,
+body.theme-dark .personalizacion-preview-controls .small,
+body.theme-dark .personalizacion-preview-overlay .text-dark,
+body.theme-dark .personalizacion-preview-controls .text-dark {
+  color: #cbd5e1 !important;
+}
+
+body.theme-dark .text-editor-modal {
+  background: rgba(0, 0, 0, 0.55);
+}
+
+body.theme-dark .text-editor-dialog {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+body.theme-dark .text-editor-body textarea {
+  background: #0f172a !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #e2e8f0 !important;
+}
+
+body.theme-dark .saved-design-preview-frame .personalizacion-3d-canvas,
+body.theme-dark .saved-design-preview-frame canvas {
+  background: #0f172a !important;
+}
+
 .personalizacion-preview-controls label {
   margin-bottom: 0;
 }

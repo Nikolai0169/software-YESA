@@ -1048,7 +1048,7 @@ const AdminDashboardPage = () => {
                             </div>
                           </div>
                           <div className="text-end">
-                            <Badge bg={c.estado === 'aprobado' ? 'success' : c.estado === 'pendiente' ? 'warning' : 'info'} className="text-capitalize">
+                            <Badge bg={c.estado === 'aceptado' ? 'success' : c.estado === 'pendiente' ? 'warning' : 'info'} className="text-capitalize">
                               {c.estado || 'pendiente'}
                             </Badge>
                             <div>
