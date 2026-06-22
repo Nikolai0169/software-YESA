@@ -9,7 +9,6 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
 
-// Define la tabla de cotizaciones y sus campos principales para persistir diseños y precios cotizados.
 const Cotizacion = sequelize.define('Cotizacion', {
   id: {
     type: DataTypes.INTEGER,
@@ -20,15 +19,6 @@ const Cotizacion = sequelize.define('Cotizacion', {
   usuarioId: {
     type: DataTypes.INTEGER,
     allowNull: true,
-  },
-  usuarioEmail: {
-    type: DataTypes.STRING(200),
-    allowNull: true,
-    validate: {
-      isEmail: {
-        msg: 'El correo del usuario debe ser un email válido',
-      },
-    },
   },
   nombre: {
     type: DataTypes.STRING(200),
@@ -83,7 +73,6 @@ const Cotizacion = sequelize.define('Cotizacion', {
     type: DataTypes.STRING(20),
     allowNull: true,
   },
-  // Convierte el arreglo de diseños guardados en texto JSON para almacenarlo en la base de datos.
   items: {
     type: DataTypes.TEXT('long'),
     allowNull: true,
@@ -121,7 +110,7 @@ const Cotizacion = sequelize.define('Cotizacion', {
     defaultValue: 0,
   },
   estado: {
-    type: DataTypes.ENUM('pendiente', 'cotizado', 'convertida', 'rechazado'),
+    type: DataTypes.ENUM('pendiente', 'cotizado', 'convertida', 'aceptado', 'rechazado'),
     allowNull: false,
     defaultValue: 'pendiente',
   },

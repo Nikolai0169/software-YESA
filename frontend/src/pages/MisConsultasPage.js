@@ -24,8 +24,9 @@ function MisConsultasPage() {
   }, []);
 
   const estadoBadge = (estado) => {
-    const map = { pendiente: 'warning', revisado: 'info', respondido: 'success' };
-    return <span className={`badge bg-${map[estado] || 'secondary'}`}>{estado}</span>;
+    const map = { pendiente: 'warning', revisado: 'info', respondido: 'success', cerrado: 'secondary' };
+    const textos = { pendiente: 'Pendiente', revisado: 'Revisado', respondido: 'Respondido', cerrado: 'Cerrado' };
+    return <span className={`badge bg-${map[estado] || 'secondary'}`}>{textos[estado] || estado}</span>;
   };
 
   return (
@@ -78,6 +79,21 @@ function MisConsultasPage() {
                         <small className="text-muted d-block mt-1">
                           <i className="bi bi-clock me-1"></i>
                           {new Date(c.fechaRespuesta).toLocaleDateString('es-CO', {
+                            year: 'numeric', month: 'long', day: 'numeric'
+                          })}
+                        </small>
+                      )}
+                    </div>
+                  )}
+
+                  {c.estado === 'cerrado' && (
+                    <div className="alert alert-secondary py-2 mt-3 mb-0">
+                      <strong><i className="bi bi-lock-fill me-1"></i>Consulta cerrada:</strong>
+                      <p className="mb-0 mt-1">Esta consulta ya fue atendida y cerrada.</p>
+                      {c.fechaRespuesta && (
+                        <small className="text-muted d-block mt-1">
+                          <i className="bi bi-clock me-1"></i>
+                          Respondida el {new Date(c.fechaRespuesta).toLocaleDateString('es-CO', {
                             year: 'numeric', month: 'long', day: 'numeric'
                           })}
                         </small>

@@ -32,7 +32,6 @@ const capitalizeFirst = (text) => {
 const isDefaultDesignName = (name) =>
   name && name.toLowerCase().startsWith('diseño personalizado');
 
-// Página para visualizar diseños 3D guardados, seleccionarlos y enviarlos a cotización.
 const SavedDesignsPage = () => {
   const [designs, setDesigns] = useState([]);
   const [selectedDesignIds, setSelectedDesignIds] = useState([]);

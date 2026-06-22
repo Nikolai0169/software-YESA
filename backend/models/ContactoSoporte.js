@@ -54,7 +54,7 @@ const ContactoSoporte = sequelize.define('ContactoSoporte', {
     },
   },
   estado: {
-    type: DataTypes.ENUM('pendiente', 'revisado', 'respondido'),
+    type: DataTypes.ENUM('pendiente', 'revisado', 'respondido', 'cerrado'),
     defaultValue: 'pendiente',
   },
   respuesta: {

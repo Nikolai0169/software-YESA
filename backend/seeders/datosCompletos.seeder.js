@@ -20,19 +20,36 @@ const Producto = require('../models/Producto');
 const fs = require('fs').promises;
 const path = require('path');
 
+const isTestEnv = process.env.NODE_ENV === 'test';
+const log = (...args) => {
+  if (!isTestEnv) {
+    console.log(...args);
+  }
+};
+
+const warn = (...args) => {
+  if (!isTestEnv) {
+    console.warn(...args);
+  }
+};
+
+const errorLog = (...args) => {
+  console.error(...args);
+};
+
 /**
  * Función principal del seeder
  */
 const seedDatosCompletos = async () => {
   try {
-    console.log('\n🌱 ========================================');
-    console.log('   INICIANDO SEEDER DE DATOS COMPLETOS');
-    console.log('========================================\n');
+    log('\n🌱 ========================================');
+    log('   INICIANDO SEEDER DE DATOS COMPLETOS');
+    log('========================================\n');
 
     // ==========================================
     // 1. CREAR USUARIOS
     // ==========================================
-    console.log('👥 1. CREANDO USUARIOS...\n');
+    log('👥 1. CREANDO USUARIOS...\n');
 
     // ADMINISTRADOR
     const adminExistente = await Usuario.findOne({ where: { email: 'admin@yesa.com' } });
@@ -47,11 +64,11 @@ const seedDatosCompletos = async () => {
         direccion: 'YESA - Oficina Principal',
         activo: true
       });
-      console.log('✅ Administrador creado');
-      console.log('   📧 Usuario: admin@yesa.com');
-      console.log('   🔑 Password: admin1234\n');
+      log('✅ Administrador creado');
+      log('   📧 Usuario: admin@yesa.com');
+      log('   🔑 Password: admin1234\n');
     } else {
-      console.log('✅ Administrador ya existe\n');
+      log('✅ Administrador ya existe\n');
     }
 
     // AUXILIAR
@@ -67,15 +84,15 @@ const seedDatosCompletos = async () => {
         direccion: 'YESA - Oficina Auxiliar',
         activo: true
       });
-      console.log('✅ Auxiliar creado');
-      console.log('   📧 Usuario: auxiliar@yesa.com');
-      console.log('   🔑 Password: aux123\n');
+      log('✅ Auxiliar creado');
+      log('   📧 Usuario: auxiliar@yesa.com');
+      log('   🔑 Password: aux123\n');
     } else {
-      console.log('✅ Auxiliar ya existe\n');
+      log('✅ Auxiliar ya existe\n');
     }
 
     // CLIENTES (5)
-    console.log('👤 Creando 5 clientes...');
+    log('👤 Creando 5 clientes...');
     for (let i = 1; i <= 5; i++) {
       const clienteExistente = await Usuario.findOne({ where: { email: `cliente${i}@yesa.com` } });
       if (!clienteExistente) {
@@ -89,22 +106,22 @@ const seedDatosCompletos = async () => {
           direccion: `Dirección del Cliente ${i}, Bogotá`,
           activo: true
         });
-        console.log(`   ✅ Cliente ${i} - Email: cliente${i}@yesa.com - Pass: cliente${i}`);
+        log(`   ✅ Cliente ${i} - Email: cliente${i}@yesa.com - Pass: cliente${i}`);
       }
     }
     
     const usuariosCreados = await Usuario.count();
-    console.log(`\n✅ Total: ${usuariosCreados} usuarios en la base de datos\n`);
+    log(`\n✅ Total: ${usuariosCreados} usuarios en la base de datos\n`);
 
     // ==========================================
     // 2. CREAR CATEGORÍAS
     // ==========================================
-    console.log('📁 2. CREANDO CATEGORÍAS...\n');
+    log('📁 2. CREANDO CATEGORÍAS...\n');
 
     const categoriasExistentes = await Categoria.count();
     
     if (categoriasExistentes > 0) {
-      console.log('⚠️  Ya existen categorías en la base de datos.\n');
+      log('⚠️  Ya existen categorías en la base de datos.\n');
     } else {
       const categoriasData = [
         {
@@ -137,14 +154,13 @@ const seedDatosCompletos = async () => {
       for (const catData of categoriasData) {
         const categoria = await Categoria.create(catData);
         categorias.push(categoria);
-        console.log(`   ✅ ${categoria.nombre}`);
-      }
-      console.log('\n✅ Total: 6 categorías creadas\n');
-
+      log(`   ✅ ${categoria.nombre}`);
+    }
+    log('\n✅ Total: 6 categorías creadas\n');
       // ==========================================
       // 3. CREAR SUBCATEGORÍAS (3 por categoría)
       // ==========================================
-      console.log('📂 3. CREANDO SUBCATEGORÍAS...\n');
+      log('📂 3. CREANDO SUBCATEGORÍAS...\n');
 
       const subcategoriasData = {
         'Alcancias': [
@@ -181,7 +197,7 @@ const seedDatosCompletos = async () => {
 
       const subcategorias = [];
       for (const categoria of categorias) {
-        console.log(`📁 ${categoria.nombre}:`);
+        log(`📁 ${categoria.nombre}:`);
         const subsData = subcategoriasData[categoria.nombre];
         if (!Array.isArray(subsData)) {
           throw new Error(`No hay subcategorías definidas para la categoría '${categoria.nombre}'. Revisa subcategoriasData.`);
@@ -195,16 +211,16 @@ const seedDatosCompletos = async () => {
             activo: true
           });
           subcategorias.push(subcategoria);
-          console.log(`   ✅ ${subcategoria.nombre}`);
+          log(`   ✅ ${subcategoria.nombre}`);
         }
-        console.log('');
+        log('');
       }
-      console.log('✅ Total: 15 subcategorías creadas\n');
+      log('✅ Total: 15 subcategorías creadas\n');
 
       // ==========================================
       // 4. CREAR PRODUCTOS (2 por subcategoría)
       // ==========================================
-      console.log('📦 4. CREANDO PRODUCTOS...\n');
+      log('📦 4. CREANDO PRODUCTOS...\n');
 
       const productosData = {
         Alcancias: {
@@ -300,11 +316,11 @@ const seedDatosCompletos = async () => {
         const productos = categoria ? productosData[categoria.nombre]?.[subcategoria.nombre] : undefined;
 
         if (!productos) {
-          console.warn(`⚠️ No se encontraron productos para ${categoria?.nombre || 'Categoría desconocida'} / ${subcategoria.nombre}`);
+          warn(`⚠️ No se encontraron productos para ${categoria?.nombre || 'Categoría desconocida'} / ${subcategoria.nombre}`);
           continue;
         }
 
-        console.log(`📦 ${subcategoria.nombre} (${categoria.nombre}):`);
+        log(`📦 ${subcategoria.nombre} (${categoria.nombre}):`);
         
         for (const prodData of productos) {
           await Producto.create({
@@ -317,52 +333,52 @@ const seedDatosCompletos = async () => {
             imagen: 'producto-default.jpg', // Imagen por defecto
             activo: true
           });
-          console.log(`   ✅ ${prodData.nombre} - $${prodData.precio.toLocaleString()}`);
+          log(`   ✅ ${prodData.nombre} - $${prodData.precio.toLocaleString()}`);
           totalProductos++;
         }
-        console.log('');
+        log('');
       }
       
-      console.log(`✅ Total: ${totalProductos} productos creados\n`);
+      log(`✅ Total: ${totalProductos} productos creados\n`);
     }
 
     // ==========================================
     // RESUMEN FINAL
     // ==========================================
-    console.log('\n🎉 ========================================');
-    console.log('   SEEDER COMPLETADO EXITOSAMENTE');
-    console.log('========================================\n');
+    log('\n🎉 ========================================');
+    log('   SEEDER COMPLETADO EXITOSAMENTE');
+    log('========================================\n');
 
     const totalUsuarios = await Usuario.count();
     const totalCategorias = await Categoria.count();
     const totalSubcategorias = await Subcategoria.count();
     const totalProductos = await Producto.count();
 
-    console.log('📊 RESUMEN:');
-    console.log(`   👥 Usuarios: ${totalUsuarios}`);
-    console.log(`   📁 Categorías: ${totalCategorias}`);
-    console.log(`   📂 Subcategorías: ${totalSubcategorias}`);
-    console.log(`   📦 Productos: ${totalProductos}\n`);
+    log('📊 RESUMEN:');
+    log(`   👥 Usuarios: ${totalUsuarios}`);
+    log(`   📁 Categorías: ${totalCategorias}`);
+    log(`   📂 Subcategorías: ${totalSubcategorias}`);
+    log(`   📦 Productos: ${totalProductos}\n`);
 
-    console.log('🔑 CREDENCIALES DE ACCESO:\n');
-    console.log('   👨‍💼 ADMINISTRADOR');
-    console.log('      Email: admin@yesa.com');
-    console.log('      Password: admin1234\n');
-    console.log('   👤 AUXILIARES');
-    console.log('      Email: auxiliar@yesa.com');
-    console.log('      Password: aux123\n');
-    console.log('   🛍️  CLIENTES (5)');
-    console.log('      Email: cliente1@yesa.com - Password: cliente1');
-    console.log('      Email: cliente2@yesa.com - Password: cliente2');
-    console.log('      Email: cliente3@yesa.com - Password: cliente3');
-    console.log('      Email: cliente4@yesa.com - Password: cliente4');
-    console.log('      Email: cliente5@yesa.com - Password: cliente5\n');
+    log('🔑 CREDENCIALES DE ACCESO:\n');
+    log('   👨‍💼 ADMINISTRADOR');
+    log('      Email: admin@yesa.com');
+    log('      Password: admin1234\n');
+    log('   👤 AUXILIARES');
+    log('      Email: auxiliar@yesa.com');
+    log('      Password: aux123\n');
+    log('   🛍️  CLIENTES (5)');
+    log('      Email: cliente1@yesa.com - Password: cliente1');
+    log('      Email: cliente2@yesa.com - Password: cliente2');
+    log('      Email: cliente3@yesa.com - Password: cliente3');
+    log('      Email: cliente4@yesa.com - Password: cliente4');
+    log('      Email: cliente5@yesa.com - Password: cliente5\n');
 
-    console.log('========================================\n');
+    log('========================================\n');
 
   } catch (error) {
-    console.error('❌ Error en el seeder:', error.message);
-    console.error(error);
+    errorLog('❌ Error en el seeder:', error.message);
+    errorLog(error);
     throw error;
   }
 };

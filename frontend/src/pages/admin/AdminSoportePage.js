@@ -130,12 +130,14 @@ const handleEnviarRespuesta = async () => {
     const variants = {
       pendiente: 'warning',
       revisado: 'info',
-      respondido: 'success'
+      respondido: 'success',
+      cerrado: 'secondary'
     };
     const textos = {
       pendiente: 'Pendiente',
       revisado: 'Revisado',
-      respondido: 'Respondido'
+      respondido: 'Respondido',
+      cerrado: 'Cerrado'
     };
     return <Badge bg={variants[estado] || 'secondary'}>{textos[estado] || estado}</Badge>;
   };
@@ -155,6 +157,7 @@ const handleEnviarRespuesta = async () => {
   const totalContactos = contactos.length;
   const pendientes = contactos.filter(c => c.estado === 'pendiente').length;
   const respondidos = contactos.filter(c => c.estado === 'respondido').length;
+  const cerrados = contactos.filter(c => c.estado === 'cerrado').length;
 
   if (loading) {
     return <LoadingSpinner message="Cargando mensajes de soporte..." />;
@@ -230,14 +233,14 @@ const handleEnviarRespuesta = async () => {
             </Card.Body>
           </Card>
         </Col>
-      </Row>
-
-      {/* Filtros */}
-      <Card className="mb-4 shadow-sm">
-        <Card.Body>
-          <h5 className="mb-3"><i className="bi bi-funnel me-2"></i>Filtros</h5>
-          <Row className="g-3 align-items-end">
-            <Col md={4}>
+                <Col md={4}>
+                  <Card className="text-white bg-secondary shadow-sm">
+                    <Card.Body>
+                      <Card.Title>Cerrados</Card.Title>
+                      <p className="display-6">{cerrados}</p>
+                    </Card.Body>
+                  </Card>
+                </Col>
               <Form.Label className="small mb-1">Buscar</Form.Label>
               <InputGroup>
                 <InputGroup.Text><i className="bi bi-search"></i></InputGroup.Text>
@@ -259,6 +262,7 @@ const handleEnviarRespuesta = async () => {
                 <option value="pendiente">Pendiente</option>
                 <option value="revisado">Revisado</option>
                 <option value="respondido">Respondido</option>
+                <option value="cerrado">Cerrado</option>
               </Form.Select>
             </Col>
             <Col md={3}>

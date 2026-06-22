@@ -5,7 +5,6 @@ import Personalizacion3D from '../components/Personalizacion3D';
 import { obtenerCotizacionUsuario } from '../services/api';
 import { formatCurrency } from '../utils/helpers';
 
-// Muestra el detalle completo de una cotización específica con el diseño 3D asociado y el precio.
 const MyCotizacionDetallePage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -111,7 +110,12 @@ const MyCotizacionDetallePage = () => {
                   {multipleDesigns && <div className="text-muted small mt-1">Incluye {designItems.length} diseños</div>}
                 </div>
                 <div className="d-flex gap-2 align-items-start">
-                  <Badge bg={cotizacion.estado ? (cotizacion.estado === 'pendiente' ? 'warning' : cotizacion.estado === 'cotizado' ? 'info' : 'secondary') : 'secondary'} className="text-capitalize">{cotizacion.estado}</Badge>
+                  <Badge
+                    bg={cotizacion.estado === 'pendiente' ? 'warning' : cotizacion.estado === 'cotizado' ? 'info' : cotizacion.estado === 'aceptado' ? 'success' : cotizacion.estado === 'rechazado' ? 'danger' : 'secondary'}
+                    className="text-capitalize"
+                  >
+                    {cotizacion.estado}
+                  </Badge>
                   <Button
                     variant="primary"
                     size="sm"
@@ -125,10 +129,13 @@ const MyCotizacionDetallePage = () => {
               </div>
               <div className="text-muted small">
                 <span>Precio: <strong>{cotizacion.precio !== undefined && cotizacion.precio !== null ? formatCurrency(cotizacion.precio) : 'Pendiente'}</strong></span>
-                {cotizacion.usuario?.nombre || cotizacion.usuario?.email || cotizacion.usuarioEmail ? (
-                  <span className="ms-3">Usuario: <strong>{cotizacion.usuario?.nombre || cotizacion.usuario?.email || cotizacion.usuarioEmail}</strong></span>
-                ) : null}
               </div>
+              {cotizacion.notas && (
+                <div className="mt-2">
+                  <strong>Notas:</strong>
+                  <p className="mb-0 text-muted">{cotizacion.notas}</p>
+                </div>
+              )}
             </Card.Body>
           </Card>
 

@@ -5,17 +5,27 @@ const Resena = require('../models/Resena');
 
 exports.crearResena = async (req, res) => {
   try {
-    const { productoId, usuarioId, nombre, email, calificacion, comentario } = req.body;
-    if (!productoId || !calificacion || !comentario) {
+    const { productoId, nombre, email, calificacion, comentario } = req.body;
+    const usuarioId = req.usuario?.id || null;
+
+    if (!productoId || calificacion === undefined || !comentario) {
       return res.status(400).json({ success: false, message: 'Faltan campos requeridos' });
+    }
+
+    const calificacionNumerica = Number(calificacion);
+    if (Number.isNaN(calificacionNumerica) || calificacionNumerica < 0.5 || calificacionNumerica > 5) {
+      return res.status(400).json({
+        success: false,
+        message: 'La calificación debe ser un número entre 0.5 y 5',
+      });
     }
 
     const nueva = await Resena.create({
       productoId,
-      usuarioId: usuarioId || null,
+      usuarioId,
       nombre: nombre || null,
       email: email || null,
-      calificacion,
+      calificacion: calificacionNumerica,
       comentario,
       aprobado: true,
     });

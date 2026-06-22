@@ -6,7 +6,7 @@ const { verificarAuth, verificarAuthOpcional } = require('../middleware/auth');
 
 // Endpoints
 router.post("/guardar", personalizacionController.guardarDiseno);
-router.post("/cotizar", verificarAuthOpcional, personalizacionController.cotizarProducto);
+router.post("/cotizar", verificarAuth, personalizacionController.cotizarProducto);
 router.get("/modelos", personalizacionController.obtenerModelos);
 
 // Rutas para que el usuario vea sus cotizaciones

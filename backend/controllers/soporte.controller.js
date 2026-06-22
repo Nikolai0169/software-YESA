@@ -197,17 +197,26 @@ exports.eliminarContacto = async (req, res) => {
       });
     }
 
-    await contacto.destroy();
+    if (contacto.estado !== 'respondido') {
+      return res.status(400).json({
+        success: false,
+        message: 'Solo se pueden cerrar tickets luego de haberlos respondido',
+      });
+    }
+
+    contacto.estado = 'cerrado';
+    await contacto.save();
 
     return res.status(200).json({
       success: true,
-      message: 'Mensaje eliminado exitosamente',
+      message: 'Mensaje cerrado exitosamente',
+      data: contacto,
     });
   } catch (error) {
     console.error('Error al eliminar contacto:', error);
     return res.status(500).json({
       success: false,
-      message: 'Error al eliminar el mensaje',
+      message: 'Error al cerrar el mensaje',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined,
     });
   }

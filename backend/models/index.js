@@ -374,7 +374,9 @@ Pedido.belongsTo(Cotizacion, {
  */
 const initAssociations = () => {
   // Imprime mensaje en consola del servidor para confirmar que las relaciones están listas
-  console.log('🔗 Asociaciones entre modelos establecidas correctamente');
+  if (process.env.NODE_ENV !== 'test') {
+    console.log('🔗 Asociaciones entre modelos establecidas correctamente');
+  }
 };
 
 // ==========================================

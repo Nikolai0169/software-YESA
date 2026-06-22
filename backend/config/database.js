@@ -22,6 +22,8 @@ require('dotenv').config();
  * Recibe 4 parámetros: nombre BD, usuario, contraseña, y objeto de configuración.
  * Esta instancia se reutiliza en toda la aplicación para interactuar con la BD.
  */
+const isTestEnv = process.env.NODE_ENV === 'test';
+
 const sequelize = new Sequelize(
   // Primer parámetro: nombre de la base de datos, leído de .env (variable DB_NAME)
   process.env.DB_NAME,
@@ -94,7 +96,9 @@ const testConnection = async () => {
     // Si falla, lanza un error que se captura en el catch.
     await sequelize.authenticate();
     // Si llega aquí, la conexión fue exitosa
-    console.log('✅ Conexión a MySQL establecida correctamente.');
+    if (!isTestEnv) {
+      console.log('✅ Conexión a MySQL establecida correctamente.');
+    }
     return true;
   } catch (error) {
     // Si la conexión falla, muestra el error y sugerencias
@@ -122,12 +126,14 @@ const syncDatabase = async (force = false, alter = false) => {
     await sequelize.sync({ force, alter });
     
     // Muestra mensaje según el tipo de sincronización realizada
-    if (force) {
-      console.log('🔄 Base de datos sincronizada (todas las tablas recreadas).');
-    } else if (alter) {
-      console.log('🔄 Base de datos sincronizada (tablas alteradas según modelos).');
-    } else {
-      console.log('✅ Base de datos sincronizada correctamente.');
+    if (!isTestEnv) {
+      if (force) {
+        console.log('🔄 Base de datos sincronizada (todas las tablas recreadas).');
+      } else if (alter) {
+        console.log('🔄 Base de datos sincronizada (tablas alteradas según modelos).');
+      } else {
+        console.log('✅ Base de datos sincronizada correctamente.');
+      }
     }
     
     return true;

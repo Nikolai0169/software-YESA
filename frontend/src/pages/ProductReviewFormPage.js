@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Form, Button, Alert } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom';
 import reviewService from '../services/reviewService';
@@ -6,14 +6,27 @@ import catalogoService from '../services/catalogoService';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useAuth } from '../context/AuthContext';
 
+const STAR_VALUES = [5.0, 4.5, 4.0, 3.5, 3.0, 2.5, 2.0, 1.5, 1.0, 0.5];
+
 const ProductReviewFormPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [producto, setProducto] = useState(null);
   const [loading, setLoading] = useState(false);
   const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
-  const [form, setForm] = useState({ nombre: '', email: '', calificacion: 5, comentario: '' });
+  const [form, setForm] = useState({ nombre: '', email: '', calificacion: 5.0, comentario: '' });
+  const [anonimo, setAnonimo] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setForm((prev) => ({
+        ...prev,
+        nombre: prev.nombre || user.nombre || '',
+        email: prev.email || user.email || '',
+      }));
+    }
+  }, [user]);
 
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -50,8 +63,8 @@ const ProductReviewFormPage = () => {
     try {
       const payload = {
         productoId: id,
-        nombre: form.nombre || '',
-        email: form.email || '',
+        nombre: anonimo ? form.nombre.trim() || 'Anónimo' : form.nombre.trim() || user?.nombre || '',
+        email: anonimo ? null : form.email.trim() || user?.email || null,
         calificacion: Number(form.calificacion),
         comentario: form.comentario.trim(),
       };
@@ -64,7 +77,7 @@ const ProductReviewFormPage = () => {
       }
     } catch (error) {
       console.error('Error al enviar reseña:', error);
-      setMensaje({ tipo: 'danger', texto: error.message || 'Error de conexión al enviar reseña.' });
+      setMensaje({ tipo: 'danger', texto: error.response?.data?.message || error.message || 'Error de conexión al enviar reseña.' });
     } finally {
       setLoading(false);
     }
@@ -92,14 +105,27 @@ const ProductReviewFormPage = () => {
               {mensaje.texto && <Alert variant={mensaje.tipo || 'warning'}>{mensaje.texto}</Alert>}
 
               <Form onSubmit={handleSubmit}>
+                <Form.Group className="mb-3" controlId="anonimo">
+                  <Form.Check
+                    type="checkbox"
+                    label="Publicar como anónimo"
+                    checked={anonimo}
+                    onChange={(e) => setAnonimo(e.target.checked)}
+                  />
+                </Form.Group>
+
                 <Form.Group className="mb-3" controlId="nombre">
-                  <Form.Label>Nombre</Form.Label>
+                  <Form.Label>Nombre / Alias</Form.Label>
                   <Form.Control
                     type="text"
                     value={form.nombre}
                     onChange={(e) => handleChange('nombre', e.target.value)}
                     placeholder="Tu nombre o alias"
+                    disabled={!anonimo && !!user?.nombre}
                   />
+                  {!anonimo && user?.nombre && (
+                    <Form.Text className="text-muted">Se usará tu nombre de usuario autenticado.</Form.Text>
+                  )}
                 </Form.Group>
 
                 <Form.Group className="mb-3" controlId="email">
@@ -109,19 +135,29 @@ const ProductReviewFormPage = () => {
                     value={form.email}
                     onChange={(e) => handleChange('email', e.target.value)}
                     placeholder="tu@email.com"
+                    disabled={!anonimo && !!user?.email}
                   />
+                  {!anonimo && user?.email && (
+                    <Form.Text className="text-muted">Se usará tu correo autenticado.</Form.Text>
+                  )}
                 </Form.Group>
 
                 <Form.Group className="mb-3" controlId="calificacion">
                   <Form.Label>Calificación</Form.Label>
-                  <Form.Select
-                    value={form.calificacion}
-                    onChange={(e) => handleChange('calificacion', e.target.value)}
-                  >
-                    {[5, 4, 3, 2, 1].map((value) => (
-                      <option key={value} value={value}>{value} estrella{value > 1 ? 's' : ''}</option>
+                  <div className="d-flex flex-wrap gap-2 align-items-center">
+                    {STAR_VALUES.map((value) => (
+                      <Button
+                        key={value}
+                        type="button"
+                        variant={Number(form.calificacion) === value ? 'warning' : 'outline-secondary'}
+                        onClick={() => handleChange('calificacion', value)}
+                        size="sm"
+                      >
+                        {value} ★
+                      </Button>
                     ))}
-                  </Form.Select>
+                  </div>
+                  <Form.Text className="text-muted">Puedes usar medias estrellas para mayor precisión.</Form.Text>
                 </Form.Group>
 
                 <Form.Group className="mb-4" controlId="comentario">

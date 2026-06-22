@@ -9,6 +9,9 @@
 // Importar el seeder de datos completos
 const { seedDatosCompletos } = require('./datosCompletos.seeder');
 
+const isTestEnv = process.env.NODE_ENV === 'test';
+const log = isTestEnv ? () => {} : console.log.bind(console);
+
 /**
  * Función principal que ejecuta todos los seeders
  */
@@ -27,15 +30,17 @@ const seedAdmin = async () => {
  */
 const runSeeders = async () => {
   try {
-    console.log('\n🌱 Ejecutando seeders...\n');
+    log('\n🌱 Ejecutando seeders...\n');
     
     // Ejecutar seeder de datos completos
     await seedDatosCompletos();
     
-    console.log('\n✅ Seeders ejecutados correctamente\n');
+    log('\n✅ Seeders ejecutados correctamente\n');
     
   } catch (error) {
-    console.error('\n❌ Error al ejecutar seeders:', error.message);
+    if (!isTestEnv) {
+      console.error('\n❌ Error al ejecutar seeders:', error.message);
+    }
     throw error;
   }
 };

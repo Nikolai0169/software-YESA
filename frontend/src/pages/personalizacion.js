@@ -40,6 +40,7 @@ const PersonalizacionPage = () => {
   const [cotizacion, setCotizacion] = useState(null);
   const [cotizando, setCotizando] = useState(false);
   const [nombreCotizacion, setNombreCotizacion] = useState('');
+  const [notasCotizacion, setNotasCotizacion] = useState('');
   const { isAuthenticated, isCliente } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -450,6 +451,7 @@ const PersonalizacionPage = () => {
         textureScale: textureScale || 1,
         zoom: zoomLevel,
         nombre: nombreFinal,
+        notas: notasCotizacion.trim() || undefined,
       };
       const result = await cotizarProducto(disenoData);
       setCotizacion({ mensaje: result.mensaje || 'Cotización enviada y pendiente' });
