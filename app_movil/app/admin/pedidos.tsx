@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ScrollView,
   View,
   Text,
+  TextInput,
   TouchableOpacity,
   ActivityIndicator,
   Alert,
@@ -43,6 +44,8 @@ export default function PedidosAdmin() {
     cliente?: { nombre?: string };
   }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filtroEstado, setFiltroEstado] = useState('todos');
+  const [busqueda, setBusqueda] = useState('');
 
   useEffect(() => {
     loadPedidos();
@@ -61,6 +64,19 @@ export default function PedidosAdmin() {
       setLoading(false);
     }
   }
+
+  const pedidosFiltrados = useMemo(() => {
+    const texto = busqueda.trim().toLowerCase();
+
+    return pedidos.filter((pedido) => {
+      const estadoPedido = (pedido.estado || 'desconocido').toLowerCase();
+      const coincideEstado = filtroEstado === 'todos' || estadoPedido === filtroEstado;
+      const nombrePedido = String(pedido.id || pedido.numero || '').toLowerCase();
+      const coincideBusqueda = texto === '' || nombrePedido.includes(texto);
+
+      return coincideEstado && coincideBusqueda;
+    });
+  }, [pedidos, filtroEstado, busqueda]);
 
   const renderPedido = (pedido: { id?: number | string; numero?: number | string; estado?: string; total?: number; monto?: number; email?: string; usuario?: { nombre?: string }; cliente?: { nombre?: string } }) => {
     const numero = pedido.id || pedido.numero || '---';
@@ -98,12 +114,38 @@ export default function PedidosAdmin() {
       <Text style={styles.title}>Pedidos</Text>
       <Text style={styles.subtitle}>Consulta el histórico de pedidos y accede a cada detalle.</Text>
 
+      <TextInput
+        style={styles.searchInput}
+        value={busqueda}
+        onChangeText={setBusqueda}
+        placeholder="Buscar por pedido #numero"
+        placeholderTextColor="#9ca3af"
+      />
+
+      <View style={styles.filterBar}>
+        <TouchableOpacity
+          style={[styles.filterChip, filtroEstado === 'todos' && styles.filterChipActive]}
+          onPress={() => setFiltroEstado('todos')}
+        >
+          <Text style={[styles.filterChipText, filtroEstado === 'todos' && styles.filterChipTextActive]}>Todos</Text>
+        </TouchableOpacity>
+        {['pendiente', 'pagado', 'enviado', 'entregado', 'cancelado'].map((estado) => (
+          <TouchableOpacity
+            key={estado}
+            style={[styles.filterChip, filtroEstado === estado && styles.filterChipActive]}
+            onPress={() => setFiltroEstado(estado)}
+          >
+            <Text style={[styles.filterChipText, filtroEstado === estado && styles.filterChipTextActive]}>{estado}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
       {loading ? (
         <ActivityIndicator size="large" color={Colors.light.primary} style={styles.loader} />
-      ) : pedidos.length === 0 ? (
-        <Text style={styles.emptyText}>No hay pedidos disponibles en este momento.</Text>
+      ) : pedidosFiltrados.length === 0 ? (
+        <Text style={styles.emptyText}>No hay pedidos que coincidan con la búsqueda.</Text>
       ) : (
-        pedidos.map(renderPedido)
+        pedidosFiltrados.map(renderPedido)
       )}
 
       <Link href="/admin/dashboard" asChild>
@@ -139,7 +181,44 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 15,
     color: Colors.light.icon,
-    marginBottom: 18,
+    marginBottom: 14,
+  },
+  searchInput: {
+    backgroundColor: Colors.light.surface,
+    borderColor: Colors.light.border,
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 10,
+    color: Colors.light.text,
+  },
+  filterBar: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 14,
+  },
+  filterChip: {
+    borderWidth: 1,
+    borderColor: Colors.light.border,
+    borderRadius: 999,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: Colors.light.surface,
+  },
+  filterChipActive: {
+    backgroundColor: Colors.light.primary,
+    borderColor: Colors.light.primary,
+  },
+  filterChipText: {
+    color: Colors.light.text,
+    fontSize: 13,
+    fontWeight: '700',
+    textTransform: 'capitalize',
+  },
+  filterChipTextActive: {
+    color: '#fff',
   },
   loader: {
     marginTop: 30,

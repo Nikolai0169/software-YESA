@@ -1,18 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ScrollView,
   View,
   Text,
+  TextInput,
   TouchableOpacity,
   ActivityIndicator,
   Alert,
   StyleSheet,
 } from 'react-native';
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import useAdminRole from '../../src/hooks/useAdminRole';
 import { Colors } from '../../constants/theme';
 import {
-  deleteProduct,
   getProductos,
   toggleProduct,
 } from '../../src/services/adminService';
@@ -21,6 +21,7 @@ export default function ProductosAdmin() {
   const { isChecking, isAuthorized } = useAdminRole();
   const [productos, setProductos] = useState<{ id: number | string; nombre?: string; titulo?: string; precio?: number; price?: number; activo?: boolean }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [buscar, setBuscar] = useState('');
 
   useEffect(() => {
     loadProductos();
@@ -65,29 +66,27 @@ export default function ProductosAdmin() {
     );
   }
 
+  function handleEdit(producto: { id: number | string; nombre?: string; titulo?: string }) {
+    if (producto.id) {
+      router.push({ pathname: '/admin/producto-form', params: { id: String(producto.id) } });
+    }
+  }
+
   function confirmDelete(producto: { id: number | string; nombre?: string; titulo?: string }) {
     Alert.alert(
-      'Eliminar producto',
-      `¿Estás seguro de eliminar “${producto.nombre || producto.titulo || 'este producto'}”? Esta acción no se puede deshacer.`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Eliminar',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteProduct(producto.id);
-              loadProductos();
-            } catch (error: unknown) {
-              const err = error as Error;
-              console.error('Error eliminando producto:', err.message || error);
-              Alert.alert('Error', 'No se pudo eliminar el producto.');
-            }
-          },
-        },
-      ]
+      'Información',
+      'No se puede eliminar producto desde app movil'
     );
   }
+
+  const productosFiltrados = useMemo(() => {
+    const termino = buscar.trim().toLowerCase();
+    if (!termino) return productos;
+    return productos.filter((producto) => {
+      const title = `${producto.nombre || producto.titulo || ''}`.toLowerCase();
+      return title.includes(termino);
+    });
+  }, [productos, buscar]);
 
   const renderProducto = (producto: { id: number | string; nombre?: string; titulo?: string; precio?: number; price?: number; activo?: boolean }) => {
     const title = producto.nombre || producto.titulo || `Producto ${producto.id}`;
@@ -103,6 +102,9 @@ export default function ProductosAdmin() {
           </Text>
         </View>
         <View style={styles.itemActions}>
+          <TouchableOpacity style={styles.smallButton} onPress={() => handleEdit(producto)}>
+            <Text style={styles.smallButtonText}>Editar</Text>
+          </TouchableOpacity>
           <TouchableOpacity style={styles.smallButton} onPress={() => confirmToggle(producto)}>
             <Text style={styles.smallButtonText}>{active ? 'Desactivar' : 'Activar'}</Text>
           </TouchableOpacity>
@@ -137,12 +139,33 @@ export default function ProductosAdmin() {
         </TouchableOpacity>
       </Link>
 
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Buscar productos..."
+          value={buscar}
+          onChangeText={setBuscar}
+          placeholderTextColor="#9ca3af"
+        />
+        {buscar !== '' && (
+          <TouchableOpacity style={styles.clearButton} onPress={() => setBuscar('')}>
+            <Text style={styles.clearButtonText}>✕</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {buscar !== '' && (
+        <Text style={styles.filterInfo}>
+          {productosFiltrados.length} de {productos.length} productos
+        </Text>
+      )}
+
       {loading ? (
         <ActivityIndicator size="large" color="#7d2181" style={styles.loader} />
-      ) : productos.length === 0 ? (
-        <Text style={styles.emptyText}>No hay productos disponibles.</Text>
+      ) : productosFiltrados.length === 0 ? (
+        <Text style={styles.emptyText}>{buscar !== '' ? 'No se encontraron productos.' : 'No hay productos disponibles.'}</Text>
       ) : (
-        productos.map(renderProducto)
+        productosFiltrados.map(renderProducto)
       )}
     </ScrollView>
   );
@@ -185,6 +208,41 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: '700',
     fontSize: 16,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    gap: 8,
+  },
+  searchInput: {
+    flex: 1,
+    backgroundColor: Colors.light.surface,
+    borderRadius: 16,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
+    color: Colors.light.text,
+    fontSize: 15,
+  },
+  clearButton: {
+    backgroundColor: Colors.light.danger,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  clearButtonText: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  filterInfo: {
+    fontSize: 13,
+    color: Colors.light.icon,
+    marginBottom: 12,
+    marginLeft: 4,
   },
   loader: {
     marginTop: 30,

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ScrollView,
   View,
@@ -23,6 +23,7 @@ export default function CategoriasAdmin() {
   const [categorias, setCategorias] = useState<{ id: number | string; nombre?: string; titulo?: string; activo?: boolean }[]>([]);
   const [loading, setLoading] = useState(true);
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [buscar, setBuscar] = useState('');
   const [editingCategoria, setEditingCategoria] = useState<{ id: number | string; nombre: string } | null>(null);
 
   useEffect(() => {
@@ -110,6 +111,15 @@ export default function CategoriasAdmin() {
     );
   }
 
+  const categoriasFiltradas = useMemo(() => {
+    const termino = buscar.trim().toLowerCase();
+    if (!termino) return categorias;
+    return categorias.filter((categoria) => {
+      const title = `${categoria.nombre || categoria.titulo || ''}`.toLowerCase();
+      return title.includes(termino);
+    });
+  }, [categorias, buscar]);
+
   const renderCategoria = (categoria: { id: number | string; nombre?: string; titulo?: string; activo?: boolean }) => {
     const title = categoria.nombre || categoria.titulo || `Categoría ${categoria.id}`;
     const active = categoria.activo !== false;
@@ -187,12 +197,33 @@ export default function CategoriasAdmin() {
         </TouchableOpacity>
       </View>
 
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Buscar categorías..."
+          value={buscar}
+          onChangeText={setBuscar}
+          placeholderTextColor="#9ca3af"
+        />
+        {buscar !== '' && (
+          <TouchableOpacity style={styles.clearButton} onPress={() => setBuscar('')}>
+            <Text style={styles.clearButtonText}>✕</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {buscar !== '' && (
+        <Text style={styles.filterInfo}>
+          {categoriasFiltradas.length} de {categorias.length} categorías
+        </Text>
+      )}
+
       {loading ? (
         <ActivityIndicator size="large" color="#7d2181" style={styles.loader} />
-      ) : categorias.length === 0 ? (
-        <Text style={styles.emptyText}>No hay categorías registradas.</Text>
+      ) : categoriasFiltradas.length === 0 ? (
+        <Text style={styles.emptyText}>{buscar !== '' ? 'No se encontraron categorías.' : 'No hay categorías registradas.'}</Text>
       ) : (
-        categorias.map(renderCategoria)
+        categoriasFiltradas.map(renderCategoria)
       )}
     </ScrollView>
   );
@@ -248,6 +279,31 @@ const styles = StyleSheet.create({
   addButtonText: {
     color: '#fff',
     fontWeight: '700',
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    gap: 8,
+  },
+  clearButton: {
+    backgroundColor: Colors.light.danger,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  clearButtonText: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  filterInfo: {
+    fontSize: 13,
+    color: Colors.light.icon,
+    marginBottom: 12,
+    marginLeft: 4,
   },
   loader: {
     marginTop: 40,

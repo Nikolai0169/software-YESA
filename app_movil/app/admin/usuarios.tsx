@@ -9,13 +9,14 @@ import {
   Alert,
   StyleSheet,
 } from 'react-native';
+import { router } from 'expo-router';
 import useAdminRole from '../../src/hooks/useAdminRole';
-import { getUsuarios, toggleUsuario, deleteUsuario } from '../../src/services/adminService';
+import { getUsuarios, toggleUsuario } from '../../src/services/adminService';
 import { Colors } from '../../constants/theme';
 
 export default function UsuariosAdmin() {
   const { isChecking, isAuthorized } = useAdminRole();
-  const [usuarios, setUsuarios] = useState<{ id: number | string; nombre?: string; apellido?: string; email?: string; activo?: boolean }[]>([]);
+  const [usuarios, setUsuarios] = useState<{ id: number | string; nombre?: string; apellido?: string; email?: string; activo?: boolean; telefono?: string; direccion?: string; rol?: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [buscar, setBuscar] = useState('');
 
@@ -74,27 +75,26 @@ export default function UsuariosAdmin() {
     );
   }
 
+  function handleEdit(usuario: { id: number | string; nombre?: string; apellido?: string; email?: string; telefono?: string; direccion?: string; rol?: string }) {
+    router.push({
+      pathname: '/admin/usuarios/crear',
+      params: {
+        mode: 'edit',
+        id: String(usuario.id),
+        nombre: usuario.nombre || '',
+        apellido: usuario.apellido || '',
+        email: usuario.email || '',
+        telefono: usuario.telefono || '',
+        direccion: usuario.direccion || '',
+        rol: usuario.rol || 'cliente',
+      },
+    });
+  }
+
   function confirmDelete(usuario: { id: number | string; nombre?: string; apellido?: string; email?: string }) {
     Alert.alert(
-      'Eliminar usuario',
-      `¿Estás seguro de eliminar al usuario "${getNombreCompleto(usuario)}"?`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Eliminar',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteUsuario(usuario.id);
-              loadUsuarios();
-            } catch (error: unknown) {
-              const err = error as Error;
-              console.error('Error eliminando usuario:', err.message || error);
-              Alert.alert('Error', 'No se pudo eliminar el usuario.');
-            }
-          },
-        },
-      ]
+      'Información',
+      'No se puede eliminar usuario desde app movil'
     );
   }
 
@@ -105,7 +105,7 @@ export default function UsuariosAdmin() {
     return fullName || usuario.email || 'Sin nombre';
   };
 
-  const renderUsuario = (usuario: { id: number | string; nombre?: string; apellido?: string; email?: string; activo?: boolean }) => {
+  const renderUsuario = (usuario: { id: number | string; nombre?: string; apellido?: string; email?: string; activo?: boolean; telefono?: string; direccion?: string; rol?: string }) => {
     const active = usuario.activo !== false;
     return (
       <View key={String(usuario.id)} style={styles.itemContainer}>
@@ -117,6 +117,9 @@ export default function UsuariosAdmin() {
           </Text>
         </View>
         <View style={styles.controls}> 
+          <TouchableOpacity style={styles.smallButton} onPress={() => handleEdit(usuario)}>
+            <Text style={styles.smallButtonText}>Editar</Text>
+          </TouchableOpacity>
           <TouchableOpacity style={styles.smallButton} onPress={() => confirmToggle(usuario)}>
             <Text style={styles.smallButtonText}>{active ? 'Desactivar' : 'Activar'}</Text>
           </TouchableOpacity>
@@ -144,6 +147,12 @@ export default function UsuariosAdmin() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>Usuarios</Text>
       <Text style={styles.subtitle}>Supervisa y controla el estado de los usuarios registrados.</Text>
+
+      <View style={styles.headerActions}>
+        <TouchableOpacity style={styles.primaryButton} onPress={() => router.push('/admin/usuarios/crear')}>
+          <Text style={styles.primaryButtonText}>Crear usuario</Text>
+        </TouchableOpacity>
+      </View>
 
       {/* Barra de búsqueda */}
       <View style={styles.searchContainer}>
@@ -204,6 +213,24 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     marginBottom: 6,
     color: Colors.light.text,
+  },
+  headerActions: {
+    marginBottom: 16,
+  },
+  primaryButton: {
+    backgroundColor: Colors.light.primary,
+    borderRadius: 16,
+    paddingVertical: 14,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  primaryButtonText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: 16,
   },
   subtitle: {
     fontSize: 15,

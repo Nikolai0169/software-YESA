@@ -40,6 +40,7 @@ export default function RootLayout() {
             <Stack.Screen name="admin/productos" options={{ title: 'Productos' }} />
             <Stack.Screen name="admin/producto-form" options={{ title: 'Crear/Editar Producto' }} />
             <Stack.Screen name="admin/usuarios" options={{ title: 'Usuarios' }} />
+            <Stack.Screen name="admin/usuarios/crear" options={{ title: 'Crear usuario' }} />
             <Stack.Screen name="admin/pedidos" options={{ title: 'Pedidos' }} />
             <Stack.Screen name="admin/pedidos/[id]" options={{ title: 'Detalle Pedido' }} />
           </Stack>

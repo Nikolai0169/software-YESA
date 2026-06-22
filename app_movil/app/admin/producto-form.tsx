@@ -32,6 +32,8 @@ export default function AdminProductoForm() {
   const [subcategorias, setSubcategorias] = useState<{ id: number | string; nombre?: string; categoriaId?: number | string }[]>([]);
   const [showCategoriaModal, setShowCategoriaModal] = useState(false);
   const [showSubcategoriaModal, setShowSubcategoriaModal] = useState(false);
+  const [busquedaCategoria, setBusquedaCategoria] = useState('');
+  const [busquedaSubcategoria, setBusquedaSubcategoria] = useState('');
   const [form, setForm] = useState<{
     nombre: string;
     descripcion: string;
@@ -57,6 +59,16 @@ export default function AdminProductoForm() {
   useEffect(() => {
     if (id) {
       loadProducto();
+    } else {
+      setForm({
+        nombre: '',
+        descripcion: '',
+        precio: '',
+        stock: '',
+        categoriaId: '',
+        subcategoriaId: '',
+        activo: true,
+      });
     }
   }, [id]);
 
@@ -79,15 +91,16 @@ export default function AdminProductoForm() {
     setLoading(true);
     try {
       const data: any = await getProducto(id);
-      if (data) {
+      const producto = data?.producto || data?.data?.producto || data;
+      if (producto) {
         setForm({
-          nombre: data.nombre || '',
-          descripcion: data.descripcion || data.descripcionCorta || '',
-          precio: String(data.precio || data.price || ''),
-          stock: String(data.stock || data.cantidad || ''),
-          categoriaId: String(data.categoriaId || data.categoria?.id || ''),
-          subcategoriaId: String(data.subcategoriaId || data.subcategoria?.id || ''),
-          activo: data.activo !== false,
+          nombre: producto.nombre || producto.titulo || '',
+          descripcion: producto.descripcion || producto.descripcionCorta || producto.detalle || '',
+          precio: String(producto.precio ?? producto.price ?? ''),
+          stock: String(producto.stock ?? producto.cantidad ?? ''),
+          categoriaId: String(producto.categoriaId ?? producto.categoria?.id ?? ''),
+          subcategoriaId: String(producto.subcategoriaId ?? producto.subcategoria?.id ?? ''),
+          activo: producto.activo !== false,
         });
       }
     } catch (error: unknown) {
@@ -100,8 +113,29 @@ export default function AdminProductoForm() {
   }
 
   async function handleSave() {
-    if (!form.nombre.trim() || !form.precio.trim()) {
-      Alert.alert('Validación', 'El nombre y el precio son obligatorios.');
+    if (id) {
+      setSaving(true);
+      const payload: Record<string, any> = {
+        nombre: form.nombre.trim(),
+        descripcion: form.descripcion.trim(),
+        precio: Number(form.precio) || 0,
+        stock: Number(form.stock) || 0,
+        activo: form.activo,
+      };
+      if (form.categoriaId) payload.categoriaId = Number(form.categoriaId);
+      if (form.subcategoriaId) payload.subcategoriaId = Number(form.subcategoriaId);
+
+      try {
+        await updateProduct(id, payload);
+        Alert.alert('Éxito', 'Producto actualizado correctamente.');
+        router.replace('/admin/productos');
+      } catch (error: unknown) {
+        const err = error as Error;
+        console.error('Error guardando producto:', err.message || error);
+        Alert.alert('Error', 'No se pudo guardar el producto.');
+      } finally {
+        setSaving(false);
+      }
       return;
     }
 
@@ -151,6 +185,18 @@ export default function AdminProductoForm() {
   const subcategoriasFiltradas = form.categoriaId
     ? subcategorias.filter((s) => String(s.categoriaId) === form.categoriaId)
     : [];
+
+  const categoriasFiltradas = categorias.filter((categoria) => {
+    const texto = busquedaCategoria.trim().toLowerCase();
+    if (!texto) return true;
+    return (categoria.nombre || '').toLowerCase().includes(texto);
+  });
+
+  const subcategoriasFiltradasBusqueda = subcategoriasFiltradas.filter((subcategoria) => {
+    const texto = busquedaSubcategoria.trim().toLowerCase();
+    if (!texto) return true;
+    return (subcategoria.nombre || '').toLowerCase().includes(texto);
+  });
 
   if (isChecking || loading) {
     return (
@@ -236,8 +282,15 @@ export default function AdminProductoForm() {
                 <Text style={styles.modalCloseBtn}>✕</Text>
               </TouchableOpacity>
             </View>
+            <TextInput
+              style={styles.modalSearchInput}
+              value={busquedaCategoria}
+              onChangeText={setBusquedaCategoria}
+              placeholder="Buscar categoría"
+              placeholderTextColor="#9ca3af"
+            />
             <FlatList
-              data={categorias}
+              data={categoriasFiltradas}
               keyExtractor={(item) => String(item.id)}
               renderItem={({ item }) => (
                 <TouchableOpacity
@@ -276,9 +329,16 @@ export default function AdminProductoForm() {
                 <Text style={styles.modalCloseBtn}>✕</Text>
               </TouchableOpacity>
             </View>
-            {subcategoriasFiltradas.length > 0 ? (
+            <TextInput
+              style={styles.modalSearchInput}
+              value={busquedaSubcategoria}
+              onChangeText={setBusquedaSubcategoria}
+              placeholder="Buscar subcategoría"
+              placeholderTextColor="#9ca3af"
+            />
+            {subcategoriasFiltradasBusqueda.length > 0 ? (
               <FlatList
-                data={subcategoriasFiltradas}
+                data={subcategoriasFiltradasBusqueda}
                 keyExtractor={(item) => String(item.id)}
                 renderItem={({ item }) => (
                   <TouchableOpacity
@@ -425,6 +485,17 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: Colors.light.border,
+  },
+  modalSearchInput: {
+    marginHorizontal: 16,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    color: Colors.light.text,
+    backgroundColor: Colors.light.surface,
   },
   modalTitle: {
     fontSize: 18,
