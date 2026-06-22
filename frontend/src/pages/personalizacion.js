@@ -925,6 +925,18 @@ const PersonalizacionPage = () => {
                       />
                     </div>
 
+                    <div className="mt-3 w-100">
+                      <label className="form-label small fw-semibold">Notas para la cotización</label>
+                      <textarea
+                        className="form-control"
+                        rows={3}
+                        placeholder="Agrega detalles o comentarios para el equipo de cotización"
+                        value={notasCotizacion}
+                        onChange={(e) => setNotasCotizacion(e.target.value)}
+                      />
+                      <small className="text-muted">Estas notas se enviarán junto con tu cotización.</small>
+                    </div>
+
                     <div className="personalizacion-actions d-flex flex-wrap justify-content-center gap-2 mt-4">
                       <button
                       type="button"

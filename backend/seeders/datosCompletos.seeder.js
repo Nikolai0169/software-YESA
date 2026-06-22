@@ -17,6 +17,7 @@ const Usuario = require('../models/Usuario');
 const Categoria = require('../models/Categoria');
 const Subcategoria = require('../models/Subcategoria');
 const Producto = require('../models/Producto');
+const Resena = require('../models/Resena');
 const fs = require('fs').promises;
 const path = require('path');
 
@@ -341,6 +342,52 @@ const seedDatosCompletos = async () => {
       
       log(`✅ Total: ${totalProductos} productos creados\n`);
     }
+
+    // ==========================================
+    // 5. CREAR RESEÑAS DE EJEMPLO APROBADAS
+    // ==========================================
+    log('📝 5. CREANDO RESEÑAS DE EJEMPLO APROBADAS...\n');
+
+    const sampleReviews = [
+      {
+        nombre: 'María González',
+        comentario: 'Hermosa alcancía, la calidad es excelente y llegó muy bien empacada. Perfecta para mi hija.',
+        calificacion: 5.0,
+      },
+      {
+        nombre: 'Carlos Rodríguez',
+        comentario: 'Muy bonita y bien hecha. El color es exactamente como en las fotos. Recomendada.',
+        calificacion: 4.5,
+      },
+      {
+        nombre: 'Ana Martínez',
+        comentario: 'Artesanía de primera calidad. Se nota el trabajo manual y el cuidado en los detalles.',
+        calificacion: 5.0,
+      },
+    ];
+
+    const productosParaResenas = await Producto.findAll({ order: [['id', 'ASC']] });
+    const reseñasARellenar = productosParaResenas.slice(0, 10);
+
+    for (const producto of reseñasARellenar) {
+      const existingReviews = await Resena.count({ where: { productoId: producto.id } });
+      if (existingReviews > 0) continue;
+
+      for (const reviewData of sampleReviews) {
+        await Resena.create({
+          productoId: producto.id,
+          usuarioId: null,
+          nombre: reviewData.nombre,
+          email: null,
+          calificacion: reviewData.calificacion,
+          comentario: reviewData.comentario,
+          aprobado: true,
+        });
+      }
+      log(`   ✅ ${sampleReviews.length} reseñas creadas para producto: ${producto.nombre}`);
+    }
+
+    log('\n');
 
     // ==========================================
     // RESUMEN FINAL

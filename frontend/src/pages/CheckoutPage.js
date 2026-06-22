@@ -131,6 +131,7 @@ const CheckoutPage = () => {
     try {
       const cotizacionId = location.state?.cotizacionId;
       const options = {
+        metodoPago: formData.metodoPago,
         notasAdicionales: formData.notasAdicionales,
       };
       if (cotizacionId) options.cotizacionId = cotizacionId;

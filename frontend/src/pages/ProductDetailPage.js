@@ -7,9 +7,10 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { Container, Row, Col, Card, Button, Badge, Alert, Form } from 'react-bootstrap';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import catalogoService from '../services/catalogoService';
 import carritoService from '../services/carritoService';
+import reviewService from '../services/reviewService';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useAuth } from '../context/AuthContext';
 import { getImageUrl } from '../utils/helpers';
@@ -20,6 +21,7 @@ const ProductDetailPage = () => {
   const { isAuthenticated } = useAuth();
   
   const [producto, setProducto] = useState(null);
+  const [resenas, setResenas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [cantidad, setCantidad] = useState(1);
   const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
@@ -48,10 +50,17 @@ const ProductDetailPage = () => {
   const loadProducto = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await catalogoService.getProductoById(id);
-      setProducto(response.data.producto);
-      if (isAuthenticated && response.data.producto) {
-        await checkFavorite(response.data.producto.id);
+      const [productoResponse, resenasResponse] = await Promise.all([
+        catalogoService.getProductoById(id),
+        reviewService.getResenasPorProducto(id),
+      ]);
+
+      const productoData = productoResponse.data.producto || productoResponse.data;
+      setProducto(productoData);
+      setResenas(resenasResponse || []);
+
+      if (isAuthenticated && productoData) {
+        await checkFavorite(productoData.id);
       }
     } catch (error) {
       console.error('Error al cargar producto:', error);
@@ -342,56 +351,36 @@ const ProductDetailPage = () => {
           <h3 className="mb-4">Opiniones de Clientes</h3>
           
           <div className="mb-4">
-            <Card className="mb-3 border-0 shadow-sm">
-              <Card.Body>
-                <div className="d-flex justify-content-between align-items-start mb-2">
-                  <h6>María González</h6>
-                  <small className="text-muted">15 de marzo, 2024</small>
-                </div>
-                <div className="mb-2">
-                  <i className="bi bi-star-fill text-warning"></i>
-                  <i className="bi bi-star-fill text-warning"></i>
-                  <i className="bi bi-star-fill text-warning"></i>
-                  <i className="bi bi-star-fill text-warning"></i>
-                  <i className="bi bi-star-fill text-warning"></i>
-                </div>
-                <p className="text-muted small">Hermosa alcancia, la calidad es excelente y llegó muy bien empacada. Perfecta para mi hija.</p>
-              </Card.Body>
-            </Card>
-
-            <Card className="mb-3 border-0 shadow-sm">
-              <Card.Body>
-                <div className="d-flex justify-content-between align-items-start mb-2">
-                  <h6>Carlos Rodríguez</h6>
-                  <small className="text-muted">8 de marzo, 2024</small>
-                </div>
-                <div className="mb-2">
-                  <i className="bi bi-star-fill text-warning"></i>
-                  <i className="bi bi-star-fill text-warning"></i>
-                  <i className="bi bi-star-fill text-warning"></i>
-                  <i className="bi bi-star-fill text-warning"></i>
-                  <span className="text-muted">☆</span>
-                </div>
-                <p className="text-muted small">Muy bonita y bien hecha. El color es exactamente como en las fotos. Recomendada.</p>
-              </Card.Body>
-            </Card>
-
-            <Card className="mb-3 border-0 shadow-sm">
-              <Card.Body>
-                <div className="d-flex justify-content-between align-items-start mb-2">
-                  <h6>Ana Martínez</h6>
-                  <small className="text-muted">2 de marzo, 2024</small>
-                </div>
-                <div className="mb-2">
-                  <i className="bi bi-star-fill text-warning"></i>
-                  <i className="bi bi-star-fill text-warning"></i>
-                  <i className="bi bi-star-fill text-warning"></i>
-                  <i className="bi bi-star-fill text-warning"></i>
-                  <i className="bi bi-star-fill text-warning"></i>
-                </div>
-                <p className="text-muted small">Artesanía de primera calidad. Se nota el trabajo manual y el cuidado en los detalles.</p>
-              </Card.Body>
-            </Card>
+            {resenas.length === 0 ? (
+              <Card className="mb-3 border-0 shadow-sm">
+                <Card.Body>
+                  <h5 className="mb-3">Aún no hay reseñas</h5>
+                  <p className="mb-3 text-muted">Sé el primero en dejar una opinión sobre este producto.</p>
+                </Card.Body>
+              </Card>
+            ) : (
+              resenas.slice(0, 3).map((resena) => (
+                <Card key={resena.id || `${resena.usuarioId}-${resena.createdAt}`} className="mb-3 border-0 shadow-sm">
+                  <Card.Body>
+                    <div className="d-flex justify-content-between align-items-start mb-2">
+                      <div>
+                        <h6>{resena.nombre || 'Cliente satisfecho'}</h6>
+                        <small className="text-muted">{new Date(resena.createdAt).toLocaleDateString('es-CO')}</small>
+                      </div>
+                      <div>
+                        {Array.from({ length: 5 }).map((_, index) => (
+                          <i
+                            key={index}
+                            className={`bi ${index < Number(resena.calificacion || 0) ? 'bi-star-fill text-warning' : 'bi-star text-warning'}`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-muted small">{resena.comentario}</p>
+                  </Card.Body>
+                </Card>
+              ))
+            )}
           </div>
 
           <Button

@@ -113,16 +113,19 @@ const handleEnviarRespuesta = async () => {
   }
 };
 
-  const handleEliminar = async (id) => {
-    if (!window.confirm('¿Estás seguro de eliminar este mensaje?')) return;
+  const handleCerrarTicket = async (id) => {
+    if (!window.confirm('¿Estás seguro de cerrar este ticket?')) return;
 
     try {
       await api.delete(`/support/contactos/${id}`);
-      setMensaje({ tipo: 'success', texto: 'Mensaje eliminado exitosamente' });
+      setMensaje({ tipo: 'success', texto: 'Ticket cerrado correctamente' });
       await loadContactos();
+      if (contactoSeleccionado?.id === id) {
+        setContactoSeleccionado(null);
+      }
     } catch (error) {
-      console.error('Error al eliminar:', error);
-      setMensaje({ tipo: 'danger', texto: 'Error al eliminar el mensaje' });
+      console.error('Error al cerrar ticket:', error);
+      setMensaje({ tipo: 'danger', texto: error.response?.data?.message || 'Error al cerrar el ticket' });
     }
   };
 
@@ -241,6 +244,12 @@ const handleEnviarRespuesta = async () => {
                     </Card.Body>
                   </Card>
                 </Col>
+      </Row>
+
+      <Card className="shadow-sm mb-4">
+        <Card.Body>
+          <Row className="g-3 align-items-end mb-4">
+            <Col md={4}>
               <Form.Label className="small mb-1">Buscar</Form.Label>
               <InputGroup>
                 <InputGroup.Text><i className="bi bi-search"></i></InputGroup.Text>
@@ -353,14 +362,16 @@ const handleEnviarRespuesta = async () => {
                           >
                             <i className="bi bi-reply"></i>
                           </Button>
-                          <Button
-                            variant="outline-danger"
-                            size="sm"
-                            onClick={() => handleEliminar(contacto.id)}
-                            title="Eliminar"
-                          >
-                            <i className="bi bi-trash"></i>
-                          </Button>
+                          {contacto.estado === 'respondido' && (
+                            <Button
+                              variant="outline-danger"
+                              size="sm"
+                              onClick={() => handleCerrarTicket(contacto.id)}
+                              title="Cerrar ticket"
+                            >
+                              <i className="bi bi-x-circle"></i>
+                            </Button>
+                          )}
                         </div>
                       </td>
                     </tr>

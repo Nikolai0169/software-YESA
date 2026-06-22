@@ -31,6 +31,15 @@ const catalogoService = {
         return payload.producto || payload;
     },
 
+    getResenasPorProducto: async (productoId) => {
+        const response = await apiClient.get(`resena/producto/${productoId}`);
+        const payload = response.data?.data || response.data || {};
+        if (Array.isArray(payload)) {
+            return payload;
+        }
+        return payload.resenas || [];
+    },
+
     //convierte una ruta relativa del backend a una url completa usable para imagen
     buildImageUrl: (path) => {
         if (!path) {

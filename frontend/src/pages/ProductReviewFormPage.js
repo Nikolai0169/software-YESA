@@ -15,7 +15,7 @@ const ProductReviewFormPage = () => {
   const [producto, setProducto] = useState(null);
   const [loading, setLoading] = useState(false);
   const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
-  const [form, setForm] = useState({ nombre: '', email: '', calificacion: 5.0, comentario: '' });
+  const [form, setForm] = useState({ nombre: '', calificacion: 5.0, comentario: '' });
   const [anonimo, setAnonimo] = useState(false);
 
   useEffect(() => {
@@ -23,7 +23,6 @@ const ProductReviewFormPage = () => {
       setForm((prev) => ({
         ...prev,
         nombre: prev.nombre || user.nombre || '',
-        email: prev.email || user.email || '',
       }));
     }
   }, [user]);
@@ -64,7 +63,6 @@ const ProductReviewFormPage = () => {
       const payload = {
         productoId: id,
         nombre: anonimo ? form.nombre.trim() || 'Anónimo' : form.nombre.trim() || user?.nombre || '',
-        email: anonimo ? null : form.email.trim() || user?.email || null,
         calificacion: Number(form.calificacion),
         comentario: form.comentario.trim(),
       };
@@ -128,19 +126,6 @@ const ProductReviewFormPage = () => {
                   )}
                 </Form.Group>
 
-                <Form.Group className="mb-3" controlId="email">
-                  <Form.Label>Email</Form.Label>
-                  <Form.Control
-                    type="email"
-                    value={form.email}
-                    onChange={(e) => handleChange('email', e.target.value)}
-                    placeholder="tu@email.com"
-                    disabled={!anonimo && !!user?.email}
-                  />
-                  {!anonimo && user?.email && (
-                    <Form.Text className="text-muted">Se usará tu correo autenticado.</Form.Text>
-                  )}
-                </Form.Group>
 
                 <Form.Group className="mb-3" controlId="calificacion">
                   <Form.Label>Calificación</Form.Label>
