@@ -44,7 +44,7 @@ function AdminPedidosPage() {
     // ✅ Verificar si fue exitoso
     if (response && response.success) {
       alert('Estado del pedido actualizado correctamente');
-      cargarPedidos();
+      await cargarPedidos();
       if (showDetalleModal && pedidoSeleccionado?.id === pedidoId) {
         const pedidoActualizado = await pedidoService.obtenerPedidoPorId(pedidoId);
         setPedidoSeleccionado(pedidoActualizado);

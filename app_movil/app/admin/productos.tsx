@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ScrollView,
   View,
@@ -9,8 +9,9 @@ import {
   Alert,
   StyleSheet,
 } from 'react-native';
-import { Link, router } from 'expo-router';
+import { Link, router, useFocusEffect } from 'expo-router';
 import useAdminRole from '../../src/hooks/useAdminRole';
+import { useAuth } from '../../src/context/authContext';
 import { Colors } from '../../constants/theme';
 import {
   getProductos,
@@ -19,15 +20,13 @@ import {
 
 export default function ProductosAdmin() {
   const { isChecking, isAuthorized } = useAdminRole();
+  const { user } = useAuth();
+  const isAuxiliar = String(user?.rol || user?.role || '').toLowerCase() === 'auxiliar';
   const [productos, setProductos] = useState<{ id: number | string; nombre?: string; titulo?: string; precio?: number; price?: number; activo?: boolean }[]>([]);
   const [loading, setLoading] = useState(true);
   const [buscar, setBuscar] = useState('');
 
-  useEffect(() => {
-    loadProductos();
-  }, []);
-
-  async function loadProductos() {
+  const loadProductos = useCallback(async () => {
     setLoading(true);
     try {
       const data = await getProductos();
@@ -39,7 +38,17 @@ export default function ProductosAdmin() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    loadProductos();
+  }, [loadProductos]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadProductos();
+    }, [loadProductos])
+  );
 
   function confirmToggle(producto: { id: number | string; nombre?: string; titulo?: string; activo?: boolean }) {
     const active = producto.activo !== false;
@@ -54,7 +63,7 @@ export default function ProductosAdmin() {
           onPress: async () => {
             try {
               await toggleProduct(producto.id);
-              loadProductos();
+              await loadProductos();
             } catch (error: unknown) {
               const err = error as Error;
               console.error('Error actualizando producto:', err.message || error);
@@ -72,12 +81,6 @@ export default function ProductosAdmin() {
     }
   }
 
-  function confirmDelete(producto: { id: number | string; nombre?: string; titulo?: string }) {
-    Alert.alert(
-      'Información',
-      'No se puede eliminar producto desde app movil'
-    );
-  }
 
   const productosFiltrados = useMemo(() => {
     const termino = buscar.trim().toLowerCase();
@@ -105,11 +108,8 @@ export default function ProductosAdmin() {
           <TouchableOpacity style={styles.smallButton} onPress={() => handleEdit(producto)}>
             <Text style={styles.smallButtonText}>Editar</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.smallButton} onPress={() => confirmToggle(producto)}>
+          <TouchableOpacity style={[styles.smallButton, active ? styles.toggleDeactivate : styles.toggleActivate]} onPress={() => confirmToggle(producto)}>
             <Text style={styles.smallButtonText}>{active ? 'Desactivar' : 'Activar'}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.smallButton, styles.deleteButton]} onPress={() => confirmDelete(producto)}>
-            <Text style={styles.smallButtonText}>Eliminar</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -298,6 +298,12 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
     marginBottom: 8,
+  },
+  toggleActivate: {
+    backgroundColor: '#8b5cf6',
+  },
+  toggleDeactivate: {
+    backgroundColor: '#a78bfa',
   },
   deleteButton: {
     backgroundColor: Colors.light.danger,

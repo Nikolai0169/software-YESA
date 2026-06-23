@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ScrollView,
   View,
@@ -9,7 +9,7 @@ import {
   Alert,
   StyleSheet,
 } from 'react-native';
-import { Link } from 'expo-router';
+import { Link, useFocusEffect } from 'expo-router';
 import useAdminRole from '../../src/hooks/useAdminRole';
 import { getPedidos } from '../../src/services/adminService';
 import { Colors } from '../../constants/theme';
@@ -47,11 +47,7 @@ export default function PedidosAdmin() {
   const [filtroEstado, setFiltroEstado] = useState('todos');
   const [busqueda, setBusqueda] = useState('');
 
-  useEffect(() => {
-    loadPedidos();
-  }, []);
-
-  async function loadPedidos() {
+  const loadPedidos = useCallback(async () => {
     setLoading(true);
     try {
       const data = await getPedidos({ limite: 50 });
@@ -63,7 +59,17 @@ export default function PedidosAdmin() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    loadPedidos();
+  }, [loadPedidos]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadPedidos();
+    }, [loadPedidos])
+  );
 
   const pedidosFiltrados = useMemo(() => {
     const texto = busqueda.trim().toLowerCase();
@@ -118,7 +124,7 @@ export default function PedidosAdmin() {
         style={styles.searchInput}
         value={busqueda}
         onChangeText={setBusqueda}
-        placeholder="Buscar por pedido #numero"
+        placeholder="Buscar pedido por ID"
         placeholderTextColor="#9ca3af"
       />
 
@@ -129,7 +135,7 @@ export default function PedidosAdmin() {
         >
           <Text style={[styles.filterChipText, filtroEstado === 'todos' && styles.filterChipTextActive]}>Todos</Text>
         </TouchableOpacity>
-        {['pendiente', 'pagado', 'enviado', 'entregado', 'cancelado'].map((estado) => (
+        {['pendiente', 'enviado', 'entregado', 'cancelado'].map((estado) => (
           <TouchableOpacity
             key={estado}
             style={[styles.filterChip, filtroEstado === estado && styles.filterChipActive]}

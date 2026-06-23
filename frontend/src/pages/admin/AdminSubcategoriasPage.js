@@ -138,7 +138,7 @@ const AdminSubcategoriasPage = () => {
         setMensaje({ tipo: 'success', texto: 'Subcategoría creada exitosamente' });
       }
       handleCloseModal();
-      loadData();
+      await loadData();
     } catch (error) {
       console.error('Error al guardar subcategoría:', error);
       setMensaje({ tipo: 'danger', texto: error.response?.data?.message || 'Error al guardar la subcategoría' });
@@ -150,7 +150,7 @@ const AdminSubcategoriasPage = () => {
     try {
       await api.delete(`/admin/subcategorias/${id}`);
       setMensaje({ tipo: 'success', texto: 'Subcategoría eliminada exitosamente' });
-      loadData();
+      await loadData();
     } catch (error) {
       console.error('Error al eliminar subcategoría:', error);
       setMensaje({ tipo: 'danger', texto: error.response?.data?.message || 'Error al eliminar la subcategoría' });

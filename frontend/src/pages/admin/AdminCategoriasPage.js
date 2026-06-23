@@ -127,7 +127,7 @@ const AdminCategoriasPage = () => {
         setMensaje({ tipo: 'success', texto: 'Categoría creada exitosamente' });
       }
       handleCloseModal();
-      loadCategorias();
+      await loadCategorias();
     } catch (error) {
       console.error('Error al guardar categoría:', error);
       setMensaje({ tipo: 'danger', texto: error.response?.data?.message || 'Error al guardar la categoría' });
@@ -139,7 +139,7 @@ const AdminCategoriasPage = () => {
     try {
       await api.delete(`/admin/categorias/${id}`);
       setMensaje({ tipo: 'success', texto: 'Categoría eliminada exitosamente' });
-      loadCategorias();
+      await loadCategorias();
     } catch (error) {
       console.error('Error al eliminar categoría:', error);
       setMensaje({ tipo: 'danger', texto: error.response?.data?.message || 'Error al eliminar la categoría' });

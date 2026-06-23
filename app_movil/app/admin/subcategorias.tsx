@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   ScrollView,
   View,
@@ -17,6 +17,7 @@ import {
   updateSubcategoria,
 } from '../../src/services/adminService';
 import useAdminRole from '../../src/hooks/useAdminRole';
+import { useFocusEffect } from 'expo-router';
 
 export default function SubcategoriasAdmin() {
   const { isChecking, isAuthorized } = useAdminRole();
@@ -37,11 +38,7 @@ export default function SubcategoriasAdmin() {
   const [nombre, setNombre] = useState('');
   const [categoriaId, setCategoriaId] = useState('');
 
-  useEffect(() => {
-    loadSubcategorias();
-  }, []);
-
-  async function loadSubcategorias() {
+  const loadSubcategorias = useCallback(async () => {
     setLoading(true);
     try {
       const [subs, cats] = await Promise.all([getSubcategorias(), getCategorias()]);
@@ -54,7 +51,17 @@ export default function SubcategoriasAdmin() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    loadSubcategorias();
+  }, [loadSubcategorias]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadSubcategorias();
+    }, [loadSubcategorias])
+  );
 
   async function handleCreateSubcategoria() {
     if (!nombre.trim() || !categoriaId.trim()) {
@@ -87,7 +94,7 @@ export default function SubcategoriasAdmin() {
         categoriaId: parseInt(editingSubcategoria.categoriaId, 10),
       });
       setEditingSubcategoria(null);
-      loadSubcategorias();
+      await loadSubcategorias();
     } catch (error: unknown) {
       const err = error as Error;
       console.error('Error actualizando subcategoría:', err.message || error);
@@ -120,7 +127,7 @@ export default function SubcategoriasAdmin() {
           onPress: async () => {
             try {
               await toggleSubcategoria(subcategoria.id);
-              loadSubcategorias();
+              await loadSubcategorias();
             } catch (error: unknown) {
               const err = error as Error;
               console.error('Error actualizando subcategoría:', err.message || error);

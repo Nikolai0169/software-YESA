@@ -70,7 +70,7 @@ function AdminUsuariosPage() {
       }
       setShowModal(false);
       limpiarFormulario();
-      cargarUsuarios();
+      await cargarUsuarios();
     } catch (error) {
       console.error('❌ Error al guardar usuario:', error);
       alert(error.response?.data?.mensaje || 'Error al guardar usuario');
@@ -88,7 +88,7 @@ function AdminUsuariosPage() {
     try {
       await usuarioService.eliminarUsuario(id);
       alert('Usuario eliminado exitosamente');
-      cargarUsuarios();
+      await cargarUsuarios();
     } catch (error) {
       console.error('❌ Error al eliminar usuario:', error);
       const mensaje = error.response?.data?.message || error.message || 'Error al eliminar usuario';

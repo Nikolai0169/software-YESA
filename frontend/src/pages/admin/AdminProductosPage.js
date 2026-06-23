@@ -9,7 +9,6 @@
 import React, { useEffect, useState, useMemo, useCallback, memo, useRef } from 'react';
 import { Container, Card, Table, Button, Modal, Form, Alert, Badge, Row, Col, Dropdown, ButtonGroup, InputGroup } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { exportarProductosAPDF, exportarProductosAExcel } from '../../utils/exportUtils';
@@ -28,7 +27,6 @@ const ProductImage = memo(({ imagen, nombre }) => {
 ProductImage.displayName = 'ProductImage';
 
 const AdminProductosPage = () => {
-  const { isAdmin, isAuxiliar } = useAuth();
   const navigate = useNavigate();
   const [productos, setProductos] = useState([]);
   const [categorias, setCategorias] = useState([]);
@@ -178,7 +176,7 @@ const AdminProductosPage = () => {
       
       setMensaje({ tipo: 'success', texto: editando ? 'Producto actualizado' : 'Producto creado' });
       handleCloseModal();
-      loadData();
+      await loadData();
     } catch (error) {
       setMensaje({ tipo: 'danger', texto: error.response?.data?.message || 'Error al guardar' });
     }
@@ -189,7 +187,7 @@ const AdminProductosPage = () => {
     try {
       await api.delete(`/admin/productos/${id}`);
       setMensaje({ tipo: 'success', texto: 'Producto eliminado' });
-      loadData();
+      await loadData();
     } catch (error) {
       setMensaje({ tipo: 'danger', texto: 'Error al eliminar' });
     }
@@ -213,8 +211,8 @@ const AdminProductosPage = () => {
       await api.put(`/admin/productos/${producto.id}`, formDataToSend, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      setProductos(prev => prev.map(p => p.id === producto.id ? { ...p, activo: !p.activo } : p));
       setMensaje({ tipo: 'success', texto: `Producto ${!producto.activo ? 'activado' : 'desactivado'}` });
+      await loadData();
     } catch (error) {
       setMensaje({ tipo: 'danger', texto: 'Error al cambiar estado' });
     }

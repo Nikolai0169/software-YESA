@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ScrollView,
   View,
@@ -9,7 +9,7 @@ import {
   Alert,
   StyleSheet,
 } from 'react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import useAdminRole from '../../src/hooks/useAdminRole';
 import { getUsuarios, toggleUsuario } from '../../src/services/adminService';
 import { Colors } from '../../constants/theme';
@@ -20,11 +20,7 @@ export default function UsuariosAdmin() {
   const [loading, setLoading] = useState(true);
   const [buscar, setBuscar] = useState('');
 
-  useEffect(() => {
-    loadUsuarios();
-  }, []);
-
-  async function loadUsuarios() {
+  const loadUsuarios = useCallback(async () => {
     setLoading(true);
     try {
       const data = await getUsuarios();
@@ -36,7 +32,17 @@ export default function UsuariosAdmin() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    loadUsuarios();
+  }, [loadUsuarios]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadUsuarios();
+    }, [loadUsuarios])
+  );
 
   // Filtrar usuarios según búsqueda
   const usuariosFiltrados = useMemo(() => {
@@ -63,7 +69,7 @@ export default function UsuariosAdmin() {
           onPress: async () => {
             try {
               await toggleUsuario(usuario.id);
-              loadUsuarios();
+              await loadUsuarios();
             } catch (error: unknown) {
               const err = error as Error;
               console.error('Error actualizando usuario:', err.message || error);
@@ -91,13 +97,6 @@ export default function UsuariosAdmin() {
     });
   }
 
-  function confirmDelete(usuario: { id: number | string; nombre?: string; apellido?: string; email?: string }) {
-    Alert.alert(
-      'Información',
-      'No se puede eliminar usuario desde app movil'
-    );
-  }
-
   const getNombreCompleto = (usuario: { nombre?: string; apellido?: string; email?: string }) => {
     const nombre = String(usuario.nombre || '').trim();
     const apellido = String(usuario.apellido || '').trim();
@@ -120,11 +119,8 @@ export default function UsuariosAdmin() {
           <TouchableOpacity style={styles.smallButton} onPress={() => handleEdit(usuario)}>
             <Text style={styles.smallButtonText}>Editar</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.smallButton} onPress={() => confirmToggle(usuario)}>
+          <TouchableOpacity style={[styles.smallButton, active ? styles.toggleDeactivate : styles.toggleActivate]} onPress={() => confirmToggle(usuario)}>
             <Text style={styles.smallButtonText}>{active ? 'Desactivar' : 'Activar'}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.smallButton, styles.deleteButton]} onPress={() => confirmDelete(usuario)}>
-            <Text style={styles.smallButtonText}>Eliminar</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -325,6 +321,12 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
     marginBottom: 8,
+  },
+  toggleActivate: {
+    backgroundColor: '#8b5cf6',
+  },
+  toggleDeactivate: {
+    backgroundColor: '#a78bfa',
   },
   deleteButton: {
     backgroundColor: Colors.light.danger,

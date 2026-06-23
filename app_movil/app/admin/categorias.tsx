@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ScrollView,
   View,
@@ -17,6 +17,7 @@ import {
 } from '../../src/services/adminService';
 import useAdminRole from '../../src/hooks/useAdminRole';
 import { Colors } from '../../constants/theme';
+import { useFocusEffect } from 'expo-router';
 
 export default function CategoriasAdmin() {
   const { isChecking, isAuthorized } = useAdminRole();
@@ -26,11 +27,7 @@ export default function CategoriasAdmin() {
   const [buscar, setBuscar] = useState('');
   const [editingCategoria, setEditingCategoria] = useState<{ id: number | string; nombre: string } | null>(null);
 
-  useEffect(() => {
-    loadCategorias();
-  }, []);
-
-  async function loadCategorias() {
+  const loadCategorias = useCallback(async () => {
     setLoading(true);
     try {
       const data = await getCategorias();
@@ -42,7 +39,17 @@ export default function CategoriasAdmin() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    loadCategorias();
+  }, [loadCategorias]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadCategorias();
+    }, [loadCategorias])
+  );
 
   async function handleCreateCategoria() {
     if (!newCategoryName.trim()) {
@@ -53,7 +60,7 @@ export default function CategoriasAdmin() {
     try {
       await createCategoria({ nombre: newCategoryName.trim() });
       setNewCategoryName('');
-      loadCategorias();
+      await loadCategorias();
     } catch (error: unknown) {
       const err = error as Error;
       console.error('Error creando categoría:', err.message || error);
@@ -70,7 +77,7 @@ export default function CategoriasAdmin() {
     try {
       await updateCategoria(editingCategoria.id, { nombre: editingCategoria.nombre.trim() });
       setEditingCategoria(null);
-      loadCategorias();
+      await loadCategorias();
     } catch (error: unknown) {
       const err = error as Error;
       console.error('Error actualizando categoría:', err.message || error);
@@ -99,7 +106,7 @@ export default function CategoriasAdmin() {
           onPress: async () => {
             try {
               await toggleCategoria(categoria.id);
-              loadCategorias();
+              await loadCategorias();
             } catch (error: unknown) {
               const err = error as Error;
               console.error('Error actualizando categoría:', err.message || error);
@@ -134,7 +141,7 @@ export default function CategoriasAdmin() {
             <Text style={styles.itemButtonText}>Editar</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.itemButton, styles.itemButtonSpacing, active ? styles.buttonInactive : styles.buttonActive]}
+            style={[styles.itemButton, styles.itemButtonSpacing, active ? styles.buttonDeactivate : styles.buttonActivate]}
             onPress={() => confirmToggle(categoria)}
           >
             <Text style={styles.itemButtonText}>{active ? 'Desactivar' : 'Activar'}</Text>
@@ -356,7 +363,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   editButton: {
-    backgroundColor: '#6b7280',
+    backgroundColor: Colors.light.primary,
   },
   itemButtonText: {
     color: '#fff',
@@ -364,11 +371,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     textAlign: 'center',
   },
-  buttonActive: {
-    backgroundColor: '#10b981',
+  buttonActivate: {
+    backgroundColor: '#8b5cf6',
   },
-  buttonInactive: {
-    backgroundColor: '#ef4444',
+  buttonDeactivate: {
+    backgroundColor: '#a78bfa',
   },
   editSection: {
     backgroundColor: Colors.light.surface,
