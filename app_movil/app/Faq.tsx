@@ -91,7 +91,7 @@ export default function FAQScreen() {
       } else {
         Alert.alert('Error', response.message || 'No pudimos enviar tu mensaje. Intenta más tarde.');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
       Alert.alert('Error', error.message || 'Error de conexión. Por favor intenta más tarde.');
     } finally {
