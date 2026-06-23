@@ -94,6 +94,16 @@ export async function getUsuarios() {
   return normalizeList(res);
 }
 
+export async function getUsuario(id) {
+  const res = await api.get(`/admin/usuarios/${id}`);
+  return normalizeItem(res);
+}
+
+export async function updateUsuario(id, data) {
+  const res = await api.put(`/admin/usuarios/${id}`, data);
+  return normalizeItem(res);
+}
+
 export async function toggleUsuario(id) {
   const res = await api.patch(`/admin/usuarios/${id}/toggle`);
   return normalizeItem(res);
@@ -111,6 +121,11 @@ export async function getPedidos(params) {
 
 export async function getPedido(id) {
   const res = await api.get(`/admin/pedidos/${id}`);
+  return res?.data?.data?.pedido || res?.data?.pedido || normalizeItem(res);
+}
+
+export async function updatePedidoEstado(id, estado) {
+  const res = await api.put(`/admin/pedidos/${id}/estado`, { estado });
   return normalizeItem(res);
 }
 
