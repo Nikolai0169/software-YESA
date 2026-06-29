@@ -98,7 +98,7 @@ const MyCotizacionesPage = () => {
 
                     <div className="mb-3">
                       <span className="d-block text-muted small">Productos / Diseños</span>
-                      <div>{c.items?.length || 1} diseño(s)</div>
+                      <div>{Array.isArray(c.items) ? c.items.length : 1} diseño(s)</div>
                     </div>
 
                     <div className="mb-3 d-flex flex-column gap-2">

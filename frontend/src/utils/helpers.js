@@ -139,3 +139,32 @@ export const getEstadoTexto = (estado) => {
   };
   return textos[estado] || estado;
 };
+
+const toFiniteNumber = (value, fallback) => {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : fallback;
+};
+
+export const normalizePersonalizacionDesign = (design = {}) => {
+  const legacyOffset = design.textureOffset && typeof design.textureOffset === 'object'
+    ? design.textureOffset
+    : {};
+  const textureOffsetX = toFiniteNumber(
+    design.textureOffsetX ?? legacyOffset.x,
+    0
+  );
+  const textureOffsetY = toFiniteNumber(
+    design.textureOffsetY ?? legacyOffset.y,
+    0
+  );
+
+  return {
+    ...design,
+    textureOffsetX,
+    textureOffsetY,
+    textureOffset: { x: textureOffsetX, y: textureOffsetY },
+    textureScale: toFiniteNumber(design.textureScale, 1),
+    zoom: toFiniteNumber(design.zoom, 1),
+    overlayTextFontSize: toFiniteNumber(design.overlayTextFontSize, 24),
+  };
+};

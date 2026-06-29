@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button, Card, Row, Col, Badge, Alert } from 'react-bootstrap';
 import Personalizacion3D from '../components/Personalizacion3D';
-import { formatCurrency } from '../utils/helpers';
+import { formatCurrency, normalizePersonalizacionDesign } from '../utils/helpers';
 import { useAuth } from '../context/AuthContext';
 import {
   getSavedDesigns,
@@ -75,7 +75,9 @@ const SavedDesignsPage = () => {
 
     if (selectedDesignIds.length === 0) return;
 
-    const selectedDesigns = designs.filter((design) => selectedDesignIds.includes(design.id));
+    const selectedDesigns = designs
+      .filter((design) => selectedDesignIds.includes(design.id))
+      .map((design) => normalizePersonalizacionDesign(design));
     const selectedItems = selectedDesigns.map((design, index) => ({
       nombre: design.nombre || `Diseño ${index + 1}`,
       modelo: design.modelo,
@@ -89,12 +91,12 @@ const SavedDesignsPage = () => {
       textureUrl: design.textureUrl || design.texture || null,
       overlayText: design.overlayText || '',
       overlayTextFontFamily: design.overlayTextFontFamily || 'sans-serif',
-      overlayTextFontSize: design.overlayTextFontSize || 24,
+      overlayTextFontSize: design.overlayTextFontSize,
       overlayTextColor: design.overlayTextColor || '#ffffff',
-      textureOffsetX: design.textureOffsetX || 0,
-      textureOffsetY: design.textureOffsetY || 0,
-      textureScale: design.textureScale || 1,
-      zoom: design.zoom || 1,
+      textureOffsetX: design.textureOffsetX,
+      textureOffsetY: design.textureOffsetY,
+      textureScale: design.textureScale,
+      zoom: design.zoom,
     }));
 
     setQuotingSelected(true);

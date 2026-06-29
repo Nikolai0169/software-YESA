@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Card, Button, Row, Col, Badge, Spinner, Alert } from 'react-bootstrap';
 import Personalizacion3D from '../components/Personalizacion3D';
 import { obtenerCotizacionUsuario } from '../services/api';
-import { formatCurrency } from '../utils/helpers';
+import { formatCurrency, normalizePersonalizacionDesign } from '../utils/helpers';
 
 const MyCotizacionDetallePage = () => {
   const { id } = useParams();
@@ -28,7 +28,9 @@ const MyCotizacionDetallePage = () => {
     load();
   }, [id]);
 
-  const designItems = Array.isArray(cotizacion?.items) ? cotizacion.items : [cotizacion];
+  const designItems = (Array.isArray(cotizacion?.items) ? cotizacion.items : [cotizacion])
+    .filter(Boolean)
+    .map((item) => normalizePersonalizacionDesign(item));
   const previewSource = designItems[0] || {};
   const multipleDesigns = designItems.length > 1;
 
@@ -61,8 +63,8 @@ const MyCotizacionDetallePage = () => {
                 textExterior={item.textExterior || ''}
                 zoom={0.9}
                 autoRotate={false}
-                textureOffset={{ x: item.textureOffsetX || 0, y: item.textureOffsetY || 0 }}
-                textureScale={item.textureScale || 1}
+                textureOffset={item.textureOffset}
+                textureScale={item.textureScale}
               />
             </div>
           </div>
@@ -171,8 +173,8 @@ const MyCotizacionDetallePage = () => {
                             textExterior={item.textExterior || ''}
                             zoom={0.9}
                             autoRotate={false}
-                            textureOffset={{ x: item.textureOffsetX || 0, y: item.textureOffsetY || 0 }}
-                            textureScale={item.textureScale || 1}
+                            textureOffset={item.textureOffset}
+                            textureScale={item.textureScale}
                           />
                         </div>
                       </div>

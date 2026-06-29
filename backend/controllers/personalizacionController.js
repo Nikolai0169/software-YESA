@@ -1,15 +1,64 @@
-const Producto = require("../models/Producto");
 const Cotizacion = require('../models/Cotizacion');
+const Diseño = require('../models/Diseño');
+
+const toFiniteNumber = (value, fallback) => {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : fallback;
+};
+
+const normalizeDesign = (design = {}) => {
+  const legacyOffset = design.textureOffset && typeof design.textureOffset === 'object'
+    ? design.textureOffset
+    : {};
+  const textureOffsetX = toFiniteNumber(
+    design.textureOffsetX ?? legacyOffset.x,
+    0
+  );
+  const textureOffsetY = toFiniteNumber(
+    design.textureOffsetY ?? legacyOffset.y,
+    0
+  );
+
+  return {
+    ...design,
+    textureOffsetX,
+    textureOffsetY,
+    textureScale: toFiniteNumber(design.textureScale, 1),
+    zoom: toFiniteNumber(design.zoom, 1),
+    overlayTextFontSize: toFiniteNumber(design.overlayTextFontSize, 24),
+  };
+};
 
 // Guardar diseño
 exports.guardarDiseno = async (req, res) => {
   try {
-    const { imagen, color, especificaciones } = req.body;
-    const nuevoDiseno = await Producto.create({
-      imagen,
-      color,
-      especificaciones,
+    const normalizedDesign = normalizeDesign(req.body || {});
+    const nuevoDiseno = await Diseño.create({
+      usuarioId: req.usuario?.id || null,
+      usuarioEmail: req.usuario?.email || null,
+      nombre: normalizedDesign.nombre || `Diseño personalizado - ${new Date().toLocaleDateString()}`,
+      modelo: normalizedDesign.modelo || 'taza',
+      imagen: normalizedDesign.textureUrl || normalizedDesign.imagen || null,
+      color: normalizedDesign.colorExterior || normalizedDesign.color || null,
+      especificaciones: normalizedDesign.especificaciones || null,
       estado: "guardado",
+      metadata: normalizedDesign,
+      colorInterior: normalizedDesign.colorInterior,
+      colorBase: normalizedDesign.colorBase,
+      colorExterior: normalizedDesign.colorExterior,
+      colorAsa: normalizedDesign.colorAsa,
+      textInterior: normalizedDesign.textInterior,
+      textExterior: normalizedDesign.textExterior,
+      textureUrl: normalizedDesign.textureUrl || null,
+      overlayText: normalizedDesign.overlayText,
+      overlayTextFontFamily: normalizedDesign.overlayTextFontFamily,
+      overlayTextFontSize: normalizedDesign.overlayTextFontSize,
+      overlayTextColor: normalizedDesign.overlayTextColor,
+      textureOffsetX: normalizedDesign.textureOffsetX,
+      textureOffsetY: normalizedDesign.textureOffsetY,
+      textureScale: normalizedDesign.textureScale,
+      zoom: normalizedDesign.zoom,
+      notas: normalizedDesign.notas || null,
     });
     res.json({ mensaje: "Diseño guardado correctamente", diseno: nuevoDiseno });
   } catch (error) {
@@ -22,11 +71,11 @@ exports.guardarDiseno = async (req, res) => {
 exports.cotizarProducto = async (req, res) => {
   try {
     const disenos = Array.isArray(req.body.disenos) ? req.body.disenos : [req.body];
-    const textureActive = disenos.some((item) => Boolean(item.hasTexture) || Boolean(item.textureUrl));
-    const firstDesign = disenos[0] || {};
-    const isMultiple = disenos.length > 1;
+    const normalizedDesigns = disenos.map((design) => normalizeDesign(design));
+    const firstDesign = normalizedDesigns[0] || {};
+    const isMultiple = normalizedDesigns.length > 1;
 
-    const items = disenos.map((design, index) => ({
+    const items = normalizedDesigns.map((design, index) => ({
       nombre: design.nombre || `Diseño ${index + 1}`,
       modelo: design.modelo || 'taza',
       colorInterior: design.colorInterior,
@@ -66,10 +115,10 @@ exports.cotizarProducto = async (req, res) => {
       overlayTextFontFamily: isMultiple ? null : firstDesign.overlayTextFontFamily,
       overlayTextFontSize: isMultiple ? null : firstDesign.overlayTextFontSize,
       overlayTextColor: isMultiple ? null : firstDesign.overlayTextColor,
-      textureOffsetX: isMultiple ? 0 : firstDesign.textureOffsetX,
-      textureOffsetY: isMultiple ? 0 : firstDesign.textureOffsetY,
-      textureScale: isMultiple ? 1 : firstDesign.textureScale,
-      zoom: isMultiple ? 1 : firstDesign.zoom,
+      textureOffsetX: isMultiple ? null : firstDesign.textureOffsetX,
+      textureOffsetY: isMultiple ? null : firstDesign.textureOffsetY,
+      textureScale: isMultiple ? null : firstDesign.textureScale,
+      zoom: isMultiple ? null : firstDesign.zoom,
       items,
       precio: 0,
       estado: 'pendiente',

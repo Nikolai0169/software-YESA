@@ -11,7 +11,7 @@ import {
   getPendingDesignToEdit,
   clearPendingDesignToEdit,
 } from "../services/personalizationService";
-import { formatCurrency } from "../utils/helpers";
+import { formatCurrency, normalizePersonalizacionDesign } from "../utils/helpers";
 
 const PersonalizacionPage = () => {
   const defaultColors = {
@@ -123,7 +123,7 @@ const PersonalizacionPage = () => {
     const currentColors = colorsByModel[modelo3D] || {};
     const currentTexts = textsByModel[modelo3D] || {};
 
-    return {
+    return normalizePersonalizacionDesign({
       id: currentDesignId || `diseno_${Date.now()}`,
       nombre:
         currentDesignName || `Diseño personalizado - ${new Date().toLocaleDateString()}`,
@@ -143,14 +143,15 @@ const PersonalizacionPage = () => {
       overlayTextColor:
         (overlayTextSettingsByModel[modelo3D] && overlayTextSettingsByModel[modelo3D].color) || '#ffffff',
       zoom: zoomLevel,
-      textureOffset: textureOffset || { x: 0, y: 0 },
-      textureScale: textureScale || 1,
+      textureOffsetX: textureOffset?.x,
+      textureOffsetY: textureOffset?.y,
+      textureScale,
       textEditorOpen,
       textEditorContent,
       textEditorFontFamily,
       textEditorFontSize,
       textEditorColor,
-    };
+    });
   };
 
   const redirectToLoginWithDesign = () => {
@@ -162,53 +163,54 @@ const PersonalizacionPage = () => {
     const pendingDesign = getPendingDesignToEdit();
     const designToEdit = pendingDesign || getDesignToEdit();
     if (designToEdit) {
+      const normalizedDesign = normalizePersonalizacionDesign(designToEdit);
       setNombreCotizacion(designToEdit.nombre || '');
-      const model = designToEdit.modelo || 'taza';
-      setCurrentDesignId(designToEdit.id || null);
+      const model = normalizedDesign.modelo || 'taza';
+      setCurrentDesignId(normalizedDesign.id || null);
       setCurrentDesignName(
-        designToEdit.nombre || `Diseño personalizado - ${new Date().toLocaleDateString()}`
+        normalizedDesign.nombre || `Diseño personalizado - ${new Date().toLocaleDateString()}`
       );
       setModelo3D(model);
       setColorsByModel((prev) => ({
         ...prev,
         [model]: {
-          interior: designToEdit.colorInterior || '#ffffff',
-          base: designToEdit.colorBase || '#ffffff',
-          exterior: designToEdit.colorExterior || '#ffffff',
-          asa: designToEdit.colorAsa || '#ffffff',
+          interior: normalizedDesign.colorInterior || '#ffffff',
+          base: normalizedDesign.colorBase || '#ffffff',
+          exterior: normalizedDesign.colorExterior || '#ffffff',
+          asa: normalizedDesign.colorAsa || '#ffffff',
         },
       }));
       setTexturesByModel((prev) => ({
         ...prev,
-        [model]: designToEdit.textureUrl || designToEdit.texture || null,
+        [model]: normalizedDesign.textureUrl || normalizedDesign.texture || null,
       }));
       setTextsByModel((prev) => ({
         ...prev,
         [model]: {
-          interior: designToEdit.textInterior || '',
-          exterior: designToEdit.textExterior || '',
+          interior: normalizedDesign.textInterior || '',
+          exterior: normalizedDesign.textExterior || '',
         },
       }));
       setOverlayTextByModel((prev) => ({
         ...prev,
-        [model]: designToEdit.overlayText || '',
+        [model]: normalizedDesign.overlayText || '',
       }));
       setOverlayTextSettingsByModel((prev) => ({
         ...prev,
         [model]: {
-          fontFamily: designToEdit.overlayTextFontFamily || 'sans-serif',
-          fontSize: designToEdit.overlayTextFontSize || 24,
-          color: designToEdit.overlayTextColor || '#ffffff',
+          fontFamily: normalizedDesign.overlayTextFontFamily || 'sans-serif',
+          fontSize: normalizedDesign.overlayTextFontSize || 24,
+          color: normalizedDesign.overlayTextColor || '#ffffff',
         },
       }));
-      setZoomLevel(designToEdit.zoom || 1);
-      setTextureOffset(designToEdit.textureOffset || { x: 0, y: 0 });
-      setTextureScale(designToEdit.textureScale || 1);
-      setTextEditorOpen(!!designToEdit.textEditorOpen);
-      setTextEditorContent(designToEdit.textEditorContent || '');
-      setTextEditorFontFamily(designToEdit.textEditorFontFamily || 'sans-serif');
-      setTextEditorFontSize(designToEdit.textEditorFontSize || 24);
-      setTextEditorColor(designToEdit.textEditorColor || '#000000');
+      setZoomLevel(normalizedDesign.zoom);
+      setTextureOffset(normalizedDesign.textureOffset);
+      setTextureScale(normalizedDesign.textureScale);
+      setTextEditorOpen(!!normalizedDesign.textEditorOpen);
+      setTextEditorContent(normalizedDesign.textEditorContent || '');
+      setTextEditorFontFamily(normalizedDesign.textEditorFontFamily || 'sans-serif');
+      setTextEditorFontSize(normalizedDesign.textEditorFontSize || 24);
+      setTextEditorColor(normalizedDesign.textEditorColor || '#000000');
       if (pendingDesign) {
         clearPendingDesignToEdit();
       } else {
@@ -429,7 +431,7 @@ const PersonalizacionPage = () => {
       const currentColors = colorsByModel[modelo3D] || {};
       const currentTexts = textsByModel[modelo3D] || {};
       const hasTexture = Boolean(texturesByModel[modelo3D]);
-      const disenoData = {
+      const disenoData = normalizePersonalizacionDesign({
         modelo: modelo3D,
         colorInterior: currentColors.interior,
         colorBase: currentColors.base,
@@ -446,13 +448,13 @@ const PersonalizacionPage = () => {
           (overlayTextSettingsByModel[modelo3D] && overlayTextSettingsByModel[modelo3D].fontSize) || 24,
         overlayTextColor:
           (overlayTextSettingsByModel[modelo3D] && overlayTextSettingsByModel[modelo3D].color) || '#ffffff',
-        textureOffsetX: textureOffset?.x || 0,
-        textureOffsetY: textureOffset?.y || 0,
-        textureScale: textureScale || 1,
+        textureOffsetX: textureOffset?.x,
+        textureOffsetY: textureOffset?.y,
+        textureScale,
         zoom: zoomLevel,
         nombre: nombreFinal,
         notas: notasCotizacion.trim() || undefined,
-      };
+      });
       const result = await cotizarProducto(disenoData);
       setCotizacion({ mensaje: result.mensaje || 'Cotización enviada y pendiente' });
     } catch (error) {
@@ -472,26 +474,7 @@ const PersonalizacionPage = () => {
     }
 
     try {
-      const currentColors = colorsByModel[modelo3D] || {};
-      const currentTexts = textsByModel[modelo3D] || {};
-      const disenoData = {
-        id: currentDesignId || `diseno_${Date.now()}`,
-        modelo: modelo3D,
-        colorInterior: currentColors.interior,
-        colorBase: currentColors.base,
-        colorExterior: currentColors.exterior,
-        colorAsa: currentColors.asa,
-        textInterior: currentTexts.interior,
-        textExterior: currentTexts.exterior,
-        textureUrl: texturesByModel[modelo3D] || null,
-        overlayText: overlayTextByModel[modelo3D] || '',
-        overlayTextFontFamily: (overlayTextSettingsByModel[modelo3D] && overlayTextSettingsByModel[modelo3D].fontFamily) || 'sans-serif',
-        overlayTextFontSize: (overlayTextSettingsByModel[modelo3D] && overlayTextSettingsByModel[modelo3D].fontSize) || 24,
-        overlayTextColor: (overlayTextSettingsByModel[modelo3D] && overlayTextSettingsByModel[modelo3D].color) || '#ffffff',
-        zoom: zoomLevel,
-        nombre:
-          currentDesignName || `Diseño personalizado - ${new Date().toLocaleDateString()}`,
-      };
+      const disenoData = buildCurrentDesignState();
       const savedDesign = saveDesignLocally({
         ...disenoData,
         savedAt: new Date().toISOString(),
