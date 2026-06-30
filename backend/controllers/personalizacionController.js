@@ -23,6 +23,7 @@ const normalizeDesign = (design = {}) => {
     ...design,
     textureOffsetX,
     textureOffsetY,
+    textureOffset: { x: textureOffsetX, y: textureOffsetY },
     textureScale: toFiniteNumber(design.textureScale, 1),
     zoom: toFiniteNumber(design.zoom, 1),
     overlayTextFontSize: toFiniteNumber(design.overlayTextFontSize, 24),
@@ -89,6 +90,10 @@ exports.cotizarProducto = async (req, res) => {
       overlayTextFontFamily: design.overlayTextFontFamily,
       overlayTextFontSize: design.overlayTextFontSize,
       overlayTextColor: design.overlayTextColor,
+      textureOffset: design.textureOffset || {
+        x: design.textureOffsetX ?? 0,
+        y: design.textureOffsetY ?? 0,
+      },
       textureOffsetX: design.textureOffsetX,
       textureOffsetY: design.textureOffsetY,
       textureScale: design.textureScale,
@@ -99,7 +104,7 @@ exports.cotizarProducto = async (req, res) => {
     const cotizacionNotas = firstDesign.notas ? firstDesign.notas : `Cotización con ${disenos.length} diseño(s) pendiente(s) de revisión`;
 
     const nuevaCotizacion = await Cotizacion.create({
-      usuarioId: req.usuario.id,
+      usuarioId: req.usuario ? req.usuario.id : null,
       nombre: isMultiple
         ? `Cotización múltiple (${disenos.length} diseños)`
         : firstDesign.nombre || 'Cotización de producto personalizado',

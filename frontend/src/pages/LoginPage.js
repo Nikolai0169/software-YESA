@@ -55,7 +55,7 @@ const LoginPage = () => {
       const redirectPath = buildRedirectPath(from, shouldReturnToSupport);
 
       // Redirigir según el rol y ruta de origen
-      if (response.data.usuario.rol === 'cliente') {
+      if (response.usuario.rol === 'cliente') {
         navigate(redirectPath || '/catalogo', { replace: true });
       } else {
         navigate(shouldReturnToSupport ? redirectPath : '/admin/dashboard', { replace: true });

@@ -36,12 +36,12 @@ const PersonalizacionPage = () => {
   const [overlayTextSettingsByModel, setOverlayTextSettingsByModel] = useState({
     taza: { fontFamily: "sans-serif", fontSize: 24, color: "#000000" },
   });
-  const [composedTextureUrl, setComposedTextureUrl] = useState(null);
+  const [, setComposedTextureUrl] = useState(null);
   const [cotizacion, setCotizacion] = useState(null);
   const [cotizando, setCotizando] = useState(false);
   const [nombreCotizacion, setNombreCotizacion] = useState('');
   const [notasCotizacion, setNotasCotizacion] = useState('');
-  const { isAuthenticated, isCliente } = useAuth();
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [textEditorOpen, setTextEditorOpen] = useState(false);
@@ -52,6 +52,7 @@ const PersonalizacionPage = () => {
   const [textureOffset, setTextureOffset] = useState({ x: 0, y: 0 });
   const [textureScale, setTextureScale] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [previewKey, setPreviewKey] = useState(0);
   const previewRef = useRef(null);
   const fileInputRef = useRef(null);
   const canvasRef = useRef(null);
@@ -82,6 +83,28 @@ const PersonalizacionPage = () => {
     setTextEditorFontFamily('sans-serif');
     setTextEditorFontSize(24);
     setTextEditorColor('#000000');
+  };
+
+  const resetPersonalizacionState = () => {
+    setModelo3D('taza');
+    setColorsByModel(defaultColors);
+    setTexturesByModel({ taza: null });
+    setTextsByModel(defaultTexts);
+    setOverlayTextByModel({ taza: '' });
+    setOverlayTextSettingsByModel({ taza: { fontFamily: 'sans-serif', fontSize: 24, color: '#000000' } });
+    setTextEditorOpen(false);
+    setTextEditorContent('');
+    setTextEditorFontFamily('sans-serif');
+    setTextEditorFontSize(24);
+    setTextEditorColor('#000000');
+    setTextureOffset({ x: 0, y: 0 });
+    setTextureScale(1);
+    setZoomLevel(1);
+    setCurrentDesignId(null);
+    setCurrentDesignName('');
+    setNombreCotizacion('');
+    setNotasCotizacion('');
+    setPreviewKey((prev) => prev + 1);
   };
 
   const setModelColor = (field, value) => {
@@ -143,6 +166,7 @@ const PersonalizacionPage = () => {
       overlayTextColor:
         (overlayTextSettingsByModel[modelo3D] && overlayTextSettingsByModel[modelo3D].color) || '#ffffff',
       zoom: zoomLevel,
+      textureOffset: textureOffset || { x: 0, y: 0 },
       textureOffsetX: textureOffset?.x,
       textureOffsetY: textureOffset?.y,
       textureScale,
@@ -455,8 +479,9 @@ const PersonalizacionPage = () => {
         nombre: nombreFinal,
         notas: notasCotizacion.trim() || undefined,
       });
-      const result = await cotizarProducto(disenoData);
+      const result = await cotizarProducto({ disenos: [disenoData] });
       setCotizacion({ mensaje: result.mensaje || 'Cotización enviada y pendiente' });
+      resetPersonalizacionState();
     } catch (error) {
       console.error('Error al cotizar:', error);
       const message = error.response?.data?.message || error.message || 'Error al cotizar el producto';
@@ -485,9 +510,11 @@ const PersonalizacionPage = () => {
       try {
         const result = await guardarDiseno(disenoData);
         alert(`Diseño guardado${result?.mensaje ? ' en servidor y localmente' : ''}${result?.id || result?._id ? ` con ID: ${result.id || result._id}` : ''}`);
+        resetPersonalizacionState();
       } catch (error) {
         console.error("Error al guardar diseño en servidor:", error);
         alert("Diseño guardado localmente");
+        resetPersonalizacionState();
       }
     } catch (error) {
       console.error("Error al guardar diseño:", error);
@@ -546,6 +573,7 @@ const PersonalizacionPage = () => {
               <div className="personalizacion-preview-fullscreen-wrapper" ref={previewRef}>
                 <div className="personalizacion-preview mt-3 position-relative">
                   <Personalizacion3D 
+                    key={previewKey}
                     modelo={modelo3D}
                     colorInterior={(colorsByModel[modelo3D] && colorsByModel[modelo3D].interior) || '#ffffff'}
                     colorBase={(colorsByModel[modelo3D] && colorsByModel[modelo3D].base) || '#ffffff'}

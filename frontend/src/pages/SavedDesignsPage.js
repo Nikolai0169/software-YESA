@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Button, Card, Row, Col, Badge, Alert } from 'react-bootstrap';
+import { Button, Card, Row, Col, Badge } from 'react-bootstrap';
 import Personalizacion3D from '../components/Personalizacion3D';
 import { formatCurrency, normalizePersonalizacionDesign } from '../utils/helpers';
 import { useAuth } from '../context/AuthContext';
@@ -93,6 +93,7 @@ const SavedDesignsPage = () => {
       overlayTextFontFamily: design.overlayTextFontFamily || 'sans-serif',
       overlayTextFontSize: design.overlayTextFontSize,
       overlayTextColor: design.overlayTextColor || '#ffffff',
+      textureOffset: design.textureOffset || { x: design.textureOffsetX || 0, y: design.textureOffsetY || 0 },
       textureOffsetX: design.textureOffsetX,
       textureOffsetY: design.textureOffsetY,
       textureScale: design.textureScale,
