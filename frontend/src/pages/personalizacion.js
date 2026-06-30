@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Personalizacion3D from "../components/Personalizacion3D";
 import { useAuth } from "../context/AuthContext";
-import { guardarDiseno, cotizarProducto } from "../services/api";
+import { guardarDiseno, cotizarProducto, uploadFile } from "../services/api";
 import {
   saveDesignLocally,
   getDesignToEdit,
@@ -455,6 +455,25 @@ const PersonalizacionPage = () => {
       const currentColors = colorsByModel[modelo3D] || {};
       const currentTexts = textsByModel[modelo3D] || {};
       const hasTexture = Boolean(texturesByModel[modelo3D]);
+      // Si la textura es un dataURL o un File, subirla primero para evitar enviar grandes payloads
+      let textureUrlToSend = texturesByModel[modelo3D] || null;
+      if (textureUrlToSend && ((typeof textureUrlToSend === 'string' && textureUrlToSend.startsWith('data:')) || textureUrlToSend instanceof File)) {
+        try {
+          const formData = new FormData();
+          if (textureUrlToSend instanceof File) {
+            formData.append('texture', textureUrlToSend, textureUrlToSend.name || 'texture.png');
+          } else {
+            const blob = await (await fetch(textureUrlToSend)).blob();
+            formData.append('texture', blob, 'texture.png');
+          }
+          const uploadResp = await uploadFile('/uploads/texture', formData);
+          textureUrlToSend = uploadResp.data?.url || textureUrlToSend;
+        } catch (err) {
+          console.error('Error subiendo textura antes de cotizar:', err);
+          throw new Error('No se pudo subir la textura');
+        }
+      }
+
       const disenoData = normalizePersonalizacionDesign({
         modelo: modelo3D,
         colorInterior: currentColors.interior,
@@ -464,7 +483,7 @@ const PersonalizacionPage = () => {
         textInterior: currentTexts.interior,
         textExterior: currentTexts.exterior,
         hasTexture,
-        textureUrl: texturesByModel[modelo3D] || null,
+        textureUrl: textureUrlToSend || null,
         overlayText: overlayTextByModel[modelo3D] || '',
         overlayTextFontFamily:
           (overlayTextSettingsByModel[modelo3D] && overlayTextSettingsByModel[modelo3D].fontFamily) || 'sans-serif',
@@ -499,7 +518,29 @@ const PersonalizacionPage = () => {
     }
 
     try {
-      const disenoData = buildCurrentDesignState();
+      const disenoDataRaw = buildCurrentDesignState();
+
+      // Si la textura es dataURL o File, subirla primero y reemplazar por URL
+      let disenoData = { ...disenoDataRaw };
+      try {
+        const tex = disenoData.textureUrl || disenoData.texture || null;
+        if (tex && ((typeof tex === 'string' && tex.startsWith('data:')) || tex instanceof File)) {
+          const formData = new FormData();
+          if (tex instanceof File) formData.append('texture', tex, tex.name || 'texture.png');
+          else {
+            const blob = await (await fetch(tex)).blob();
+            formData.append('texture', blob, 'texture.png');
+          }
+          const uploadResp = await uploadFile('/uploads/texture', formData);
+          const url = uploadResp.data?.url;
+          if (url) {
+            disenoData.textureUrl = url;
+            disenoData.texture = url;
+          }
+        }
+      } catch (err) {
+        console.error('Error subiendo textura al guardar diseño:', err);
+      }
       const savedDesign = saveDesignLocally({
         ...disenoData,
         savedAt: new Date().toISOString(),

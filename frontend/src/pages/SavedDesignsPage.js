@@ -10,7 +10,7 @@ import {
   clearSavedDesigns,
   setDesignToEdit,
 } from '../services/personalizationService';
-import { cotizarProducto } from '../services/api';
+import { cotizarProducto, uploadFile } from '../services/api';
 
 const formatDate = (dateString) => {
   try {
@@ -105,6 +105,39 @@ const SavedDesignsPage = () => {
     setQuotedDesigns([]);
 
     try {
+      // Subir texturas dataURL/Blob si existen en los diseños seleccionados
+      for (let i = 0; i < selectedItems.length; i++) {
+        const item = selectedItems[i];
+        const tex = item.textureUrl;
+        // Si la textura es data: (base64), blob: (URL creada en cliente) o un objeto File, subirla
+        if (tex) {
+          try {
+            let shouldUpload = false;
+            let blob = null;
+
+            if (typeof tex === 'string') {
+              if (tex.startsWith('data:') || tex.startsWith('blob:')) {
+                shouldUpload = true;
+                // fetch funciona con data: y blob: URLs
+                blob = await (await fetch(tex)).blob();
+              }
+            } else if (tex instanceof File) {
+              shouldUpload = true;
+              blob = tex;
+            }
+
+            if (shouldUpload && blob) {
+              const fd = new FormData();
+              fd.append('texture', blob, 'texture.png');
+              const up = await uploadFile('/uploads/texture', fd);
+              item.textureUrl = up.data?.url || item.textureUrl;
+            }
+          } catch (err) {
+            console.error('Error subiendo textura para cotizar:', err);
+          }
+        }
+      }
+
       const response = await cotizarProducto({ disenos: selectedItems });
       const quote = response.cotizacion;
       setQuoteSummary({

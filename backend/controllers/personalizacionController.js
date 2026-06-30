@@ -71,10 +71,20 @@ exports.guardarDiseno = async (req, res) => {
 // Cotizar producto
 exports.cotizarProducto = async (req, res) => {
   try {
+    // Log de diagnóstico: cuántos diseños y tamaño aproximado del payload
+    try {
+      const raw = JSON.stringify(req.body || {});
+      console.log(`📦 Cotizar request - payload bytes: ${Buffer.byteLength(raw, 'utf8')}`);
+    } catch (e) {
+      console.log('📦 Cotizar request - no fue posible calcular tamaño del payload');
+    }
+
     const disenos = Array.isArray(req.body.disenos) ? req.body.disenos : [req.body];
     const normalizedDesigns = disenos.map((design) => normalizeDesign(design));
     const firstDesign = normalizedDesigns[0] || {};
     const isMultiple = normalizedDesigns.length > 1;
+
+    console.log(`✉️ Cotizar request - diseños: ${normalizedDesigns.length}`);
 
     const items = normalizedDesigns.map((design, index) => ({
       nombre: design.nombre || `Diseño ${index + 1}`,
@@ -133,7 +143,12 @@ exports.cotizarProducto = async (req, res) => {
     res.json({ mensaje: 'Cotización enviada y pendiente', cotizacion: nuevaCotizacion });
   } catch (error) {
     console.error('Error al cotizar producto:', error);
-    res.status(500).json({ error: 'Error al cotizar producto' });
+    // Si es un error de base de datos que sugiere packet too large, devolver detalle
+    const errMsg = process.env.NODE_ENV === 'development'
+      ? (error.message || String(error))
+      : 'Error al cotizar producto';
+    const status = error.name && error.name.includes('Sequelize') ? 500 : 500;
+    return res.status(status).json({ error: errMsg, detail: process.env.NODE_ENV === 'development' ? error.stack : undefined });
   }
 };
 

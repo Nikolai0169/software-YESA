@@ -114,17 +114,17 @@ app.use(cors({
 }));
 
 // express.json() → Middleware que parsea (interpreta) el body de las peticiones en formato JSON
-// Cuando el frontend envía: { "email": "test@test.com", "password": "123" }
-// Este middleware lo convierte en un objeto JavaScript accesible como req.body
-// Sin esto, req.body sería undefined
-// Se aumenta el límite para soportar payloads grandes como texturas en Base64.
-app.use(express.json({ limit: '50mb' }));
+// Aumentamos el límite para soportar payloads más grandes (texturas temporales, formularios amplios)
+// Nota: esto sólo aumenta el límite de lectura en el servidor; la base de datos aún puede rechazar
+// payloads muy grandes por su propia configuración (ej. max_allowed_packet en MySQL).
+// WARNING: setting very large limits may expose the server to memory/DoS risks.
+// Use with caution. Values are configurable via .env: `EXPRESS_JSON_LIMIT`, `EXPRESS_URLENCODED_LIMIT`.
+// To allow very large payloads we set a default of 2GB (configurable via env).
+// WARNING: valores tan grandes pueden exponer el servidor a riesgos de memoria/DoS.
+app.use(express.json({ limit: process.env.EXPRESS_JSON_LIMIT || '2gb' }));
 
 // express.urlencoded() → Middleware que parsea el body de formularios HTML tradicionales
-// Formato: email=test@test.com&password=123 (URL-encoded)
-// extended: true → permite objetos anidados y arrays en el body
-// Se usa cuando el frontend envía formularios con enctype="application/x-www-form-urlencoded"
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: process.env.EXPRESS_URLENCODED_LIMIT || '2gb' }));
 
 // express.static() → Middleware que sirve archivos estáticos (imágenes, CSS, etc.)
 // Hace que los archivos de la carpeta 'uploads/' sean accesibles públicamente via HTTP
@@ -213,6 +213,10 @@ app.use('/api/admin', adminRoutes);
 // Incluye guardado y cotizado de diseños personalizados
 const personalizacionRoutes = require('./routes/personalizacion');
 app.use('/api/personalizacion', personalizacionRoutes);
+
+// Rutas para subir archivos (texturas)
+const uploadRoutes = require('./routes/upload.routes');
+app.use('/api/uploads', uploadRoutes);
 
 // Rutas del cliente → prefijo /api
 // Archivo: routes/cliente.routes.js
