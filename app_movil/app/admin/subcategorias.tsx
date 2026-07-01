@@ -373,7 +373,7 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 15,
     gap: 8,
   },
   clearButton: {
@@ -396,6 +396,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e5e7eb',
     color: '#111827',
+    flex: 1,
   },
   addButton: {
     backgroundColor: '#7d2181',
