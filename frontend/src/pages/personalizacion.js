@@ -532,11 +532,7 @@ const PersonalizacionPage = () => {
         nombre: nombreFinal,
         notas: notasCotizacion.trim() || undefined,
       });
-<<<<<<< HEAD
       const result = await cotizarProducto(buildQuotePayload(disenoData));
-=======
-      const result = await cotizarProducto({ disenos: [disenoData] });
->>>>>>> 7727f0c751bb5afba7b22ab3c753ccd265c415ec
       setCotizacion({ mensaje: result.mensaje || 'Cotización enviada y pendiente' });
       resetPersonalizacionState();
     } catch (error) {
