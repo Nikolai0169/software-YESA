@@ -122,7 +122,6 @@ const SavedDesignsPage = () => {
 
     try {
       const response = await cotizarProducto({ disenos: buildQuotePayload(selectedItems) });
-      const response2 = await cotizarProducto({ disenos: selectedItems });
       const quote = response.cotizacion;
       setQuoteSummary({
         cotizacion: quote,
