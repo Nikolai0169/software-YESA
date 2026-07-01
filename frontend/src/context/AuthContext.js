@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }) => {
   // Login
   const login = useCallback(async (email, password) => {
     const response = await authService.login(email, password);
-    setUser(response.data.usuario);
+    setUser(response.usuario || response.user || null);
     
     // Sincronizar carrito local con el servidor después de establecer el usuario
     setTimeout(async () => {
@@ -55,7 +55,7 @@ export const AuthProvider = ({ children }) => {
   // Register
   const register = useCallback(async (userData) => {
     const response = await authService.register(userData);
-    setUser(response.data.usuario);
+    setUser(response.usuario || response.user || null);
     
     // Sincronizar carrito local con el servidor después de establecer el usuario
     setTimeout(async () => {
@@ -81,7 +81,7 @@ export const AuthProvider = ({ children }) => {
   // Actualizar perfil
   const updateProfile = useCallback(async (userData) => {
     const response = await authService.updateProfile(userData);
-    setUser(response.data.usuario);
+    setUser(response.usuario || response.user || null);
     return response;
   }, []);
 

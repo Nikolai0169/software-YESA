@@ -23,6 +23,7 @@ const normalizeDesign = (design = {}) => {
     ...design,
     textureOffsetX,
     textureOffsetY,
+    textureOffset: { x: textureOffsetX, y: textureOffsetY },
     textureScale: toFiniteNumber(design.textureScale, 1),
     zoom: toFiniteNumber(design.zoom, 1),
     overlayTextFontSize: toFiniteNumber(design.overlayTextFontSize, 24),
@@ -70,10 +71,20 @@ exports.guardarDiseno = async (req, res) => {
 // Cotizar producto
 exports.cotizarProducto = async (req, res) => {
   try {
+    // Log de diagnóstico: cuántos diseños y tamaño aproximado del payload
+    try {
+      const raw = JSON.stringify(req.body || {});
+      console.log(`📦 Cotizar request - payload bytes: ${Buffer.byteLength(raw, 'utf8')}`);
+    } catch (e) {
+      console.log('📦 Cotizar request - no fue posible calcular tamaño del payload');
+    }
+
     const disenos = Array.isArray(req.body.disenos) ? req.body.disenos : [req.body];
     const normalizedDesigns = disenos.map((design) => normalizeDesign(design));
     const firstDesign = normalizedDesigns[0] || {};
     const isMultiple = normalizedDesigns.length > 1;
+
+    console.log(`✉️ Cotizar request - diseños: ${normalizedDesigns.length}`);
 
     const items = normalizedDesigns.map((design, index) => ({
       nombre: design.nombre || `Diseño ${index + 1}`,
@@ -89,6 +100,10 @@ exports.cotizarProducto = async (req, res) => {
       overlayTextFontFamily: design.overlayTextFontFamily,
       overlayTextFontSize: design.overlayTextFontSize,
       overlayTextColor: design.overlayTextColor,
+      textureOffset: design.textureOffset || {
+        x: design.textureOffsetX ?? 0,
+        y: design.textureOffsetY ?? 0,
+      },
       textureOffsetX: design.textureOffsetX,
       textureOffsetY: design.textureOffsetY,
       textureScale: design.textureScale,
@@ -99,7 +114,7 @@ exports.cotizarProducto = async (req, res) => {
     const cotizacionNotas = firstDesign.notas ? firstDesign.notas : `Cotización con ${disenos.length} diseño(s) pendiente(s) de revisión`;
 
     const nuevaCotizacion = await Cotizacion.create({
-      usuarioId: req.usuario.id,
+      usuarioId: req.usuario ? req.usuario.id : null,
       nombre: isMultiple
         ? `Cotización múltiple (${disenos.length} diseños)`
         : firstDesign.nombre || 'Cotización de producto personalizado',
@@ -128,7 +143,12 @@ exports.cotizarProducto = async (req, res) => {
     res.json({ mensaje: 'Cotización enviada y pendiente', cotizacion: nuevaCotizacion });
   } catch (error) {
     console.error('Error al cotizar producto:', error);
-    res.status(500).json({ error: 'Error al cotizar producto' });
+    // Si es un error de base de datos que sugiere packet too large, devolver detalle
+    const errMsg = process.env.NODE_ENV === 'development'
+      ? (error.message || String(error))
+      : 'Error al cotizar producto';
+    const status = error.name && error.name.includes('Sequelize') ? 500 : 500;
+    return res.status(status).json({ error: errMsg, detail: process.env.NODE_ENV === 'development' ? error.stack : undefined });
   }
 };
 

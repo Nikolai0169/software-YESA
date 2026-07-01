@@ -14,14 +14,19 @@ const authService = {
   register: async (userData) => {
     try {
       const response = await api.post('/auth/register', userData);
-      
+      const authData = response.data.data || response.data;
+
       // Guardar token y usuario en localStorage
-      if (response.data.success) {
-        localStorage.setItem('token', response.data.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.data.usuario));
+      if (response.data.success && authData) {
+        if (authData.token) {
+          localStorage.setItem('token', authData.token);
+        }
+        if (authData.usuario) {
+          localStorage.setItem('user', JSON.stringify(authData.usuario));
+        }
       }
       
-      return response.data;
+      return authData;
     } catch (error) {
       throw error.response?.data || { success: false, message: 'Error de conexión' };
     }
@@ -33,14 +38,19 @@ const authService = {
   login: async (email, password) => {
     try {
       const response = await api.post('/auth/login', { email, password });
+      const authData = response.data.data || response.data;
       
       // Guardar token y usuario en localStorage
-      if (response.data.success) {
-        localStorage.setItem('token', response.data.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.data.usuario));
+      if (response.data.success && authData) {
+        if (authData.token) {
+          localStorage.setItem('token', authData.token);
+        }
+        if (authData.usuario) {
+          localStorage.setItem('user', JSON.stringify(authData.usuario));
+        }
       }
       
-      return response.data;
+      return authData;
     } catch (error) {
       throw error.response?.data || { success: false, message: 'Error de conexión' };
     }
@@ -60,7 +70,7 @@ const authService = {
   getProfile: async () => {
     try {
       const response = await api.get('/auth/me');
-      return response.data;
+      return response.data.data || response.data;
     } catch (error) {
       throw error.response?.data || { success: false, message: 'Error de conexión' };
     }
@@ -78,7 +88,7 @@ const authService = {
         localStorage.setItem('user', JSON.stringify(response.data.data.usuario));
       }
       
-      return response.data;
+      return response.data.data;
     } catch (error) {
       throw error.response?.data || { success: false, message: 'Error de conexión' };
     }

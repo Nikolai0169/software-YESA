@@ -6,6 +6,7 @@ const { verificarAuth, verificarAuthOpcional } = require('../middleware/auth');
 
 // Endpoints
 router.post("/guardar", personalizacionController.guardarDiseno);
+// Requiere autenticación para cotizar: el usuario debe iniciar sesión
 router.post("/cotizar", verificarAuth, personalizacionController.cotizarProducto);
 router.get("/modelos", personalizacionController.obtenerModelos);
 

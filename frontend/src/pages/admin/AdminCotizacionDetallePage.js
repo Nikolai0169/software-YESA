@@ -32,7 +32,6 @@ const AdminCotizacionDetallePage = () => {
   const designItems = (Array.isArray(cotizacion?.items) ? cotizacion.items : [cotizacion])
     .filter(Boolean)
     .map((item) => normalizePersonalizacionDesign(item));
-  const previewSource = designItems[0] || {};
   const multipleDesigns = designItems.length > 1;
 
   const getCotizacionEstadoBadge = (estado) => {
@@ -49,50 +48,6 @@ const AdminCotizacionDetallePage = () => {
         return 'secondary';
     }
   };
-
-  const renderDesignPreviewCard = (item, index) => (
-    <Col xs={12} md={6} key={`item-preview-${index}`}>
-      <Card className="h-100 shadow-sm saved-design-card">
-        <Card.Body>
-          <div className="d-flex justify-content-between align-items-start mb-2">
-            <div>
-              <Card.Subtitle className="text-muted">Diseño {index + 1}</Card.Subtitle>
-              <div className="fw-bold">{item.nombre || `Diseño ${index + 1}`}</div>
-            </div>
-            <Badge bg="secondary" className="text-capitalize">{item.modelo || 'taza'}</Badge>
-          </div>
-
-          <div className="saved-design-preview">
-            <div className="saved-design-preview-frame">
-              <Personalizacion3D
-                modelo={item.modelo || 'taza'}
-                colorInterior={item.colorInterior || '#ffffff'}
-                colorBase={item.colorBase || '#ffffff'}
-                colorExterior={item.colorExterior || '#ffffff'}
-                colorAsa={item.colorAsa || '#ffffff'}
-                texture={item.textureUrl || item.texture || null}
-                overlayText={item.overlayText || ''}
-                overlayTextFontFamily={item.overlayTextFontFamily || 'sans-serif'}
-                overlayTextFontSize={item.overlayTextFontSize || 24}
-                overlayTextColor={item.overlayTextColor || '#ffffff'}
-                textInterior={item.textInterior || ''}
-                textExterior={item.textExterior || ''}
-                zoom={0.9}
-                autoRotate={false}
-                textureOffset={item.textureOffset}
-                textureScale={item.textureScale}
-              />
-            </div>
-          </div>
-
-          <div className="mt-3 text-muted small">
-            <div>Overlay: {item.overlayText || 'No aplica'}</div>
-            <div>Color exterior: {item.colorExterior || 'N/A'}</div>
-          </div>
-        </Card.Body>
-      </Card>
-    </Col>
-  );
 
   return (
     <Container className="py-5">

@@ -26,6 +26,9 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json', // Tipo de contenido por defecto
   },
+  // Permitir cuerpos y respuestas muy grandes (Infinity admite transferencias grandes)
+  maxContentLength: Infinity,
+  maxBodyLength: Infinity,
 });
 
 /**
@@ -124,6 +127,8 @@ export const uploadFile = (url, formData) => {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
+    maxContentLength: Infinity,
+    maxBodyLength: Infinity,
   });
 };
 

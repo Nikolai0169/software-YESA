@@ -114,8 +114,8 @@ const upload = multer({
   limits: {
     // fileSize: tamaño máximo del archivo en bytes.
     // Lee MAX_FILE_SIZE del .env y lo convierte a número con parseInt().
-    // Si no existe la variable, usa 5242880 bytes = 5 MB (5 * 1024 * 1024)
-    fileSize: parseInt(process.env.MAX_FILE_SIZE) || 5242880
+    // Si no existe la variable, usa 2147483648 bytes = 2 GB (2 * 1024 * 1024 * 1024)
+    fileSize: parseInt(process.env.MAX_FILE_SIZE) || 2147483648
   }
 });
 

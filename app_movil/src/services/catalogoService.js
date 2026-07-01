@@ -50,7 +50,10 @@ const catalogoService = {
             return path;
         }
 
-        return `${API_ORIGIN}/${path.replace(/^\//, '')}`;
+        // Normaliza rutas que podrían venir con prefijo /api o api/
+        let p = path.replace(/^\//, '');
+        if (p.startsWith('api/')) p = p.replace(/^api\//, '');
+        return `${API_ORIGIN}/${p}`;
     }
 };
 

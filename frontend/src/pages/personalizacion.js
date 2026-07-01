@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Personalizacion3D from "../components/Personalizacion3D";
 import { useAuth } from "../context/AuthContext";
-import { guardarDiseno, cotizarProducto } from "../services/api";
+import { guardarDiseno, cotizarProducto, uploadFile } from "../services/api";
 import {
   saveDesignLocally,
   getDesignToEdit,
@@ -55,12 +55,12 @@ const PersonalizacionPage = () => {
   const [overlayTextSettingsByModel, setOverlayTextSettingsByModel] = useState({
     taza: { fontFamily: "sans-serif", fontSize: 24, color: "#000000" },
   });
-  const [composedTextureUrl, setComposedTextureUrl] = useState(null);
+  const [, setComposedTextureUrl] = useState(null);
   const [cotizacion, setCotizacion] = useState(null);
   const [cotizando, setCotizando] = useState(false);
   const [nombreCotizacion, setNombreCotizacion] = useState('');
   const [notasCotizacion, setNotasCotizacion] = useState('');
-  const { isAuthenticated, isCliente } = useAuth();
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [textEditorOpen, setTextEditorOpen] = useState(false);
@@ -71,6 +71,7 @@ const PersonalizacionPage = () => {
   const [textureOffset, setTextureOffset] = useState({ x: 0, y: 0 });
   const [textureScale, setTextureScale] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [previewKey, setPreviewKey] = useState(0);
   const previewRef = useRef(null);
   const fileInputRef = useRef(null);
   const canvasRef = useRef(null);
@@ -101,6 +102,28 @@ const PersonalizacionPage = () => {
     setTextEditorFontFamily('sans-serif');
     setTextEditorFontSize(24);
     setTextEditorColor('#000000');
+  };
+
+  const resetPersonalizacionState = () => {
+    setModelo3D('taza');
+    setColorsByModel(defaultColors);
+    setTexturesByModel({ taza: null });
+    setTextsByModel(defaultTexts);
+    setOverlayTextByModel({ taza: '' });
+    setOverlayTextSettingsByModel({ taza: { fontFamily: 'sans-serif', fontSize: 24, color: '#000000' } });
+    setTextEditorOpen(false);
+    setTextEditorContent('');
+    setTextEditorFontFamily('sans-serif');
+    setTextEditorFontSize(24);
+    setTextEditorColor('#000000');
+    setTextureOffset({ x: 0, y: 0 });
+    setTextureScale(1);
+    setZoomLevel(1);
+    setCurrentDesignId(null);
+    setCurrentDesignName('');
+    setNombreCotizacion('');
+    setNotasCotizacion('');
+    setPreviewKey((prev) => prev + 1);
   };
 
   const setModelColor = (field, value) => {
@@ -162,6 +185,7 @@ const PersonalizacionPage = () => {
       overlayTextColor:
         (overlayTextSettingsByModel[modelo3D] && overlayTextSettingsByModel[modelo3D].color) || '#ffffff',
       zoom: zoomLevel,
+      textureOffset: textureOffset || { x: 0, y: 0 },
       textureOffsetX: textureOffset?.x,
       textureOffsetY: textureOffset?.y,
       textureScale,
@@ -465,6 +489,25 @@ const PersonalizacionPage = () => {
       const currentColors = colorsByModel[modelo3D] || {};
       const currentTexts = textsByModel[modelo3D] || {};
       const hasTexture = Boolean(texturesByModel[modelo3D]);
+      // Si la textura es un dataURL o un File, subirla primero para evitar enviar grandes payloads
+      let textureUrlToSend = texturesByModel[modelo3D] || null;
+      if (textureUrlToSend && ((typeof textureUrlToSend === 'string' && textureUrlToSend.startsWith('data:')) || textureUrlToSend instanceof File)) {
+        try {
+          const formData = new FormData();
+          if (textureUrlToSend instanceof File) {
+            formData.append('texture', textureUrlToSend, textureUrlToSend.name || 'texture.png');
+          } else {
+            const blob = await (await fetch(textureUrlToSend)).blob();
+            formData.append('texture', blob, 'texture.png');
+          }
+          const uploadResp = await uploadFile('/uploads/texture', formData);
+          textureUrlToSend = uploadResp.data?.url || textureUrlToSend;
+        } catch (err) {
+          console.error('Error subiendo textura antes de cotizar:', err);
+          throw new Error('No se pudo subir la textura');
+        }
+      }
+
       const disenoData = normalizePersonalizacionDesign({
         modelo: modelo3D,
         colorInterior: currentColors.interior,
@@ -474,7 +517,7 @@ const PersonalizacionPage = () => {
         textInterior: currentTexts.interior,
         textExterior: currentTexts.exterior,
         hasTexture,
-        textureUrl: texturesByModel[modelo3D] || null,
+        textureUrl: textureUrlToSend || null,
         overlayText: overlayTextByModel[modelo3D] || '',
         overlayTextFontFamily:
           (overlayTextSettingsByModel[modelo3D] && overlayTextSettingsByModel[modelo3D].fontFamily) || 'sans-serif',
@@ -489,8 +532,13 @@ const PersonalizacionPage = () => {
         nombre: nombreFinal,
         notas: notasCotizacion.trim() || undefined,
       });
+<<<<<<< HEAD
       const result = await cotizarProducto(buildQuotePayload(disenoData));
+=======
+      const result = await cotizarProducto({ disenos: [disenoData] });
+>>>>>>> 7727f0c751bb5afba7b22ab3c753ccd265c415ec
       setCotizacion({ mensaje: result.mensaje || 'Cotización enviada y pendiente' });
+      resetPersonalizacionState();
     } catch (error) {
       console.error('Error al cotizar:', error);
       const message = error.response?.data?.message || error.message || 'Error al cotizar el producto';
@@ -508,7 +556,29 @@ const PersonalizacionPage = () => {
     }
 
     try {
-      const disenoData = buildCurrentDesignState();
+      const disenoDataRaw = buildCurrentDesignState();
+
+      // Si la textura es dataURL o File, subirla primero y reemplazar por URL
+      let disenoData = { ...disenoDataRaw };
+      try {
+        const tex = disenoData.textureUrl || disenoData.texture || null;
+        if (tex && ((typeof tex === 'string' && tex.startsWith('data:')) || tex instanceof File)) {
+          const formData = new FormData();
+          if (tex instanceof File) formData.append('texture', tex, tex.name || 'texture.png');
+          else {
+            const blob = await (await fetch(tex)).blob();
+            formData.append('texture', blob, 'texture.png');
+          }
+          const uploadResp = await uploadFile('/uploads/texture', formData);
+          const url = uploadResp.data?.url;
+          if (url) {
+            disenoData.textureUrl = url;
+            disenoData.texture = url;
+          }
+        }
+      } catch (err) {
+        console.error('Error subiendo textura al guardar diseño:', err);
+      }
       const savedDesign = saveDesignLocally({
         ...disenoData,
         savedAt: new Date().toISOString(),
@@ -519,9 +589,11 @@ const PersonalizacionPage = () => {
       try {
         const result = await guardarDiseno(disenoData);
         alert(`Diseño guardado${result?.mensaje ? ' en servidor y localmente' : ''}${result?.id || result?._id ? ` con ID: ${result.id || result._id}` : ''}`);
+        resetPersonalizacionState();
       } catch (error) {
         console.error("Error al guardar diseño en servidor:", error);
         alert("Diseño guardado localmente");
+        resetPersonalizacionState();
       }
     } catch (error) {
       console.error("Error al guardar diseño:", error);
@@ -580,6 +652,7 @@ const PersonalizacionPage = () => {
               <div className="personalizacion-preview-fullscreen-wrapper" ref={previewRef}>
                 <div className="personalizacion-preview mt-3 position-relative">
                   <Personalizacion3D 
+                    key={previewKey}
                     modelo={modelo3D}
                     colorInterior={(colorsByModel[modelo3D] && colorsByModel[modelo3D].interior) || '#ffffff'}
                     colorBase={(colorsByModel[modelo3D] && colorsByModel[modelo3D].base) || '#ffffff'}
