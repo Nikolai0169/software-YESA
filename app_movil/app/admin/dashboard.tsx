@@ -131,6 +131,11 @@ export default function DashboardAdmin() {
           <Text style={styles.actionButtonText}>Administrar categorías</Text>
         </TouchableOpacity>
       </Link>
+      <Link href="/admin/subcategorias" asChild>
+        <TouchableOpacity style={styles.actionButton}>
+          <Text style={styles.actionButtonText}>Administrar subcategorías</Text>
+        </TouchableOpacity>
+      </Link>
       <Link href="/admin/productos" asChild>
         <TouchableOpacity style={styles.actionButton}>
           <Text style={styles.actionButtonText}>Administrar productos</Text>

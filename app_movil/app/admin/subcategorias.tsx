@@ -17,9 +17,10 @@ import {
   updateSubcategoria,
 } from '../../src/services/adminService';
 import useAdminRole from '../../src/hooks/useAdminRole';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 
 export default function SubcategoriasAdmin() {
+  const router = useRouter();
   const { isChecking, isAuthorized } = useAdminRole();
   const [subcategorias, setSubcategorias] = useState<{
     id: number | string;
@@ -37,6 +38,9 @@ export default function SubcategoriasAdmin() {
   const [loading, setLoading] = useState(true);
   const [nombre, setNombre] = useState('');
   const [categoriaId, setCategoriaId] = useState('');
+  const [busquedaCategoria, setBusquedaCategoria] = useState('');
+  const [busquedaTexto, setBusquedaTexto] = useState('');
+  const [showCategoriaModal, setShowCategoriaModal] = useState(false);
 
   const loadSubcategorias = useCallback(async () => {
     setLoading(true);
@@ -102,7 +106,7 @@ export default function SubcategoriasAdmin() {
     }
   }
 
-  function handleEditSubcategoria(subcategoria: { id: number | string; nombre?: string; categoriaId?: number | string; categoria?: { id?: number | string } }) {
+  function handleEditSubcategoria(subcategoria: { id: number | string; nombre?: string; categoriaId?: number | string; categoria?: { id?: number | string; nombre?: string; titulo?: string } }) {
     setEditingSubcategoria({
       id: subcategoria.id,
       nombre: subcategoria.nombre || '',
@@ -138,6 +142,26 @@ export default function SubcategoriasAdmin() {
       ]
     );
   }
+
+  const categoriasFiltradas = categorias.filter((categoria) => {
+    const texto = busquedaCategoria.trim().toLowerCase();
+    if (!texto) return true;
+    return (categoria.nombre || categoria.titulo || '').toLowerCase().includes(texto);
+  });
+
+  const subcategoriasFiltradas = subcategorias.filter((subcategoria) => {
+    const texto = busquedaTexto.trim().toLowerCase();
+    if (!texto) return true;
+    const nombre = (subcategoria.nombre || '').toLowerCase();
+    const categoria = (subcategoria.categoria?.nombre || subcategoria.categoria?.titulo || '').toLowerCase();
+    return nombre.includes(texto) || categoria.includes(texto);
+  });
+
+  const getCategoriaNombre = () => {
+    if (!categoriaId) return 'Selecciona una categoría';
+    const categoria = categorias.find((item) => String(item.id) === String(categoriaId));
+    return categoria?.nombre || categoria?.titulo || 'Selecciona una categoría';
+  };
 
   const renderSubcategoria = (subcategoria: { id: number | string; nombre?: string; categoriaId?: number | string; categoria?: { nombre?: string; titulo?: string }; activo?: boolean }) => {
     const category = categorias.find((item) => String(item.id) === String(subcategoria.categoriaId)) || subcategoria.categoria || {};
@@ -213,10 +237,7 @@ export default function SubcategoriasAdmin() {
             />
           </View>
           <View style={styles.formRow}>
-            <TouchableOpacity
-              style={styles.selector}
-              onPress={() => Alert.alert('Categoría', 'Selecciona la categoría en la lista inferior')}
-            >
+            <TouchableOpacity style={styles.selector} onPress={() => setShowCategoriaModal(true)}>
               <Text style={styles.selectorText}>
                 {categorias.find((c) => String(c.id) === String(editingSubcategoria.categoriaId))?.nombre || 'Seleccionar categoría'}
               </Text>
@@ -233,37 +254,33 @@ export default function SubcategoriasAdmin() {
         </View>
       ) : null}
 
-      <View style={styles.formRow}>
+      <View style={styles.searchContainer}>
         <TextInput
           style={styles.input}
-          placeholder="Nueva subcategoría"
-          value={nombre}
-          onChangeText={setNombre}
+          placeholder="Buscar subcategorías..."
+          value={busquedaTexto}
+          onChangeText={setBusquedaTexto}
           placeholderTextColor="#9ca3af"
         />
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => {
-            if (categorias.length === 0) {
-              Alert.alert('Sin categorías', 'Crea primero una categoría antes de agregar subcategorías.');
-              return;
-            }
-            if (!categoriaId && categorias.length === 1) setCategoriaId(String(categorias[0].id));
-            handleCreateSubcategoriaMobile();
-          }}
-        >
-          <Text style={styles.addButtonText}>Agregar</Text>
-        </TouchableOpacity>
+        {busquedaTexto !== '' && (
+          <TouchableOpacity style={styles.clearButton} onPress={() => setBusquedaTexto('')}>
+            <Text style={styles.clearButtonText}>✕</Text>
+          </TouchableOpacity>
+        )}
       </View>
+
+      <TouchableOpacity style={styles.addButton} onPress={() => router.push('/admin/subcategorias-crear')}>
+        <Text style={styles.addButtonText }>Crear nueva subcategoria</Text>
+      </TouchableOpacity>
 
       {loading ? (
         <ActivityIndicator size="large" color="#7d2181" style={styles.loader} />
-      ) : subcategorias.length === 0 ? (
-        <Text style={styles.emptyText}>No hay subcategorías registradas.</Text>
+      ) : subcategoriasFiltradas.length === 0 ? (
+        <Text style={styles.emptyText}>No se encontraron subcategorías.</Text>
       ) : (
         categorias.length > 0 ? (
           categorias.map((cat) => {
-            const subs = subcategorias.filter((s) => String(s.categoriaId) === String(cat.id) || String(s.categoria?.id) === String(cat.id));
+            const subs = subcategoriasFiltradas.filter((s) => String(s.categoriaId) === String(cat.id) || String(s.categoria?.id) === String(cat.id));
             return (
               <View key={String(cat.id)} style={styles.categoryCard}>
                 <Text style={styles.categoryTitle}>{cat.nombre || cat.titulo || `Categoría ${cat.id}`}</Text>
@@ -294,7 +311,7 @@ export default function SubcategoriasAdmin() {
             );
           })
         ) : (
-          subcategorias.map((s) => (
+          subcategoriasFiltradas.map((s) => (
             <View key={String(s.id)} style={styles.itemContainer}>
               <View style={styles.itemInfo}>
                 <Text style={styles.itemTitle}>{s.nombre || `Sub ${s.id}`}</Text>
@@ -317,20 +334,6 @@ export default function SubcategoriasAdmin() {
         )
       )}
 
-      {categorias.length > 0 ? (
-        <View style={styles.categoriesList}>
-          <Text style={styles.sectionTitle}>Categorías</Text>
-          {categorias.map((c) => (
-            <TouchableOpacity
-              key={String(c.id)}
-              style={[styles.categoryBadge, String(c.id) === String(categoriaId) ? styles.categoryBadgeActive : null]}
-              onPress={() => setCategoriaId(String(c.id))}
-            >
-              <Text style={[styles.categoryBadgeText, String(c.id) === String(categoriaId) ? styles.categoryBadgeTextActive : null]}>{c.nombre || c.titulo}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      ) : null}
     </ScrollView>
   );
 }
@@ -367,6 +370,25 @@ const styles = StyleSheet.create({
     gap: 12,
     marginBottom: 12,
   },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    gap: 8,
+  },
+  clearButton: {
+    backgroundColor: '#e5e7eb',
+    borderRadius: 999,
+    width: 36,
+    height: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  clearButtonText: {
+    color: '#374151',
+    fontSize: 16,
+    fontWeight: '700',
+  },
   input: {
     backgroundColor: '#ffffff',
     borderRadius: 16,
@@ -384,6 +406,10 @@ const styles = StyleSheet.create({
   addButtonText: {
     color: '#ffffff',
     fontWeight: '700',
+    alignSelf: 'center',
+    height: 30,
+    lineHeight: 30,
+    fontSize: 16,
   },
   loader: {
     marginTop: 30,

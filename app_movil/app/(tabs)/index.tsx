@@ -33,12 +33,15 @@ export default function Index() {
   const { agregarProducto, totalItems } = useCarrito();
   const [productos, setProductos] = useState<any[]>([]);
   const [categorias, setCategorias] = useState<any[]>([]);
+  const [subcategorias, setSubcategorias] = useState<any[]>([]);
   const [selectedCategoria, setSelectedCategoria] = useState<string>('');
+  const [selectedSubcategoria, setSelectedSubcategoria] = useState<string>('');
   const [buscar, setBuscar] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [paginaActual, setPaginaActual] = useState(1);
+  const [showSubcategorias, setShowSubcategorias] = useState(false);
 
   useEffect(() => {
     loadCatalogo();
@@ -46,14 +49,38 @@ export default function Index() {
 
   useEffect(() => {
     setPaginaActual(1);
-  }, [buscar, selectedCategoria]);
+  }, [buscar, selectedCategoria, selectedSubcategoria]);
+
+  useEffect(() => {
+    if (!selectedCategoria) {
+      setSubcategorias([]);
+      setSelectedSubcategoria('');
+      setShowSubcategorias(false);
+      return;
+    }
+
+    const cargarSubcategorias = async () => {
+      try {
+        const listaSubcategorias = await catalogoService.getSubcategorias(selectedCategoria);
+        setSubcategorias(Array.isArray(listaSubcategorias) ? listaSubcategorias : []);
+        setSelectedSubcategoria('');
+        setShowSubcategorias(true);
+      } catch (err) {
+        console.error('cargarSubcategorias error', err);
+        setSubcategorias([]);
+        setShowSubcategorias(true);
+      }
+    };
+
+    cargarSubcategorias();
+  }, [selectedCategoria]);
 
   const loadCatalogo = async () => {
     setLoading(true);
     setError('');
     try {
       const [listaProductos, listaCategorias] = await Promise.all([
-        catalogoService.getProductos(),
+        catalogoService.getProductos({ limite: 1000 }),
         catalogoService.getCategorias(),
       ]);
       // Filtrar defensivamente productos inactivos en el cliente
@@ -81,10 +108,12 @@ export default function Index() {
       const descripcion = String(producto.descripcion || '').toLowerCase();
       const coincideTexto = termino === '' || nombre.includes(termino) || descripcion.includes(termino);
       const categoriaId = String(producto.categoriaId || producto.categoria?.id || producto.categoria?.idCategoria || '');
+      const subcategoriaId = String(producto.subcategoriaId || producto.subcategoria?.id || producto.subcategoria?.idSubcategoria || '');
       const coincideCategoria = selectedCategoria === '' || selectedCategoria === 'all' || categoriaId === selectedCategoria;
-      return coincideTexto && coincideCategoria;
+      const coincideSubcategoria = selectedSubcategoria === '' || selectedSubcategoria === 'all' || subcategoriaId === selectedSubcategoria;
+      return coincideTexto && coincideCategoria && coincideSubcategoria;
     });
-  }, [buscar, productos, selectedCategoria]);
+  }, [buscar, productos, selectedCategoria, selectedSubcategoria]);
 
   const productosVisibles = useMemo(() => {
     const start = (paginaActual - 1) * ITEMS_PER_PAGE;
@@ -112,6 +141,24 @@ export default function Index() {
         onPress={() => setSelectedCategoria(isSelected ? '' : categoryId)}
       >
         <Text style={[styles.categoryText, isSelected && styles.categoryTextSelected]}>{categoria.nombre || categoria.nombreCategoria || 'Categoría'}</Text>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderSubcategoria = (subcategoria: any) => {
+    const subcategoryId = String(subcategoria.id || subcategoria._id || subcategoria.idSubcategoria || '');
+    const isSelected = selectedSubcategoria === subcategoryId;
+
+    return (
+      <TouchableOpacity
+        key={subcategoryId || `sub-${Math.random()}`}
+        style={[styles.subcategoryButton, isSelected && styles.subcategoryButtonSelected]}
+        onPress={() => {
+          setSelectedSubcategoria(isSelected ? '' : subcategoryId);
+          setShowSubcategorias(false);
+        }}
+      >
+        <Text style={[styles.subcategoryText, isSelected && styles.subcategoryTextSelected]}>{subcategoria.nombre || 'Subcategoría'}</Text>
       </TouchableOpacity>
     );
   };
@@ -196,6 +243,31 @@ export default function Index() {
         </TouchableOpacity>
         {categorias.map(renderCategoria)}
       </ScrollView>
+
+      {selectedCategoria ? (
+        <View style={styles.subcategoryFilterBox}>
+          <TouchableOpacity
+            style={styles.subcategoryToggle}
+            onPress={() => setShowSubcategorias((value) => !value)}
+          >
+            <Text style={styles.subcategoryToggleText}>Subcategorías</Text>
+            <Text style={styles.subcategoryToggleText}>{showSubcategorias ? '▾' : '▸'}</Text>
+          </TouchableOpacity>
+          {showSubcategorias ? (
+            <View style={styles.subcategoryList}>
+              <TouchableOpacity
+                style={[styles.subcategoryButton, !selectedSubcategoria && styles.subcategoryButtonSelected]}
+                onPress={() => setSelectedSubcategoria('')}
+              >
+                <Text style={[styles.subcategoryText, !selectedSubcategoria && styles.subcategoryTextSelected]}>Todas</Text>
+              </TouchableOpacity>
+              {subcategorias.length > 0 ? subcategorias.map(renderSubcategoria) : (
+                <Text style={styles.subcategoryEmptyText}>No hay subcategorías activas para esta categoría.</Text>
+              )}
+            </View>
+          ) : null}
+        </View>
+      ) : null}
 
       {loading ? (
         <View style={styles.centered}>
@@ -323,6 +395,53 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 6,
   },
+  subcategoryFilterBox: {
+    marginHorizontal: 20,
+    marginBottom: 12,
+    borderRadius: 16,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    overflow: 'hidden',
+  },
+  subcategoryToggle: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  subcategoryToggleText: {
+    color: '#374151',
+    fontWeight: '700',
+  },
+  subcategoryList: {
+    paddingHorizontal: 12,
+    paddingBottom: 12,
+    gap: 8,
+  },
+  subcategoryButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    backgroundColor: '#f5f3ff',
+    borderRadius: 999,
+    alignSelf: 'flex-start',
+  },
+  subcategoryButtonSelected: {
+    backgroundColor: '#7c3aed',
+  },
+  subcategoryText: {
+    color: '#4c1d95',
+    fontWeight: '600',
+  },
+  subcategoryTextSelected: {
+    color: '#fff',
+  },
+  subcategoryEmptyText: {
+    color: '#6b7280',
+    paddingHorizontal: 4,
+    paddingTop: 4,
+  },
   categoryButton: {
     paddingHorizontal: 16,
     paddingVertical: 10,
@@ -444,6 +563,31 @@ const styles = StyleSheet.create({
   emptyText: {
     color: '#6b7280',
     fontSize: 16,
+  },
+  paginationRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginHorizontal: 20,
+    marginVertical: 16,
+    gap: 12,
+  },
+  pageButton: {
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: '#7c3aed',
+  },
+  pageButtonDisabled: {
+    backgroundColor: '#c7d2fe',
+  },
+  pageButtonText: {
+    color: '#fff',
+    fontWeight: '700',
+  },
+  paginationInfo: {
+    color: '#374151',
+    fontWeight: '600',
   },
   paginationRow: {
     flexDirection: 'row',
