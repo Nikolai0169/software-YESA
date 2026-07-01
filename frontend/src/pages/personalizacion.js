@@ -13,6 +13,25 @@ import {
 } from "../services/personalizationService";
 import { formatCurrency, normalizePersonalizacionDesign } from "../utils/helpers";
 
+const isDataUrl = (value) => typeof value === 'string' && value.startsWith('data:');
+
+const buildQuotePayload = (design) => {
+  const payload = { ...design };
+
+  if (isDataUrl(payload.textureUrl)) {
+    delete payload.textureUrl;
+  }
+
+  delete payload.composedTextureUrl;
+  delete payload.textEditorOpen;
+  delete payload.textEditorContent;
+  delete payload.textEditorFontFamily;
+  delete payload.textEditorFontSize;
+  delete payload.textEditorColor;
+
+  return payload;
+};
+
 const PersonalizacionPage = () => {
   const defaultColors = {
     taza: { interior: "#ffffff", base: "#ffffff", exterior: "#ffffff", asa: "#ffffff" },
@@ -294,6 +313,11 @@ const PersonalizacionPage = () => {
 
       // Convertir canvas a blob y crear URL
       canvas.toBlob((blob) => {
+        if (!blob) {
+          console.error('No se pudo generar la textura compuesta del canvas');
+          return;
+        }
+
         const url = URL.createObjectURL(blob);
         blobUrlRef.current = url;
         setComposedTextureUrl(url);
@@ -309,7 +333,17 @@ const PersonalizacionPage = () => {
         blobUrlRef.current = null;
       }
     };
-  }, [modelo3D, overlayTextByModel, overlayTextSettingsByModel, texturesByModel, textureOffset, textureScale]);
+  }, [
+    modelo3D,
+    texturesByModel[modelo3D],
+    overlayTextByModel[modelo3D],
+    overlayTextSettingsByModel[modelo3D]?.fontFamily,
+    overlayTextSettingsByModel[modelo3D]?.fontSize,
+    overlayTextSettingsByModel[modelo3D]?.color,
+    textureOffset?.x,
+    textureOffset?.y,
+    textureScale,
+  ]);
 
   useEffect(() => {
     setTextureOffset({ x: 0, y: 0 });
@@ -455,7 +489,7 @@ const PersonalizacionPage = () => {
         nombre: nombreFinal,
         notas: notasCotizacion.trim() || undefined,
       });
-      const result = await cotizarProducto(disenoData);
+      const result = await cotizarProducto(buildQuotePayload(disenoData));
       setCotizacion({ mensaje: result.mensaje || 'Cotización enviada y pendiente' });
     } catch (error) {
       console.error('Error al cotizar:', error);

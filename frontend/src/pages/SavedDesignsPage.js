@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Button, Card, Row, Col, Badge, Alert } from 'react-bootstrap';
+import { Button, Card, Row, Col, Badge } from 'react-bootstrap';
 import Personalizacion3D from '../components/Personalizacion3D';
 import { formatCurrency, normalizePersonalizacionDesign } from '../utils/helpers';
 import { useAuth } from '../context/AuthContext';
@@ -11,6 +11,22 @@ import {
   setDesignToEdit,
 } from '../services/personalizationService';
 import { cotizarProducto } from '../services/api';
+
+const isDataUrl = (value) => typeof value === 'string' && value.startsWith('data:');
+
+const buildQuotePayload = (designs) =>
+  designs.map((design) => {
+    const payload = { ...design };
+
+    if (isDataUrl(payload.textureUrl)) {
+      delete payload.textureUrl;
+    }
+
+    delete payload.texture;
+    delete payload.composedTextureUrl;
+
+    return payload;
+  });
 
 const formatDate = (dateString) => {
   try {
@@ -104,7 +120,7 @@ const SavedDesignsPage = () => {
     setQuotedDesigns([]);
 
     try {
-      const response = await cotizarProducto({ disenos: selectedItems });
+      const response = await cotizarProducto({ disenos: buildQuotePayload(selectedItems) });
       const quote = response.cotizacion;
       setQuoteSummary({
         cotizacion: quote,

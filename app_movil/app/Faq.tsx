@@ -59,7 +59,6 @@ export default function FAQScreen() {
   const primary = Colors[theme].primary;
   const primaryLight = Colors[theme].primaryLight;
   const surface = Colors[theme].surface;
-  const surfaceSoft = Colors[theme].surfaceSoft;
   const borderColor = Colors[theme].border;
   const textColor = Colors[theme].text;
 
@@ -70,6 +69,7 @@ export default function FAQScreen() {
       router.push('/login');
       return;
     }
+
     if (!formData.nombre.trim() || !formData.email.trim() || !formData.asunto.trim() || !formData.mensaje.trim()) {
       Alert.alert('Error', 'Por favor completa todos los campos');
       return;
@@ -119,10 +119,9 @@ export default function FAQScreen() {
           </Pressable>
         ))}
 
-        {/* Sección de Contacto con Soporte */}
         <View style={[styles.contactSeparator, { backgroundColor: borderColor }]} />
         <ThemedText type="subtitle" style={[styles.contactTitle, { color: textColor }]}>¿No encontraste tu respuesta?</ThemedText>
-        
+
         {!showForm ? (
           <Pressable
             style={[styles.contactButton, { backgroundColor: primary }]}
@@ -221,11 +220,8 @@ const styles = StyleSheet.create({
   questionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   question: { fontWeight: '700', flex: 1 },
   answer: { marginTop: 8 },
-  
-  // Estilos para contacto
   contactSeparator: { height: 1, backgroundColor: '#eee', marginVertical: 16 },
   contactTitle: { marginVertical: 8, color: '#333' },
-  
   contactButton: {
     flexDirection: 'row',
     backgroundColor: '#7d2181',
@@ -236,7 +232,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   contactButtonText: { color: '#fff', fontWeight: '600', fontSize: 16 },
-  
   formContainer: {
     backgroundColor: '#f9f9f9',
     borderRadius: 10,
@@ -251,7 +246,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   formTitle: { fontWeight: '700', fontSize: 18, color: '#333' },
-  
   label: { fontWeight: '600', color: '#333', marginTop: 12, marginBottom: 6 },
   input: {
     backgroundColor: '#fff',
@@ -268,7 +262,6 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
     paddingTop: 10,
   },
-  
   submitButton: {
     backgroundColor: '#7d2181',
     paddingVertical: 12,
