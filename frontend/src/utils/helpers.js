@@ -95,7 +95,7 @@ export const formatDateTime = (dateString) => {
 export const getImageUrl = (imagePath) => {
   if (!imagePath) return '/placeholder.png';
   if (imagePath.startsWith('http')) return imagePath;
-  return `http://localhost:5000/${imagePath}`;
+  return `${process.env.REACT_APP_API_URL?.replace(/\/api\/?$/, '') || 'http://localhost:5000'}/${imagePath.replace(/^\//, '')}`;
 };
 
 /**

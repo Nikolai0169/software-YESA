@@ -30,7 +30,7 @@ const FavoritesPage = () => {
   const loadFavoritos = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/cliente/favoritos', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/cliente/favoritos`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -54,7 +54,7 @@ const FavoritesPage = () => {
   const eliminarFavorito = async (productoId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/cliente/favoritos/${productoId}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/cliente/favoritos/${productoId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

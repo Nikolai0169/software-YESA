@@ -8,13 +8,13 @@
 
 // Importar axios
 import axios from 'axios';
+import { API_URL } from './config';
 
 /**
  * URL base del backend API
  * Todas las peticiones se harán a esta URL base
  * Ejemplo: http://localhost:5000/api/productos
  */
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 /**
  * Crear instancia de axios con configuración base

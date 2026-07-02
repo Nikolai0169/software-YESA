@@ -9,7 +9,7 @@ function MisConsultasPage() {
     const fetchConsultas = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:5000/api/support/mis-consultas', {
+        const res = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/support/mis-consultas`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();

@@ -50,6 +50,8 @@ export default function CotizacionesAdmin() {
   const [precioDraft, setPrecioDraft] = useState('');
   const [estadoDraft, setEstadoDraft] = useState('cotizado');
   const [notasDraft, setNotasDraft] = useState('');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const selectedCotizacion = useMemo(
     () => cotizaciones.find((cotizacion) => String(cotizacion.id) === String(selectedId)) || null,
@@ -75,12 +77,13 @@ export default function CotizacionesAdmin() {
 
   async function loadCotizaciones() {
     setLoading(true);
+    setErrorMessage(null);
     try {
       const list = await cotizacionesService.getCotizaciones();
       setCotizaciones(Array.isArray(list) ? list.map(normalizeCotizacion) : []);
     } catch (error) {
       console.error('Error cargando cotizaciones:', error);
-      Alert.alert('Error', 'No se pudieron cargar las cotizaciones.');
+      setErrorMessage('No se pudieron cargar las cotizaciones. Intenta nuevamente.');
       setCotizaciones([]);
     } finally {
       setLoading(false);
@@ -100,6 +103,7 @@ export default function CotizacionesAdmin() {
 
     setSavingId(selectedCotizacion.id);
     try {
+      setErrorMessage(null);
       const response = await cotizacionesService.updateCotizacion(selectedCotizacion.id, {
         precio,
         estado: estadoDraft,
@@ -111,10 +115,11 @@ export default function CotizacionesAdmin() {
         prev.map((cotizacion) => (String(cotizacion.id) === String(updated.id) ? { ...cotizacion, ...updated } : cotizacion))
       );
       setSelectedId(updated.id);
-      Alert.alert('Éxito', 'Cotización actualizada correctamente.');
+      setSuccessMessage('Cotización actualizada correctamente.');
+      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (error) {
       console.error('Error actualizando cotización:', error);
-      Alert.alert('Error', 'No se pudo actualizar la cotización.');
+      setErrorMessage('No se pudo actualizar la cotización. Intenta nuevamente.');
     } finally {
       setSavingId(null);
     }
@@ -142,7 +147,20 @@ export default function CotizacionesAdmin() {
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Resumen</Text>
         <Text style={styles.cardText}>Total: {cotizaciones.length}</Text>
+        <Text style={styles.cardText}>Cotizaciones pendientes y cotizadas del módulo administrativo.</Text>
       </View>
+
+      {errorMessage ? (
+        <View style={styles.alertCardError}>
+          <Text style={styles.alertText}>{errorMessage}</Text>
+        </View>
+      ) : null}
+
+      {successMessage ? (
+        <View style={styles.alertCardSuccess}>
+          <Text style={styles.alertText}>{successMessage}</Text>
+        </View>
+      ) : null}
 
       {cotizaciones.length === 0 ? (
         <View style={styles.emptyCard}>
@@ -164,9 +182,12 @@ export default function CotizacionesAdmin() {
                   <Text style={styles.statusText}>{cotizacion.estado}</Text>
                 </View>
               </View>
-              <Text style={styles.quoteMeta}>ID: {cotizacion.id}</Text>
+                  <Text style={styles.quoteMeta}>ID: {cotizacion.id}</Text>
               <Text style={styles.quoteMeta}>Precio: {formatCurrency(cotizacion.precio)}</Text>
               <Text style={styles.quoteMeta}>Items: {Array.isArray(cotizacion.items) ? cotizacion.items.length : 0}</Text>
+              <Text style={styles.quoteMeta}>Usuario: {cotizacion.usuario?.nombre || cotizacion.usuario?.email || 'Anónimo'}</Text>
+              {cotizacion.notas ? <Text style={styles.quoteMeta}>Notas: {cotizacion.notas}</Text> : null}
+              <Text style={styles.quoteMeta}>Creado: {cotizacion.createdAt ? new Date(cotizacion.createdAt).toLocaleString() : 'N/A'}</Text>
             </TouchableOpacity>
           );
         })
@@ -398,6 +419,23 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 16,
     marginBottom: 10,
+  },
+  alertCardError: {
+    backgroundColor: '#fdecea',
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 16,
+  },
+  alertCardSuccess: {
+    backgroundColor: '#ecfdf5',
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 16,
+  },
+  alertText: {
+    color: Colors.light.text,
+    fontSize: 13,
+    lineHeight: 18,
   },
   backButtonText: {
     color: Colors.light.surface,

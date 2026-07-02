@@ -126,10 +126,10 @@ const MyCotizacionDetallePage = () => {
                             overlayTextColor={item.overlayTextColor || '#ffffff'}
                             textInterior={item.textInterior || ''}
                             textExterior={item.textExterior || ''}
-                            zoom={0.9}
+                            zoom={item.zoom || 0.9}
                             autoRotate={false}
                             textureOffset={item.textureOffset || { x: item.textureOffsetX || 0, y: item.textureOffsetY || 0 }}
-                            textureScale={item.textureScale}
+                            textureScale={item.textureScale || 1}
                           />
                         </div>
                       </div>

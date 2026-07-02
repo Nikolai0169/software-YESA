@@ -51,6 +51,16 @@ function hostFromDebuggerHost() {
   }
 }
 
+function isLocalHostUrl(value) {
+  if (!value) return false;
+  const host = String(value)
+    .replace(/^https?:\/\//, '')
+    .replace(/\/+$/, '')
+    .split('/')[0]
+    .split(':')[0];
+  return ['localhost', '127.0.0.1', '0.0.0.0', '::1'].includes(host);
+}
+
 function resolveApiBaseUrl() {
   // [Vista web de la app móvil]
   // Se usa cuando se ejecuta con `expo start --web` o en un navegador.
@@ -64,20 +74,20 @@ function resolveApiBaseUrl() {
   // Se usa cuando la app se prueba en un celular real con Expo Go.
   // En este caso, el backend debe estar accesible desde la red local del PC.
   if (isPhysicalDevice) {
+    if (expoApiBaseUrl && !isLocalHostUrl(expoApiBaseUrl)) {
+      return expoApiBaseUrl;
+    }
+
     const host = hostFromDebuggerHost();
     if (host) {
       return `http://${host}:5000/api`;
     }
 
-    if (expoApiBaseUrl) {
-      return expoApiBaseUrl;
-    }
-
-    if (envApi) {
+    if (envApi && !isLocalHostUrl(envApi)) {
       return envApi;
     }
 
-    return 'http://192.168.1.81:5000/api';
+    return 'http://localhost:5000/api';
   }
 
   // [Emulador de Expo Go]
@@ -118,7 +128,6 @@ function buildApiBaseUrlCandidates(primaryUrl) {
   add(envApi);
   add(expoApiBaseUrl);
   add('http://10.0.2.2:5000/api');
-  add('http://192.168.1.81:5000/api');
   add('http://127.0.0.1:5000/api');
   add('http://localhost:5000/api');
 

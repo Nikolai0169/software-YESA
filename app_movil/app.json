@@ -22,7 +22,7 @@
       "favicon": "./assets/favicon.png"
     },
     "extra": {
-      "apiBaseUrl": ""
+      "apiBaseUrl": "http://172.16.102.121:5000/api"
     },
     "plugins": [
       "expo-router",

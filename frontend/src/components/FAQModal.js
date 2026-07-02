@@ -168,7 +168,7 @@ const FAQModal = ({ show, onHide, openSection, setShowFAQ, openContact = false }
   const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
 
   try {
-    const response = await fetch('http://localhost:5000/api/support/contact', {
+const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/support/contact`, {
       method: 'POST',
       headers,
       body: JSON.stringify(data),

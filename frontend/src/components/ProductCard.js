@@ -19,7 +19,7 @@ const ProductCard = memo(({ producto, onAddToCart, showActions = true }) => {
   const checkIfFavorite = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/cliente/favoritos', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/cliente/favoritos`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -51,7 +51,7 @@ const ProductCard = memo(({ producto, onAddToCart, showActions = true }) => {
     setLoadingFavorite(true);
     try {
       const token = localStorage.getItem('token');
-      const url = `http://localhost:5000/api/cliente/favoritos${isFavorite ? `/${producto.id}` : ''}`;
+      const url = `${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/cliente/favoritos${isFavorite ? `/${producto.id}` : ''}`;
       const method = isFavorite ? 'DELETE' : 'POST';
       const response = await fetch(url, {
         method,

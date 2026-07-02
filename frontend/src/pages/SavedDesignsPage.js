@@ -255,12 +255,14 @@ const SavedDesignsPage = () => {
                                 overlayTextColor={design.overlayTextColor || '#ffffff'}
                                 textInterior={design.textInterior || ''}
                                 textExterior={design.textExterior || ''}
-                                zoom={0.9}
+                                zoom={design.zoom || 0.9}
                                 autoRotate={false}
-                                textureOffset={{
-                                  x: design.textureOffsetX || 0,
-                                  y: design.textureOffsetY || 0,
-                                }}
+                                textureOffset={
+                                  design.textureOffset || {
+                                    x: design.textureOffsetX || 0,
+                                    y: design.textureOffsetY || 0,
+                                  }
+                                }
                                 textureScale={design.textureScale || 1}
                               />
                             </div>
@@ -347,7 +349,15 @@ const SavedDesignsPage = () => {
                               overlayTextColor={design.overlayTextColor || '#ffffff'}
                               textInterior={design.textInterior || ''}
                               textExterior={design.textExterior || ''}
-                              zoom={previewZoom}
+                              zoom={design.zoom || previewZoom}
+                              autoRotate={false}
+                              textureOffset={
+                                design.textureOffset || {
+                                  x: design.textureOffsetX || 0,
+                                  y: design.textureOffsetY || 0,
+                                }
+                              }
+                              textureScale={design.textureScale || 1}
                             />
                           </div>
                         </div>

@@ -18,6 +18,7 @@ import {
   getUsuarios,
   getPedidos,
 } from '../../src/services/adminService';
+import cotizacionesService from '../../src/services/cotizacionesService';
 
 export default function DashboardAdmin() {
   const { isChecking, isAuthorized } = useAdminRole();
@@ -28,6 +29,8 @@ export default function DashboardAdmin() {
     usuarios: number;
     pedidos: number;
     pedidosPendientes: number;
+    cotizaciones: number;
+    cotizacionesPendientes: number;
   }>({
     categorias: 0,
     subcategorias: 0,
@@ -35,6 +38,8 @@ export default function DashboardAdmin() {
     usuarios: 0,
     pedidos: 0,
     pedidosPendientes: 0,
+    cotizaciones: 0,
+    cotizacionesPendientes: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -42,17 +47,22 @@ export default function DashboardAdmin() {
     async function loadStats() {
       setLoading(true);
       try {
-        const [categorias, subcategorias, productos, usuarios, pedidos] = await Promise.all([
+        const [categorias, subcategorias, productos, usuarios, pedidos, cotizaciones] = await Promise.all([
           getCategorias(),
           getSubcategorias(),
           getProductos(),
           getUsuarios(),
           getPedidos({ limite: 20 }),
+          cotizacionesService.getCotizaciones(),
         ]);
 
-        const pending = Array.isArray(pedidos)
-          ? pedidos.filter((pedido) => pedido.estado === 'pendiente').length
-          : 0;
+        const pedidosList = Array.isArray(pedidos) ? pedidos : [];
+        const cotizacionesList = Array.isArray(cotizaciones) ? cotizaciones : [];
+        const pendingPedidos = pedidosList.filter((pedido) => pedido.estado === 'pendiente').length;
+        const pendingCotizaciones = cotizacionesList.filter((cotizacion) => {
+          const status = String(cotizacion.estado || '').toLowerCase();
+          return status === 'pendiente' || cotizacion.precio === null || cotizacion.precio === undefined || Number(cotizacion.precio) <= 0;
+        }).length;
 
         setStats({
           categorias: categorias.length,
@@ -60,7 +70,9 @@ export default function DashboardAdmin() {
           productos: productos.length,
           usuarios: usuarios.length,
           pedidos: pedidos.length,
-          pedidosPendientes: pending,
+          pedidosPendientes: pendingPedidos,
+          cotizaciones: cotizacionesList.length,
+          cotizacionesPendientes: pendingCotizaciones,
         });
       } catch (error: unknown) {
         const err = error as Error;
@@ -122,6 +134,17 @@ export default function DashboardAdmin() {
         <View style={styles.smallCard}> 
           <Text style={styles.smallCardLabel}>Pendientes</Text>
           <Text style={styles.smallCardValue}>{stats.pedidosPendientes}</Text>
+        </View>
+      </View>
+
+      <View style={styles.smallCardsRow}>
+        <View style={styles.smallCard}>
+          <Text style={styles.smallCardLabel}>Cotizaciones totales</Text>
+          <Text style={styles.smallCardValue}>{stats.cotizaciones}</Text>
+        </View>
+        <View style={styles.smallCard}> 
+          <Text style={styles.smallCardLabel}>Pendientes</Text>
+          <Text style={styles.smallCardValue}>{stats.cotizacionesPendientes}</Text>
         </View>
       </View>
 
