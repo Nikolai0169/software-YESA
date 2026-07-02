@@ -13,22 +13,13 @@ const Categoria = require('../models/Categoria');
 const Subcategoria = require('../models/Subcategoria');
 const path = require('path');
 const fs = require('fs').promises;
+const { normalizarRutaImagen } = require('../utils/imagenUrl');
 
 // ✅ FUNCIÓN AUXILIAR PARA CONSTRUIR URLs DE IMÁGENES
-const construirURLProducto = (producto) => {
+const construirURLProducto = (producto, req) => {
   if (!producto) return producto;
 
-  const baseURL = process.env.BACKEND_URL || 'http://localhost:5000';
-
-  const normalizar = (imagen) => {
-    if (!imagen) return imagen;
-    if (imagen.startsWith('http')) return imagen;
-    // Quitar barras iniciales
-    const limpia = imagen.replace(/^\/+/, '');
-    // Si ya contiene la carpeta uploads/ -> evitar duplicarla
-    if (limpia.startsWith('uploads/')) return `${baseURL}/${limpia}`;
-    return `${baseURL}/uploads/${limpia}`;
-  };
+  const normalizar = (imagen) => normalizarRutaImagen(imagen, req);
 
   if (producto.imagenes && typeof producto.imagenes === 'string') {
     try {
@@ -57,11 +48,11 @@ const construirURLProducto = (producto) => {
 };
 
 // ✅ FUNCIÓN AUXILIAR PARA CONSTRUIR URLs EN ARRAYS
-const construirURLsProductos = (productos) => {
+const construirURLsProductos = (productos, req) => {
   if (Array.isArray(productos)) {
-    return productos.map(construirURLProducto);
+    return productos.map((producto) => construirURLProducto(producto, req));
   }
-  return construirURLProducto(productos);
+  return construirURLProducto(productos, req);
 };
 
 /**
@@ -109,7 +100,7 @@ const getProductos = async (req, res) => {
     const { count, rows: productos } = await Producto.findAndCountAll(opciones);
     
     // ✅ CONSTRUIR URLs
-    const productosConURL = construirURLsProductos(productos);
+    const productosConURL = construirURLsProductos(productos, req);
     
     res.json({
       success: true,
@@ -254,7 +245,7 @@ const crearProducto = async (req, res) => {
     });
     
     // ✅ CONSTRUIR URL
-    const productoConURL = construirURLProducto(nuevoProducto.toJSON ? nuevoProducto.toJSON() : nuevoProducto);
+    const productoConURL = construirURLProducto(nuevoProducto.toJSON ? nuevoProducto.toJSON() : nuevoProducto, req);
     
     res.status(201).json({
       success: true,
@@ -368,7 +359,7 @@ const actualizarProducto = async (req, res) => {
     });
     
     // ✅ CONSTRUIR URL
-    const productoConURL = construirURLProducto(producto.toJSON ? producto.toJSON() : producto);
+    const productoConURL = construirURLProducto(producto.toJSON ? producto.toJSON() : producto, req);
     
     res.json({
       success: true,
@@ -419,7 +410,7 @@ const toggleProducto = async (req, res) => {
     await producto.save();
     
     // ✅ CONSTRUIR URL
-    const productoConURL = construirURLProducto(producto.toJSON ? producto.toJSON() : producto);
+    const productoConURL = construirURLProducto(producto.toJSON ? producto.toJSON() : producto, req);
     
     res.json({
       success: true,
@@ -536,7 +527,7 @@ const actualizarStock = async (req, res) => {
     await producto.save();
     
     // ✅ CONSTRUIR URL
-    const productoConURL = construirURLProducto(producto.toJSON ? producto.toJSON() : producto);
+    const productoConURL = construirURLProducto(producto.toJSON ? producto.toJSON() : producto, req);
     
     res.json({
       success: true,

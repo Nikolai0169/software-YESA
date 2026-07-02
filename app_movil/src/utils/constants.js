@@ -8,18 +8,19 @@ import { Platform } from 'react-native';
  */
 const isWeb = typeof window !== 'undefined' && typeof document !== 'undefined';
 const platformOS = Platform?.OS;
+const isNative = platformOS === 'ios' || platformOS === 'android';
+const isPhysicalDevice = isNative && Constants?.isDevice === true;
 
 export const API_TIMEOUT_MS = isWeb ? 30000 : 15000; //30s para web, 15s para mobile
 
-// Priority order:
-// 1. Expo config extra `apiBaseUrl` (app.json/app.config)
-// 2. Environment variable `EXPO_PUBLIC_API_BASE_URL` o `EXPO_API_BASE_URL`
-// 3. Si está en web: usa el hostname actual de la página (ej: localhost, 192.168.1.81)
-// 4. Si está en mobile: detecta el host del debuggerHost de Expo
-// 5. Fallbacks: localhost para iOS, 10.0.2.2 para Android emulador
+// Prioridad de resolución:
+// 1) Expo config extra `apiBaseUrl` (app.json/app.config)
+// 2) Variable de entorno `EXPO_PUBLIC_API_BASE_URL` o `EXPO_API_BASE_URL`
+// 3) Bloque específico según el entorno de ejecución
+// 4) Fallback general
 
 const expoApiBaseUrl = Constants.expoConfig?.extra?.apiBaseUrl;
-const envApi = process.env.EXPO_PUBLIC_API_BASE_URL || process.env.EXPO_API_BASE_URL;
+const envApi = process.env.EXPO_PUBLIC_API_BASE_URL || process.env.EXPO_API_BASE_URL || Constants.expoConfig?.extra?.EXPO_PUBLIC_API_BASE_URL;
 
 function getWebHostname() {
   try {
@@ -51,30 +52,81 @@ function hostFromDebuggerHost() {
 }
 
 function resolveApiBaseUrl() {
-  // 1) WEB: use current page hostname, ignoring app.json extra apiBaseUrl
+  // [Vista web de la app móvil]
+  // Se usa cuando se ejecuta con `expo start --web` o en un navegador.
+  // Aquí el backend se resuelve con el host actual del navegador.
   if (isWeb) {
     const host = getWebHostname() || 'localhost';
     return `http://${host}:5000/api`;
   }
 
-  // 2) Native: if we can derive the device host from Expo debuggerHost, use it
-  const host = hostFromDebuggerHost();
-  if (host) {
-    return `http://${host}:5000/api`;
+  // [Dispositivo físico]
+  // Se usa cuando la app se prueba en un celular real con Expo Go.
+  // En este caso, el backend debe estar accesible desde la red local del PC.
+  if (isPhysicalDevice) {
+    const host = hostFromDebuggerHost();
+    if (host) {
+      return `http://${host}:5000/api`;
+    }
+
+    if (expoApiBaseUrl) {
+      return expoApiBaseUrl;
+    }
+
+    if (envApi) {
+      return envApi;
+    }
+
+    return 'http://192.168.1.81:5000/api';
   }
 
-  // 3) Native environment variable override (useful in native builds or custom dev env)
-  if (envApi) return envApi;
-
-  // 4) Fallback: emulator / simulator
+  // [Emulador de Expo Go]
+  // Android emulator usa `10.0.2.2` para llegar al host del PC.
+  // iOS simulator suele usar `localhost`.
   if (platformOS === 'android') {
     return 'http://10.0.2.2:5000/api';
+  }
+
+  if (platformOS === 'ios') {
+    return 'http://localhost:5000/api';
+  }
+
+  // [Fallback general]
+  if (expoApiBaseUrl) {
+    return expoApiBaseUrl;
+  }
+
+  if (envApi) {
+    return envApi;
   }
 
   return 'http://localhost:5000/api';
 }
 
+function buildApiBaseUrlCandidates(primaryUrl) {
+  const candidates = [];
+  const add = (value) => {
+    if (!value) return;
+    const normalized = String(value).trim();
+    if (!normalized) return;
+    if (!candidates.includes(normalized)) {
+      candidates.push(normalized);
+    }
+  };
+
+  add(primaryUrl);
+  add(envApi);
+  add(expoApiBaseUrl);
+  add('http://10.0.2.2:5000/api');
+  add('http://192.168.1.81:5000/api');
+  add('http://127.0.0.1:5000/api');
+  add('http://localhost:5000/api');
+
+  return candidates;
+}
+
 export const API_BASE_URL = resolveApiBaseUrl();
+export const API_BASE_URL_CANDIDATES = buildApiBaseUrlCandidates(API_BASE_URL);
 
 export const API_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, '');
 

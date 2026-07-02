@@ -10,7 +10,6 @@ import {
   TextInput,
   Dimensions,
   Modal,
-  Image,
   Pressable,
 } from 'react-native';
 import { formatCurrency } from '../../src/utils/formatters';
@@ -18,6 +17,7 @@ import { Link, useRouter } from 'expo-router';
 import { useCarrito } from '../../src/context/carritoContext';
 import catalogoService from '../../src/services/catalogoService';
 import ProductCard from '../../src/components/ProductCard';
+import SmartImage from '../../src/components/SmartImage';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const ITEMS_PER_PAGE = 12;
@@ -323,7 +323,7 @@ export default function Index() {
             <ScrollView>
               <Text style={styles.modalTitle}>{selectedProduct?.nombre || selectedProduct?.titulo || 'Detalle'}</Text>
               {selectedProduct?.imagen ? (
-                <Image source={{ uri: catalogoService.buildImageUrl(selectedProduct.imagen) }} style={styles.modalImage} />
+                <SmartImage sources={catalogoService.buildImageCandidates(selectedProduct.imagen)} style={styles.modalImage} placeholder={{ uri: 'https://via.placeholder.com/300x200' }} />
               ) : null}
               <Text style={styles.modalDescription}>{selectedProduct?.descripcion || 'Sin descripción disponible.'}</Text>
               <Text style={styles.modalPrice}>{formatCurrency(Number(selectedProduct?.precio || selectedProduct?.precioVenta || 0))}</Text>

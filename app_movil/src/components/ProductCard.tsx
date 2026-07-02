@@ -1,5 +1,6 @@
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import catalogoService from '../services/catalogoService';
+import SmartImage from './SmartImage';
 
 type ProductCardProps = {
   producto: any;
@@ -16,12 +17,12 @@ const formatPrice = (value: number) => {
 };
 
 export default function ProductCard({ producto, onPress, onAddToCart }: ProductCardProps) {
-  const imageUrl = catalogoService.buildImageUrl(producto.imagen);
+  const candidates = catalogoService.buildImageCandidates(producto.imagen || producto.imagenes?.[0]);
 
   return (
     <View style={styles.card}>
       <TouchableOpacity style={styles.preview} onPress={onPress} activeOpacity={0.8}>
-        <Image source={{ uri: imageUrl }} style={styles.image} resizeMode="cover" />
+        <SmartImage sources={candidates} style={styles.image} resizeMode="cover" placeholder={{ uri: 'https://via.placeholder.com/300x180' }} />
       </TouchableOpacity>
       <View style={styles.body}>
         <TouchableOpacity onPress={onPress} activeOpacity={0.7}>

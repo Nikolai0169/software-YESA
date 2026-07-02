@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">10.44% </span>
+                <span class="strong">13.33% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>7/67</span>
+                <span class='fraction'>8/60</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/38</span>
+                <span class='fraction'>0/30</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">11.29% </span>
+                <span class="strong">14.03% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>7/62</span>
+                <span class='fraction'>8/57</span>
             </div>
         
             
@@ -231,36 +231,22 @@
 <a name='L166'></a><a href='#L166'>166</a>
 <a name='L167'></a><a href='#L167'>167</a>
 <a name='L168'></a><a href='#L168'>168</a>
-<a name='L169'></a><a href='#L169'>169</a>
-<a name='L170'></a><a href='#L170'>170</a>
-<a name='L171'></a><a href='#L171'>171</a>
-<a name='L172'></a><a href='#L172'>172</a>
-<a name='L173'></a><a href='#L173'>173</a>
-<a name='L174'></a><a href='#L174'>174</a>
-<a name='L175'></a><a href='#L175'>175</a>
-<a name='L176'></a><a href='#L176'>176</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L169'></a><a href='#L169'>169</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -288,7 +274,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -327,7 +313,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -376,7 +362,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -408,7 +394,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -422,20 +408,13 @@
 &nbsp;
 const Favorito = require('../models/Favorito');
 const Producto = require('../models/Producto');
+const { normalizarRutaImagen } = require('../utils/imagenUrl');
 &nbsp;
 // Normaliza las rutas de imagen de los productos favoritos para que el frontend pueda mostrarlas correctamente.
-const construirURLProducto = <span class="fstat-no" title="function not covered" >(p</span>roducto) =&gt; {
+const construirURLProducto = <span class="fstat-no" title="function not covered" >(p</span>roducto, req) =&gt; {
 <span class="cstat-no" title="statement not covered" >  if (!producto) <span class="cstat-no" title="statement not covered" >return producto;</span></span>
 &nbsp;
-  const baseURL = <span class="cstat-no" title="statement not covered" >process.env.BACKEND_URL || 'http://localhost:5000';</span>
-&nbsp;
-  const normalizar = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(i</span>magen) =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    if (!imagen) <span class="cstat-no" title="statement not covered" >return imagen;</span></span>
-<span class="cstat-no" title="statement not covered" >    if (imagen.startsWith('http')) <span class="cstat-no" title="statement not covered" >return imagen;</span></span>
-    const limpia = <span class="cstat-no" title="statement not covered" >imagen.replace(/^\/+/, '');</span>
-<span class="cstat-no" title="statement not covered" >    if (limpia.startsWith('uploads/')) <span class="cstat-no" title="statement not covered" >return `${baseURL}/${limpia}`;</span></span>
-<span class="cstat-no" title="statement not covered" >    return `${baseURL}/uploads/${limpia}`;</span>
-  };
+  const normalizar = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(i</span>magen) =&gt; <span class="cstat-no" title="statement not covered" >normalizarRutaImagen(imagen, req);</span></span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >  if (producto.imagenes &amp;&amp; typeof producto.imagenes === 'string') {</span>
 <span class="cstat-no" title="statement not covered" >    try {</span>
@@ -481,7 +460,7 @@ const getFavoritos = <span class="fstat-no" title="function not covered" >as</sp
 &nbsp;
     const favoritosConURL = <span class="cstat-no" title="statement not covered" >favoritos.map(<span class="fstat-no" title="function not covered" >(f</span>avorito) =&gt; {</span>
       const favoritoJSON = <span class="cstat-no" title="statement not covered" >favorito.toJSON();</span>
-<span class="cstat-no" title="statement not covered" >      favoritoJSON.producto = construirURLProducto(favoritoJSON.producto || {});</span>
+<span class="cstat-no" title="statement not covered" >      favoritoJSON.producto = construirURLProducto(favoritoJSON.producto || {}, req);</span>
 <span class="cstat-no" title="statement not covered" >      return favoritoJSON;</span>
     });
 &nbsp;
@@ -595,7 +574,7 @@ module.exports = {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-22T05:02:17.970Z
+                at 2026-07-02T00:21:24.539Z
             </div>
         <script src="../prettify.js"></script>
         <script>

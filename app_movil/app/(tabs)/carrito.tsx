@@ -1,7 +1,8 @@
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
 import { Link } from 'expo-router';
 import { useCarrito } from '../../src/context/carritoContext';
 import catalogoService from '../../src/services/catalogoService';
+import SmartImage from '../../src/components/SmartImage';
 import { formatCurrency } from '../../src/utils/formatters';
 
 export default function Carrito() {
@@ -13,7 +14,11 @@ export default function Carrito() {
     return (
       <View style={styles.item}>
         {item.imagen ? (
-          <Image source={{ uri: catalogoService.buildImageUrl(item.imagen) }} style={styles.thumb} />
+          <SmartImage
+            sources={catalogoService.buildImageCandidates(item.imagen)}
+            style={styles.thumb}
+            placeholder={{ uri: 'https://via.placeholder.com/64' }}
+          />
         ) : null}
         <View style={styles.itemInfo}>
           <Text style={styles.itemTitle}>{item.nombre}</Text>

@@ -1,4 +1,5 @@
 const path = require('path');
+const { construirBaseUrl } = require('../utils/imagenUrl');
 
 exports.uploadTexture = async (req, res) => {
   try {
@@ -6,7 +7,7 @@ exports.uploadTexture = async (req, res) => {
       return res.status(400).json({ success: false, message: 'No se recibió archivo' });
     }
 
-    const backendOrigin = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`;
+    const backendOrigin = construirBaseUrl(req);
     const fileUrl = `${backendOrigin.replace(/\/+$/, '')}/uploads/${req.file.filename}`;
     return res.json({ success: true, url: fileUrl });
   } catch (error) {

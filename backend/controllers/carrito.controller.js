@@ -22,19 +22,13 @@ const Categoria = require('../models/Categoria');
 // Importa el modelo Subcategoria desde models/Subcategoria.js.
 // Se incluye en las consultas para mostrar la subcategoría de cada producto.
 const Subcategoria = require('../models/Subcategoria');
+const { normalizarRutaImagen } = require('../utils/imagenUrl');
 
 // ✅ FUNCIÓN AUXILIAR PARA CONSTRUIR URLs DE IMÁGENES
-const construirURLProducto = (producto) => {
+const construirURLProducto = (producto, req) => {
   if (!producto) return producto;
 
-  const baseURL = process.env.BACKEND_URL || 'http://localhost:5000';
-  const normalizar = (imagen) => {
-    if (!imagen) return imagen;
-    if (imagen.startsWith('http')) return imagen;
-    const limpia = imagen.replace(/^\/+/, '');
-    if (limpia.startsWith('uploads/')) return `${baseURL}/${limpia}`;
-    return `${baseURL}/uploads/${limpia}`;
-  };
+  const normalizar = (imagen) => normalizarRutaImagen(imagen, req);
 
   if (producto.imagen) {
     producto.imagen = normalizar(producto.imagen);

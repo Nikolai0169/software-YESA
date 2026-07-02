@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { View, Text, Image, ScrollView, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import catalogoService from '../../src/services/catalogoService';
+import SmartImage from '../../src/components/SmartImage';
 import { useCarrito } from '../../src/context/carritoContext';
 import { formatCurrency } from '../../src/utils/formatters';
 import ResenaForm from '../../src/components/ResenaForm';
@@ -78,11 +79,11 @@ export default function ProductoDetalleScreen() {
     );
   }
 
-  const imageUrl = catalogoService.buildImageUrl(producto.imagen);
+  const imageCandidates = catalogoService.buildImageCandidates(producto.imagen);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Image source={{ uri: imageUrl }} style={styles.image} resizeMode="cover" />
+      <SmartImage sources={imageCandidates} style={styles.image} resizeMode="cover" placeholder={{ uri: 'https://via.placeholder.com/320x240' }} />
       <Text style={styles.title}>{producto.nombre || producto.titulo}</Text>
       <Text style={styles.price}>{formatCurrency(Number(producto.precio || 0))}</Text>
       <Text style={styles.subtitle}>{producto.categoria?.nombre || producto.categoria || 'Categoría'}</Text>

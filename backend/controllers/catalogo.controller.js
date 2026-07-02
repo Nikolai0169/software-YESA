@@ -18,20 +18,13 @@ const Categoria = require('../models/Categoria');
 // Importa el modelo Subcategoria desde models/Subcategoria.js.
 // Representa la tabla 'Subcategoria' en la BD.
 const Subcategoria = require('../models/Subcategoria');
+const { normalizarRutaImagen } = require('../utils/imagenUrl');
 
 // ✅ FUNCIÓN AUXILIAR PARA CONSTRUIR URLs DE IMÁGENES
-const construirURLProducto = (producto) => {
+const construirURLProducto = (producto, req) => {
   if (!producto) return producto;
 
-  const baseURL = process.env.BACKEND_URL || 'http://localhost:5000';
-
-  const normalizar = (imagen) => {
-    if (!imagen) return imagen;
-    if (imagen.startsWith('http')) return imagen;
-    const limpia = imagen.replace(/^\/+/, '');
-    if (limpia.startsWith('uploads/')) return `${baseURL}/${limpia}`;
-    return `${baseURL}/uploads/${limpia}`;
-  };
+  const normalizar = (imagen) => normalizarRutaImagen(imagen, req);
 
   if (producto.imagenes && typeof producto.imagenes === 'string') {
     try {
@@ -60,11 +53,11 @@ const construirURLProducto = (producto) => {
 };
 
 // ✅ FUNCIÓN AUXILIAR PARA CONSTRUIR URLs EN ARRAYS
-const construirURLsProductos = (productos) => {
+const construirURLsProductos = (productos, req) => {
   if (Array.isArray(productos)) {
-    return productos.map(construirURLProducto);
+    return productos.map((producto) => construirURLProducto(producto, req));
   }
-  return construirURLProducto(productos);
+  return construirURLProducto(productos, req);
 };
 
 /**
@@ -181,7 +174,7 @@ const getProductos = async (req, res) => {
     });
     
     // ✅ CONSTRUIR URLs
-    const productosConURL = construirURLsProductos(productos);
+    const productosConURL = construirURLsProductos(productos, req);
     
     // Responde con los productos y la info de paginación
     res.json({
@@ -251,7 +244,7 @@ const getProductoById = async (req, res) => {
     }
     
     // ✅ CONSTRUIR URL
-    const productoConURL = construirURLProducto(producto.toJSON ? producto.toJSON() : producto);
+    const productoConURL = construirURLProducto(producto.toJSON ? producto.toJSON() : producto, req);
     
     // Responde con el producto encontrado
     res.json({
@@ -442,7 +435,7 @@ const getProductosDestacados = async (req, res) => {
     });
     
     // ✅ CONSTRUIR URLs
-    const productosConURL = construirURLsProductos(productos);
+    const productosConURL = construirURLsProductos(productos, req);
     
     // Responde con los productos destacados
     res.json({

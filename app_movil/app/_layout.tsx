@@ -31,7 +31,7 @@ export default function RootLayout() {
             <Stack.Screen name="login" options={{ title: 'Iniciar sesión' }} />
             <Stack.Screen name="register" options={{ title: 'Crear cuenta' }} />
               <Stack.Screen name="producto/[id]" options={{ title: 'Detalle de producto' }} />
-            <Stack.Screen name="faq" options={{ title: 'Preguntas Frecuentes' }} />
+            <Stack.Screen name="Faq" options={{ title: 'Preguntas Frecuentes' }} />
             <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modelos 3D' }} />
             <Stack.Screen name="admin/dashboard" options={{ title: 'Dashboard Admin' }} />
             <Stack.Screen name="admin/cotizaciones" options={{ title: 'Cotizaciones' }} />

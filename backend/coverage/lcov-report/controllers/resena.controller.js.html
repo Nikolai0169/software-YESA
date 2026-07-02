@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">14.28% </span>
+                <span class="strong">12.5% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>3/21</span>
+                <span class='fraction'>3/24</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/16</span>
+                <span class='fraction'>0/18</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">14.28% </span>
+                <span class="strong">12.5% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>3/21</span>
+                <span class='fraction'>3/24</span>
             </div>
         
             
@@ -108,16 +108,12 @@
 <a name='L43'></a><a href='#L43'>43</a>
 <a name='L44'></a><a href='#L44'>44</a>
 <a name='L45'></a><a href='#L45'>45</a>
-<a name='L46'></a><a href='#L46'>46</a>
-<a name='L47'></a><a href='#L47'>47</a>
-<a name='L48'></a><a href='#L48'>48</a>
-<a name='L49'></a><a href='#L49'>49</a>
-<a name='L50'></a><a href='#L50'>50</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L46'></a><a href='#L46'>46</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -129,9 +125,6 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -151,7 +144,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -160,15 +153,14 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/**
- * Controlador de reseñas
- */
-const Resena = require('../models/Resena');
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const Resena = require('../models/Resena');
 &nbsp;
 exports.crearResena = <span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {
+<span class="cstat-no" title="statement not covered" >  console.log('📝 Body recibido:', req.body);</span>
+<span class="cstat-no" title="statement not covered" >  console.log('📝 Params recibido:', req.params);</span>
 <span class="cstat-no" title="statement not covered" >  try {</span>
-    const { productoId, nombre, email, calificacion, comentario } = <span class="cstat-no" title="statement not covered" >req.body;</span>
+    const { productoId: bodyProductoId, nombre, email, calificacion, comentario } = <span class="cstat-no" title="statement not covered" >req.body;</span>
+    const productoId = <span class="cstat-no" title="statement not covered" >req.params.id || bodyProductoId;</span>
     const usuarioId = <span class="cstat-no" title="statement not covered" >req.usuario?.id || null;</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    if (!productoId || calificacion === undefined || !comentario) {</span>
@@ -177,10 +169,7 @@ exports.crearResena = <span class="fstat-no" title="function not covered" >as</s
 &nbsp;
     const calificacionNumerica = <span class="cstat-no" title="statement not covered" >Number(calificacion);</span>
 <span class="cstat-no" title="statement not covered" >    if (Number.isNaN(calificacionNumerica) || calificacionNumerica &lt; 0.5 || calificacionNumerica &gt; 5) {</span>
-<span class="cstat-no" title="statement not covered" >      return res.status(400).json({</span>
-        success: false,
-        message: 'La calificación debe ser un número entre 0.5 y 5',
-      });
+<span class="cstat-no" title="statement not covered" >      return res.status(400).json({ success: false, message: 'La calificación debe ser un número entre 0.5 y 5' });</span>
     }
 &nbsp;
     const nueva = <span class="cstat-no" title="statement not covered" >await Resena.create({</span>
@@ -202,22 +191,21 @@ exports.crearResena = <span class="fstat-no" title="function not covered" >as</s
 &nbsp;
 exports.obtenerResenasPorProducto = <span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {
 <span class="cstat-no" title="statement not covered" >  try {</span>
-    const { id } = <span class="cstat-no" title="statement not covered" >req.params;</span> // producto id
+    const { id } = <span class="cstat-no" title="statement not covered" >req.params;</span>
     const resenas = <span class="cstat-no" title="statement not covered" >await Resena.findAll({ where: { productoId: id, aprobado: true }, order: [['createdAt', 'DESC']] });</span>
 <span class="cstat-no" title="statement not covered" >    return res.status(200).json({ success: true, data: resenas });</span>
   } catch (error) {
 <span class="cstat-no" title="statement not covered" >    console.error('Error obtener reseñas:', error);</span>
 <span class="cstat-no" title="statement not covered" >    return res.status(500).json({ success: false, message: 'Error al obtener reseñas' });</span>
   }
-};
-&nbsp;</pre></td></tr></table></pre>
+};</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-22T05:02:17.970Z
+                at 2026-07-02T00:21:24.539Z
             </div>
         <script src="../prettify.js"></script>
         <script>

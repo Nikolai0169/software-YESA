@@ -91,6 +91,8 @@ app.use(cors({
       process.env.FRONTEND_URL || 'http://localhost:3000',
       'http://localhost:8081',
       'http://127.0.0.1:8081',
+      'http://localhost:19006',
+      'http://127.0.0.1:19006',
     ];
 
     // Permite peticiones sin origen (cURL, Postman, servidores)
@@ -100,9 +102,11 @@ app.use(cors({
       return callback(null, true);
     }
 
-    // Permite cualquier localhost con puerto distinto si el origen viene de localhost o 127.0.0.1
-    const localhostRegex = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
-    if (localhostRegex.test(origin)) {
+    // [Dispositivo físico / red local]
+    // Permite orígenes en localhost, 127.0.0.1 y redes privadas típicas del desarrollo.
+    const localhostRegex = /^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0|10\.0\.2\.2)(:\d+)?$/;
+    const privateNetworkRegex = /^https?:\/\/(192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+)(:\d+)?$/;
+    if (localhostRegex.test(origin) || privateNetworkRegex.test(origin)) {
       return callback(null, true);
     }
 
@@ -346,7 +350,7 @@ const startServer = async () => {
     await initializeApp();
 
     await new Promise((resolve) => {
-      server = app.listen(PORT, () => {
+      server = app.listen(PORT, '0.0.0.0', () => {
         app.server = server;
         console.log('\n╔════════════════════════════════════════════════╗');
         console.log(`║  ✅ Servidor corriendo en puerto ${PORT}          ║`);

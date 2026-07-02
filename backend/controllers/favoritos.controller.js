@@ -7,20 +7,13 @@
 
 const Favorito = require('../models/Favorito');
 const Producto = require('../models/Producto');
+const { normalizarRutaImagen } = require('../utils/imagenUrl');
 
 // Normaliza las rutas de imagen de los productos favoritos para que el frontend pueda mostrarlas correctamente.
-const construirURLProducto = (producto) => {
+const construirURLProducto = (producto, req) => {
   if (!producto) return producto;
 
-  const baseURL = process.env.BACKEND_URL || 'http://localhost:5000';
-
-  const normalizar = (imagen) => {
-    if (!imagen) return imagen;
-    if (imagen.startsWith('http')) return imagen;
-    const limpia = imagen.replace(/^\/+/, '');
-    if (limpia.startsWith('uploads/')) return `${baseURL}/${limpia}`;
-    return `${baseURL}/uploads/${limpia}`;
-  };
+  const normalizar = (imagen) => normalizarRutaImagen(imagen, req);
 
   if (producto.imagenes && typeof producto.imagenes === 'string') {
     try {
@@ -66,7 +59,7 @@ const getFavoritos = async (req, res) => {
 
     const favoritosConURL = favoritos.map((favorito) => {
       const favoritoJSON = favorito.toJSON();
-      favoritoJSON.producto = construirURLProducto(favoritoJSON.producto || {});
+      favoritoJSON.producto = construirURLProducto(favoritoJSON.producto || {}, req);
       return favoritoJSON;
     });
 

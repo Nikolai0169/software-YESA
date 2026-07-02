@@ -4,8 +4,13 @@
 //interceptor de respuesta: normaliza los errores para que el codigo reciba siempre un objeto error con un mensaje legible
 
 import axios from 'axios';
-import {API_BASE_URL, API_TIMEOUT_MS, STORAGE_KEYS} from '../utils/constants';
+import {API_BASE_URL, API_BASE_URL_CANDIDATES, API_TIMEOUT_MS, STORAGE_KEYS} from '../utils/constants';
 import {storageGetItem} from '../utils/storage';
+
+const isRetryableNetworkError = (error) => {
+    const message = String(error?.message || '').toLowerCase();
+    return message.includes('network error') || message.includes('failed to fetch') || message.includes('socket hang up');
+};
 
 //instancias de axios
 const apiClient= axios.create({
@@ -43,7 +48,18 @@ apiClient.interceptors.request.use(
 
 apiClient.interceptors.response.use(
     (response) => response,
-    (error) => {
+    async (error) => {
+        const config = error?.config;
+        const retryCount = config?._retryCount || 0;
+        const canRetry = retryCount < API_BASE_URL_CANDIDATES.length - 1 && isRetryableNetworkError(error);
+
+        if (canRetry) {
+            const nextBaseUrl = API_BASE_URL_CANDIDATES[retryCount + 1];
+            config._retryCount = retryCount + 1;
+            config.baseURL = nextBaseUrl;
+            return apiClient.request(config);
+        }
+
         const backendData = error.response?.data;
         const backendMessage = backendData?.message; // mensaje del servidor
         const message = backendMessage || error.message || 'Error de conexion';

@@ -5,7 +5,7 @@
  */
 
 import apiClient from '../api/apiClient';
-import { API_ORIGIN } from '../utils/constants';
+import { API_ORIGIN, API_BASE_URL, API_BASE_URL_CANDIDATES } from '../utils/constants';
 
 const catalogoService = {
     //consulta la lista del categorias disponibles para filtrar productos de navegacion
@@ -48,20 +48,49 @@ const catalogoService = {
         return payload.resenas || [];
     },
 
-    //convierte una ruta relativa del backend a una url completa usable para imagen
-    buildImageUrl: (path) => {
+    //convierte una ruta relativa del backend a una o varias urls candidatas para imagen
+    buildImageCandidates: function (path) {
         if (!path) {
-            return 'https://via.placeholder.com/300/200.png?text=Producto';
+            return ['https://via.placeholder.com/300/200.png?text=Producto'];
         }
 
-        if (path.startsWith('http://') || path.startsWith('https://')) {
-            return path;
+        // si ya es URL absoluta, devolverla como único candidato
+        if (/^https?:\/\//i.test(path)) {
+            return [path];
         }
 
-        // Normaliza rutas que podrían venir con prefijo /api o api/
-        let p = path.replace(/^\//, '');
-        if (p.startsWith('api/')) p = p.replace(/^api\//, '');
-        return `${API_ORIGIN}/${p}`;
+        const normalized = String(path).replace(/^\//, '').replace(/^api\//, '');
+
+        const candidates = [];
+
+        // API_ORIGIN preferido
+        if (API_ORIGIN) {
+            candidates.push(`${String(API_ORIGIN).replace(/\/$/, '')}/${normalized}`);
+        }
+
+        // candidatos configurados en constantes (API_BASE_URL_CANDIDATES)
+        if (Array.isArray(API_BASE_URL_CANDIDATES)) {
+            API_BASE_URL_CANDIDATES.forEach((base) => {
+                if (!base) return;
+                const b = String(base).replace(/\/$/, '');
+                // si base final incluye /api, quitar para concatenar uploads
+                candidates.push(`${b.replace(/\/api\/?$/, '')}/${normalized}`);
+            });
+        }
+
+        // fallback: derivar de API_BASE_URL
+        if (API_BASE_URL) {
+            candidates.push(`${String(API_BASE_URL).replace(/\/$/, '').replace(/\/api\/?$/, '')}/${normalized}`);
+        }
+
+        // eliminar duplicados y vacíos
+        return Array.from(new Set(candidates.filter(Boolean)));
+    },
+
+    // mantenemos compatibilidad: devuelve la primera candidata o placeholder
+    buildImageUrl: function (path) {
+        const c = this.buildImageCandidates ? this.buildImageCandidates(path) : [];
+        return (c && c.length > 0) ? c[0] : 'https://via.placeholder.com/300/200.png?text=Producto';
     }
 };
 
