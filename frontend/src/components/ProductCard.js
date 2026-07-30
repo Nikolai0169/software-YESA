@@ -11,10 +11,18 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { formatCurrency, getImageUrl } from '../utils/helpers';
 
-const ProductCard = memo(({ producto, onAddToCart, showActions = true }) => {
+const ProductCard = memo(({ producto, onAddToCart, showActions = true, onFavoriteFeedback }) => {
   const { isAuthenticated } = useAuth();
   const [isFavorite, setIsFavorite] = useState(false);
   const [loadingFavorite, setLoadingFavorite] = useState(false);
+
+  const showFavoriteFeedback = useCallback((tipo, texto) => {
+    if (onFavoriteFeedback) {
+      onFavoriteFeedback(tipo, texto);
+    } else {
+      window.alert(texto);
+    }
+  }, [onFavoriteFeedback]);
 
   const checkIfFavorite = useCallback(async () => {
     try {
@@ -44,7 +52,7 @@ const ProductCard = memo(({ producto, onAddToCart, showActions = true }) => {
   const toggleFavorite = async (e) => {
     e.preventDefault();
     if (!isAuthenticated) {
-      alert('Debes iniciar sesión para agregar a favoritos.');
+      showFavoriteFeedback('warning', 'Debes iniciar sesión para agregar a favoritos.');
       return;
     }
 
@@ -66,14 +74,16 @@ const ProductCard = memo(({ producto, onAddToCart, showActions = true }) => {
       if (data.success) {
         setIsFavorite(!isFavorite);
         if (!isFavorite) {
-          alert('Producto agregado a favoritos');
+          showFavoriteFeedback('success', 'Producto agregado a favoritos');
+        } else {
+          showFavoriteFeedback('success', 'Producto eliminado de favoritos');
         }
       } else {
-        alert(data.message || 'Ocurrió un error al actualizar favoritos.');
+        showFavoriteFeedback('danger', data.message || 'Ocurrió un error al actualizar favoritos.');
       }
     } catch (error) {
       console.error('Error al actualizar favorito:', error);
-      alert('Error de conexión.');
+      showFavoriteFeedback('danger', 'Error de conexión.');
     } finally {
       setLoadingFavorite(false);
     }

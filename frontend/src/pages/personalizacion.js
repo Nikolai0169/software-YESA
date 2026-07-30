@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Personalizacion3D from "../components/Personalizacion3D";
 import { useAuth } from "../context/AuthContext";
 import { guardarDiseno, cotizarProducto, uploadFile } from "../services/api";
+import SuccessBanner from '../components/SuccessBanner';
 import {
   saveDesignLocally,
   getDesignToEdit,
@@ -12,6 +13,7 @@ import {
   clearPendingDesignToEdit,
 } from "../services/personalizationService";
 import { formatCurrency, normalizePersonalizacionDesign } from "../utils/helpers";
+/* eslint-disable react-hooks/exhaustive-deps */
 
 const isDataUrl = (value) => typeof value === 'string' && value.startsWith('data:');
 
@@ -57,6 +59,7 @@ const PersonalizacionPage = () => {
   });
   const [, setComposedTextureUrl] = useState(null);
   const [cotizacion, setCotizacion] = useState(null);
+  const [saveSuccess, setSaveSuccess] = useState('');
   const [cotizando, setCotizando] = useState(false);
   const [nombreCotizacion, setNombreCotizacion] = useState('');
   const [notasCotizacion, setNotasCotizacion] = useState('');
@@ -202,6 +205,7 @@ const PersonalizacionPage = () => {
     navigate('/login', { state: { from: location.pathname || '/personalizacion' } });
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const pendingDesign = getPendingDesignToEdit();
     const designToEdit = pendingDesign || getDesignToEdit();
@@ -262,6 +266,8 @@ const PersonalizacionPage = () => {
     }
   }, []);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     // Inicializar canvas solo una vez
     if (!canvasRef.current) {
@@ -369,6 +375,7 @@ const PersonalizacionPage = () => {
     textureScale,
   ]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     setTextureOffset({ x: 0, y: 0 });
     setTextureScale(1);
@@ -533,7 +540,10 @@ const PersonalizacionPage = () => {
         notas: notasCotizacion.trim() || undefined,
       });
       const result = await cotizarProducto(buildQuotePayload(disenoData));
-      setCotizacion({ mensaje: result.mensaje || 'Cotización enviada y pendiente' });
+      setCotizacion({
+        mensaje: result.mensaje || 'Cotización enviada y pendiente',
+        precio: result?.cotizacion?.precio,
+      });
       resetPersonalizacionState();
     } catch (error) {
       console.error('Error al cotizar:', error);
@@ -584,11 +594,11 @@ const PersonalizacionPage = () => {
 
       try {
         const result = await guardarDiseno(disenoData);
-        alert(`Diseño guardado${result?.mensaje ? ' en servidor y localmente' : ''}${result?.id || result?._id ? ` con ID: ${result.id || result._id}` : ''}`);
+        setSaveSuccess(`Diseño guardado${result?.mensaje ? ' en servidor y localmente' : ''}${result?.id || result?._id ? ` con ID: ${result.id || result._id}` : ''}`);
         resetPersonalizacionState();
       } catch (error) {
         console.error("Error al guardar diseño en servidor:", error);
-        alert("Diseño guardado localmente");
+        setSaveSuccess('Diseño guardado localmente');
         resetPersonalizacionState();
       }
     } catch (error) {
@@ -1044,13 +1054,26 @@ const PersonalizacionPage = () => {
                         Debes iniciar sesión para guardar tu diseño o cotizar. Al iniciar sesión volverás a esta pantalla con el diseño que llevas hasta el momento.
                       </div>
                     )}
+                    {saveSuccess && (
+                      <SuccessBanner
+                        message={saveSuccess}
+                        onClose={() => setSaveSuccess('')}
+                        className="mt-3"
+                      />
+                    )}
                     {cotizacion && (
-                      <div className={`mt-3 alert ${cotizacion.error ? 'alert-danger' : 'alert-success'}`}>
-                        <strong>{cotizacion.mensaje || 'Cotización generada'}</strong>
-                        {!cotizacion.error && cotizacion.precio !== undefined && (
-                          <div>Precio estimado: <strong>{formatCurrency(cotizacion.precio)}</strong></div>
-                        )}
-                      </div>
+                      cotizacion.error ? (
+                        <div className="mt-3 alert alert-danger">
+                          <strong>{cotizacion.mensaje || 'Cotización generada'}</strong>
+                        </div>
+                      ) : (
+                        <SuccessBanner
+                          message={cotizacion.mensaje || 'Cotización generada'}
+                          description={cotizacion.precio !== undefined ? `Precio estimado: ${formatCurrency(cotizacion.precio)}` : ''}
+                          onClose={() => setCotizacion(null)}
+                          className="mt-3"
+                        />
+                      )
                     )}
                   </>
                 )}

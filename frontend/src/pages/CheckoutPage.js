@@ -5,7 +5,7 @@
  * Página para finalizar la compra
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Container, Row, Col, Card, Form, Button, Alert, ListGroup } from 'react-bootstrap';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -29,6 +29,30 @@ const CheckoutPage = () => {
     metodoPago: 'efectivo',
     notasAdicionales: ''
   });
+
+  const loadCarrito = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await carritoService.getCarrito();
+      const carritoData = response.data || response.carrito;
+      
+      if (!carritoData || !carritoData.items || carritoData.items.length === 0) {
+        setMensaje({ 
+          tipo: 'warning', 
+          texto: 'Tu carrito está vacío' 
+        });
+        setTimeout(() => navigate('/carrito'), 2000);
+        return;
+      }
+      
+      setCarrito(carritoData);
+    } catch (error) {
+      console.error('Error al cargar carrito:', error);
+      setMensaje({ tipo: 'danger', texto: 'Error al cargar el carrito' });
+    } finally {
+      setLoading(false);
+    }
+  }, [navigate]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -78,31 +102,7 @@ const CheckoutPage = () => {
     };
 
     loadCheckoutData();
-  }, [isAuthenticated, navigate, location.state]);
-
-  const loadCarrito = async () => {
-    setLoading(true);
-    try {
-      const response = await carritoService.getCarrito();
-      const carritoData = response.data || response.carrito;
-      
-      if (!carritoData || !carritoData.items || carritoData.items.length === 0) {
-        setMensaje({ 
-          tipo: 'warning', 
-          texto: 'Tu carrito está vacío' 
-        });
-        setTimeout(() => navigate('/carrito'), 2000);
-        return;
-      }
-      
-      setCarrito(carritoData);
-    } catch (error) {
-      console.error('Error al cargar carrito:', error);
-      setMensaje({ tipo: 'danger', texto: 'Error al cargar el carrito' });
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [isAuthenticated, navigate, location.state, loadCarrito]);
 
   const handleChange = (e) => {
     setFormData({

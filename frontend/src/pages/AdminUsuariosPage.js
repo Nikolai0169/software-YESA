@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import usuarioService from '../services/usuarioService';
 import { exportarUsuariosAPDF, exportarUsuariosAExcel } from '../utils/exportUtils';
 import { useAuth } from '../context/AuthContext'; // Ajusta la ruta según tu proyecto
+import SuccessBanner from '../components/SuccessBanner';
 
 function AdminUsuariosPage() {
   const { user: usuarioActualAutenticado } = useAuth(); // Obtén el usuario logueado
@@ -29,6 +30,7 @@ function AdminUsuariosPage() {
   const [orden, setOrden] = useState({ campo: 'nombre', direccion: 'asc' });
   const [paginaActual, setPaginaActual] = useState(1);
   const registrosPorPagina = 25;
+  const [mensajeExito, setMensajeExito] = useState('');
 
   const cargarUsuarios = useCallback(async () => {
     setLoading(true);
@@ -55,7 +57,7 @@ function AdminUsuariosPage() {
         const dataActualizar = { ...usuarioActual };
         if (!dataActualizar.password) delete dataActualizar.password;
         await usuarioService.actualizarUsuario(usuarioActual.id, dataActualizar);
-        alert('Usuario actualizado exitosamente');
+        setMensajeExito('Usuario actualizado exitosamente');
       } else {
         if (!usuarioActual.apellido) {
           alert('El apellido es requerido para nuevos usuarios');
@@ -66,7 +68,7 @@ function AdminUsuariosPage() {
           return;
         }
         await usuarioService.crearUsuario(usuarioActual);
-        alert('Usuario creado exitosamente');
+        setMensajeExito('Usuario creado exitosamente');
       }
       setShowModal(false);
       limpiarFormulario();
@@ -87,7 +89,7 @@ function AdminUsuariosPage() {
     if (!window.confirm('¿Estás seguro de eliminar este usuario?')) return;
     try {
       await usuarioService.eliminarUsuario(id);
-      alert('Usuario eliminado exitosamente');
+      setMensajeExito('Usuario eliminado exitosamente');
       await cargarUsuarios();
     } catch (error) {
       console.error('❌ Error al eliminar usuario:', error);
@@ -111,7 +113,7 @@ function AdminUsuariosPage() {
       console.log(`🔄 ${accion} usuario ID ${usuario.id}...`);
       // Usar el endpoint PATCH /admin/usuarios/:id/toggle del backend
       await usuarioService.toggleUsuario(usuario.id);
-      alert(`Usuario ${accion} exitosamente`);
+      setMensajeExito(`Usuario ${accion} exitosamente`);
       
       // Recargar la lista para reflejar el cambio
       await cargarUsuarios();
@@ -213,6 +215,14 @@ function AdminUsuariosPage() {
           }
         `}
       </style>
+
+      {mensajeExito && (
+        <SuccessBanner
+          message={mensajeExito}
+          onClose={() => setMensajeExito('')}
+          className="mb-3"
+        />
+      )}
 
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Gestión de Usuarios</h2>

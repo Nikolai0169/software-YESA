@@ -7,7 +7,7 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { Container, Row, Col, Card, Button, Badge, Alert, Form } from 'react-bootstrap';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import catalogoService from '../services/catalogoService';
 import carritoService from '../services/carritoService';
 import reviewService from '../services/reviewService';

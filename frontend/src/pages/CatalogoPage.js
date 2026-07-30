@@ -13,7 +13,6 @@ import catalogoService from '../services/catalogoService';
 import carritoService from '../services/carritoService';
 import ProductCard from '../components/ProductCard';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { useAuth } from '../context/AuthContext';
 
 const CatalogoPage = () => {
   const [productos, setProductos] = useState([]);
@@ -24,7 +23,6 @@ const CatalogoPage = () => {
   
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
 
   // Leer filtros desde URL (para compatibilidad con navbar)
   const getFiltrosDesdeURL = useCallback(() => {
@@ -71,18 +69,26 @@ const CatalogoPage = () => {
     fetchProductos(filtros);
   }, [getFiltrosDesdeURL, fetchProductos]);
 
+  const mostrarMensaje = useCallback((tipo, texto) => {
+    setMensaje({ tipo, texto });
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => {
+      setMensaje({ tipo: '', texto: '' });
+    }, 3000);
+  }, []);
+
   const handleAddToCart = useCallback(async (producto) => {
     try {
       await carritoService.agregarAlCarrito(producto.id, 1, producto);
-      setMensaje({ tipo: 'success', texto: `${producto.nombre} agregado al carrito` });
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      timeoutRef.current = setTimeout(() => {
-        setMensaje({ tipo: '', texto: '' });
-      }, 3000);
+      mostrarMensaje('success', `${producto.nombre} agregado al carrito`);
     } catch (error) {
-      setMensaje({ tipo: 'danger', texto: error.message || 'Error al agregar al carrito' });
+      mostrarMensaje('danger', error.message || 'Error al agregar al carrito');
     }
-  }, []);
+  }, [mostrarMensaje]);
+
+  const handleFavoriteFeedback = useCallback((tipo, texto) => {
+    mostrarMensaje(tipo, texto);
+  }, [mostrarMensaje]);
 
   useEffect(() => {
     return () => {
@@ -183,7 +189,12 @@ const CatalogoPage = () => {
 
             <div className="product-grid">
               {productos.map((producto) => (
-                <ProductCard key={producto.id} producto={producto} onAddToCart={handleAddToCart} />
+                <ProductCard
+                  key={producto.id}
+                  producto={producto}
+                  onAddToCart={handleAddToCart}
+                  onFavoriteFeedback={handleFavoriteFeedback}
+                />
               ))}
             </div>
 

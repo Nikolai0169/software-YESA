@@ -23,7 +23,7 @@ const carritoService = {
         const response = await api.get('/cliente/carrito');
         return response.data;
       } catch (error) {
-        throw error.response?.data || { success: false, message: 'Error de conexión' };
+        throw new Error(error.response?.data?.message || 'Error de conexión');
       }
     } else {
       // Usuario no autenticado: obtener del localStorage
@@ -53,12 +53,12 @@ const carritoService = {
         });
         return response.data;
       } catch (error) {
-        throw error.response?.data || { success: false, message: 'Error de conexión' };
+        throw new Error(error.response?.data?.message || 'Error de conexión');
       }
     } else {
       // Usuario no autenticado: agregar en localStorage
       if (!productoInfo) {
-        throw { success: false, message: 'Se requiere información del producto' };
+        throw new Error('Se requiere información del producto');
       }
 
       const carritoLocal = JSON.parse(localStorage.getItem(CARRITO_LOCAL_KEY) || '[]');
@@ -103,7 +103,7 @@ const carritoService = {
         });
         return response.data;
       } catch (error) {
-        throw error.response?.data || { success: false, message: 'Error de conexión' };
+        throw new Error(error.response?.data?.message || 'Error de conexión');
       }
     } else {
       // Usuario no autenticado: actualizar en localStorage
@@ -116,7 +116,7 @@ const carritoService = {
         return { success: true, message: 'Cantidad actualizada' };
       }
       
-      throw { success: false, message: 'Producto no encontrado' };
+      throw new Error('Producto no encontrado');
     }
   },
 
@@ -132,7 +132,7 @@ const carritoService = {
         const response = await api.delete(`/cliente/carrito/${itemId}`);
         return response.data;
       } catch (error) {
-        throw error.response?.data || { success: false, message: 'Error de conexión' };
+        throw new Error(error.response?.data?.message || 'Error de conexión');
       }
     } else {
       // Usuario no autenticado: eliminar del localStorage
@@ -156,7 +156,7 @@ const carritoService = {
         const response = await api.delete('/cliente/carrito');
         return response.data;
       } catch (error) {
-        throw error.response?.data || { success: false, message: 'Error de conexión' };
+        throw new Error(error.response?.data?.message || 'Error de conexión');
       }
     } else {
       // Usuario no autenticado: vaciar localStorage

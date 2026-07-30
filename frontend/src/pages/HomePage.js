@@ -7,7 +7,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Card } from 'react-bootstrap';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import catalogoService from '../services/catalogoService';
 import ProductCard from '../components/ProductCard';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -16,8 +16,7 @@ import { useAuth } from '../context/AuthContext';
 const HomePage = () => {
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { isAuthenticated, isAdmin, isAuxiliar } = useAuth();
-  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     // Eliminar redirección automática - permite que admins vean la página de inicio si quieren

@@ -1,5 +1,6 @@
-﻿import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
+/* eslint-disable react-hooks/exhaustive-deps */
 
 const createTextSprite = (text, fontFamily = "sans-serif", fontSize = 24, color = "#ffffff") => {
   const width = 2048;
@@ -24,68 +25,6 @@ const createTextSprite = (text, fontFamily = "sans-serif", fontSize = 24, color 
   texture.minFilter = THREE.LinearFilter;
   texture.needsUpdate = true;
   return texture;
-};
-
-const createOverlayTexture = (
-  textureUrl,
-  text,
-  fontFamily = "sans-serif",
-  fontSize = 24,
-  color = "#ffffff",
-  callback,
-  backgroundColor = null
-) => {
-  const size = 1024;
-  const canvas = document.createElement("canvas");
-  canvas.width = size;
-  canvas.height = size;
-  const ctx = canvas.getContext("2d");
-
-  const drawOverlay = (image) => {
-    ctx.clearRect(0, 0, size, size);
-    if (backgroundColor) {
-      ctx.fillStyle = backgroundColor;
-      ctx.fillRect(0, 0, size, size);
-    }
-
-    if (image) {
-      ctx.drawImage(image, 0, 0, size, size);
-    }
-
-    ctx.fillStyle = color;
-    ctx.font = `bold ${fontSize}px ${fontFamily}`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    const lines = text ? text.split("\n") : [];
-    const lineHeight = fontSize + 10;
-    lines.forEach((line, index) => {
-      ctx.fillText(
-        line,
-        size / 2,
-        size / 2 + (index - (lines.length - 1) / 2) * lineHeight
-      );
-    });
-
-    const canvasTexture = new THREE.CanvasTexture(canvas);
-    canvasTexture.minFilter = THREE.LinearFilter;
-    canvasTexture.needsUpdate = true;
-    callback(canvasTexture);
-  };
-
-  if (!textureUrl) {
-    drawOverlay(null);
-    return;
-  }
-
-  const image = new Image();
-  image.crossOrigin = "anonymous";
-  image.onload = () => {
-    drawOverlay(image);
-  };
-  image.onerror = () => {
-    drawOverlay(null);
-  };
-  image.src = textureUrl;
 };
 
 const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBase = "#ffffff", colorExterior = "#ffffff", colorAsa = "#ffffff", texture, overlayText = "", overlayTextFontFamily = "sans-serif", overlayTextFontSize = 24, overlayTextColor = "#ffffff", textInterior = "", textExterior = "", zoom = 1, autoRotate = true, textureOffset = { x: 0, y: 0 }, textureScale = 1 }) => {
@@ -241,9 +180,12 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
     );
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     // Escena
     const scene = new THREE.Scene();
+    const mountNode = mountRef.current;
+    if (!mountNode) return;
     sceneRef.current = scene;
     isRingRef.current = modelo === "anillo";
     scene.background = new THREE.Color(0x333333);
@@ -251,7 +193,7 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
     // Cámara
     const camera = new THREE.PerspectiveCamera(
       75,
-      mountRef.current.clientWidth / mountRef.current.clientHeight,
+      mountNode.clientWidth / mountNode.clientHeight,
       0.1,
       1000
     );
@@ -264,18 +206,18 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
     // Cap the device pixel ratio for performance but keep clarity on high-DPI
     const pixelRatio = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
     renderer.setPixelRatio(pixelRatio);
-    renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight, false);
+    renderer.setSize(mountNode.clientWidth, mountNode.clientHeight, false);
     renderer.setClearColor(0xffffff, 1);
     renderer.domElement.style.width = "100%";
     renderer.domElement.style.height = "100%";
     renderer.domElement.style.backgroundColor = "#ffffff";
     renderer.domElement.style.imageRendering = 'auto';
     renderer.domElement.style.cursor = 'grab';
-    mountRef.current.appendChild(renderer.domElement);
+    mountNode.appendChild(renderer.domElement);
 
     const resizeScene = () => {
-      if (!mountRef.current) return;
-      const bounds = mountRef.current.getBoundingClientRect();
+      if (!mountNode) return;
+      const bounds = mountNode.getBoundingClientRect();
       const width = Math.max(bounds.width, 1);
       const height = Math.max(bounds.height, 1);
       renderer.setSize(width, height, false);
@@ -291,7 +233,7 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
 
     const resizeObserver = new ResizeObserver(resizeScene);
     resizeObserverRef.current = resizeObserver;
-    resizeObserver.observe(mountRef.current);
+    resizeObserver.observe(mountNode);
 
     resizeScene();
 
@@ -479,12 +421,13 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
       if (modelGroup.userData.disposeSprites) {
         modelGroup.userData.disposeSprites();
       }
-      if (mountRef.current && renderer.domElement && mountRef.current.contains(renderer.domElement)) {
-        mountRef.current.removeChild(renderer.domElement);
+      if (mountNode && renderer.domElement && mountNode.contains(renderer.domElement)) {
+        mountNode.removeChild(renderer.domElement);
       }
     };
   }, [modelo]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (interiorMaterialRef.current) {
       interiorMaterialRef.current.color = new THREE.Color(colorInterior || "#ffffff");
@@ -504,6 +447,7 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
     }
   }, [colorInterior, colorBase, colorExterior, colorAsa]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (isRingRef.current) {
       updateRingTextSprites();

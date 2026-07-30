@@ -11,6 +11,7 @@ import {
   setDesignToEdit,
 } from '../services/personalizationService';
 import { cotizarProducto } from '../services/api';
+import SuccessBanner from '../components/SuccessBanner';
 
 const isDataUrl = (value) => typeof value === 'string' && value.startsWith('data:');
 
@@ -197,31 +198,31 @@ const SavedDesignsPage = () => {
 
           {quoteSummary && (
             <>
-              <div className={`alert ${quoteSummary.error ? 'alert-danger' : 'alert-success'} mt-4`}>
-                {quoteSummary.error ? (
-                  <div>{quoteSummary.mensaje}</div>
-                ) : (
-                  <>
-                    <div className="mb-2">
-                      <strong>Cotización creada:</strong> {quoteSummary.cotizacion?.nombre || quoteSummary.mensaje}
+              {quoteSummary.error ? (
+                <div className="alert alert-danger mt-4">{quoteSummary.mensaje}</div>
+              ) : (
+                <SuccessBanner
+                  message={quoteSummary.cotizacion?.nombre || quoteSummary.mensaje}
+                  description={quoteSummary.cotizacion?.precio !== undefined
+                    ? `Precio estimado: ${formatCurrency(quoteSummary.cotizacion.precio)}`
+                    : `Diseños enviados: ${quoteSummary.items.length}`}
+                  onClose={() => setQuoteSummary(null)}
+                  className="mt-4"
+                />
+              )}
+
+              {!quoteSummary.error && (
+                <div className="mt-3">
+                  <div className="mb-2">
+                    <strong>Diseños:</strong> {quoteSummary.items.length}
+                  </div>
+                  {quoteSummary.items.map((item, index) => (
+                    <div key={index} className="small">
+                      • {item.nombre} ({item.modelo || 'Taza'})
                     </div>
-                    <div className="mb-2">
-                      <strong>Diseños:</strong> {quoteSummary.items.length}
-                    </div>
-                    <div className="mb-2">
-                      <strong>Precio estimado:</strong>{' '}
-                      {quoteSummary.cotizacion?.precio !== undefined
-                        ? formatCurrency(quoteSummary.cotizacion.precio)
-                        : 'Pendiente'}
-                    </div>
-                    {quoteSummary.items.map((item, index) => (
-                      <div key={index} className="small">
-                        • {item.nombre} ({item.modelo || 'Taza'})
-                      </div>
-                    ))}
-                  </>
-                )}
-              </div>
+                  ))}
+                </div>
+              )}
 
               {!quoteSummary.error && quotedDesigns.length > 0 && (
                 <div className="mb-4">

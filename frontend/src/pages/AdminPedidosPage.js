@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import pedidoService from '../services/pedidoService';
 import { exportarPedidosAPDF, exportarPedidosAExcel } from '../utils/exportUtils';
+import SuccessBanner from '../components/SuccessBanner';
 
 function AdminPedidosPage() {
   const navigate = useNavigate();
@@ -9,6 +10,7 @@ function AdminPedidosPage() {
   const [loading, setLoading] = useState(true);
   const [showDetalleModal, setShowDetalleModal] = useState(false);
   const [pedidoSeleccionado, setPedidoSeleccionado] = useState(null);
+  const [mensajeExito, setMensajeExito] = useState('');
   const [filtros, setFiltros] = useState({
     busqueda: '',
     estado: 'todos',
@@ -43,7 +45,7 @@ function AdminPedidosPage() {
     
     // ✅ Verificar si fue exitoso
     if (response && response.success) {
-      alert('Estado del pedido actualizado correctamente');
+      setMensajeExito('Estado del pedido actualizado correctamente');
       await cargarPedidos();
       if (showDetalleModal && pedidoSeleccionado?.id === pedidoId) {
         const pedidoActualizado = await pedidoService.obtenerPedidoPorId(pedidoId);
@@ -170,6 +172,14 @@ function AdminPedidosPage() {
 
   return (
     <div className="container mt-4">
+      {mensajeExito && (
+        <SuccessBanner
+          message={mensajeExito}
+          onClose={() => setMensajeExito('')}
+          className="mb-3"
+        />
+      )}
+
       {/* Estilos para scroll en tabla */}
       <style>
         {`

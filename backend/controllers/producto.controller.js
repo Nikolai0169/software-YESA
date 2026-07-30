@@ -14,6 +14,7 @@ const Subcategoria = require('../models/Subcategoria');
 const path = require('path');
 const fs = require('fs').promises;
 const { normalizarRutaImagen } = require('../utils/imagenUrl');
+const { resolverImagenProducto } = require('../utils/productoImagen');
 
 // ✅ FUNCIÓN AUXILIAR PARA CONSTRUIR URLs DE IMÁGENES
 const construirURLProducto = (producto, req) => {
@@ -217,13 +218,7 @@ const crearProducto = async (req, res) => {
       });
     }
     
-    const imagenes = (req.files && req.files.imagenes && req.files.imagenes.length)
-      ? req.files.imagenes.map(file => file.filename)
-      : (req.files && req.files.imagen && req.files.imagen.length)
-        ? [req.files.imagen[0].filename]
-        : null;
-
-    const imagen = imagenes && imagenes.length ? imagenes[0] : null;
+    const { imagen, imagenes } = await resolverImagenProducto(req.body, req.files);
 
     const nuevoProducto = await Producto.create({
       nombre,
@@ -319,11 +314,7 @@ const actualizarProducto = async (req, res) => {
     if (subcategoriaId) producto.subcategoriaId = parseInt(subcategoriaId);
     if (activo !== undefined) producto.activo = activo;
     
-    const nuevasImagenes = (req.files && req.files.imagenes && req.files.imagenes.length)
-      ? req.files.imagenes.map(file => file.filename)
-      : (req.files && req.files.imagen && req.files.imagen.length)
-        ? [req.files.imagen[0].filename]
-        : null;
+    const { imagen: imagenDesdeRequest, imagenes: nuevasImagenes } = await resolverImagenProducto(req.body, req.files);
 
     if (nuevasImagenes) {
       if (producto.imagenes && Array.isArray(producto.imagenes)) {
@@ -346,7 +337,7 @@ const actualizarProducto = async (req, res) => {
       }
 
       producto.imagenes = nuevasImagenes;
-      producto.imagen = nuevasImagenes[0];
+      producto.imagen = imagenDesdeRequest;
     }
     
     await producto.save();

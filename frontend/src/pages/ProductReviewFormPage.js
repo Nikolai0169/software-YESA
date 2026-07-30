@@ -3,7 +3,6 @@ import { Container, Row, Col, Card, Form, Button, Alert } from 'react-bootstrap'
 import { useParams, useNavigate } from 'react-router-dom';
 import reviewService from '../services/reviewService';
 import catalogoService from '../services/catalogoService';
-import LoadingSpinner from '../components/LoadingSpinner';
 import { useAuth } from '../context/AuthContext';
 
 const STAR_VALUES = [5.0, 4.5, 4.0, 3.5, 3.0, 2.5, 2.0, 1.5, 1.0, 0.5];
