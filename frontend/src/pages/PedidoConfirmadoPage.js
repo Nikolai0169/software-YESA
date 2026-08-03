@@ -5,30 +5,24 @@
  * Página de confirmación después de realizar un pedido
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Container, Row, Col, Card, Button, Table, Alert, ListGroup } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import pedidoService from '../services/pedidoService';
 import LoadingSpinner from '../components/LoadingSpinner';
+import SuccessBanner from '../components/SuccessBanner';
 
 const PedidoConfirmadoPage = () => {
   const [pedido, setPedido] = useState(null);
   const [loading, setLoading] = useState(true);
   const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
+  const [mensajeExito, setMensajeExito] = useState('');
   const { id } = useParams();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login');
-      return;
-    }
-    loadPedido();
-  }, [id, isAuthenticated, navigate]);
-
-  const loadPedido = async () => {
+  const loadPedido = useCallback(async () => {
     setLoading(true);
     try {
       const response = await pedidoService.getPedidoById(id);
@@ -43,7 +37,15 @@ const PedidoConfirmadoPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+    loadPedido();
+  }, [id, isAuthenticated, navigate, loadPedido]);
 
   const formatearPrecio = (precio) => {
     return new Intl.NumberFormat('es-CO', {
@@ -89,6 +91,21 @@ const PedidoConfirmadoPage = () => {
 
   const handleImprimir = () => {
     window.print();
+  };
+
+  const handleCancelarPedido = async () => {
+    if (!pedido || pedido.estado !== 'pendiente') return;
+
+    if (!window.confirm('¿Estás seguro de cancelar este pedido?')) return;
+
+    try {
+      await pedidoService.cancelarPedido(pedido.id);
+      setMensajeExito(`Pedido #${pedido.id} cancelado exitosamente`);
+      await loadPedido();
+    } catch (error) {
+      console.error('Error al cancelar pedido:', error);
+      setMensaje({ tipo: 'danger', texto: error.message || 'No se pudo cancelar el pedido' });
+    }
   };
 
   if (loading) {
@@ -141,6 +158,14 @@ const PedidoConfirmadoPage = () => {
         <Alert variant={mensaje.tipo} dismissible onClose={() => setMensaje({ tipo: '', texto: '' })}>
           {mensaje.texto}
         </Alert>
+      )}
+
+      {mensajeExito && (
+        <SuccessBanner
+          message={mensajeExito}
+          onClose={() => setMensajeExito('')}
+          className="mb-3"
+        />
       )}
 
       <Row>
@@ -255,6 +280,15 @@ const PedidoConfirmadoPage = () => {
               </div>
 
               <div className="d-grid gap-2">
+                {pedido.estado === 'pendiente' && (
+                  <Button
+                    variant="outline-danger"
+                    onClick={handleCancelarPedido}
+                  >
+                    <i className="bi bi-x-circle me-2"></i>
+                    Cancelar pedido
+                  </Button>
+                )}
                 <Button
                   variant="primary"
                   onClick={() => navigate('/mis-pedidos')}

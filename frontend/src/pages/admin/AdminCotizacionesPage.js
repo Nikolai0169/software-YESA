@@ -3,6 +3,7 @@ import { Container, Card, Button, Row, Col, Badge, Spinner, Alert, Form, InputGr
 import { useNavigate } from 'react-router-dom';
 import { obtenerCotizaciones, actualizarCotizacion } from '../../services/api';
 import { formatCurrency } from '../../utils/helpers';
+import SuccessBanner from '../../components/SuccessBanner';
 
 const AdminCotizacionesPage = () => {
   const [cotizaciones, setCotizaciones] = useState([]);
@@ -222,9 +223,11 @@ const AdminCotizacionesPage = () => {
           )}
 
           {successMessage && (
-            <Alert variant="success" className="mt-4">
-              {successMessage}
-            </Alert>
+            <SuccessBanner
+              message={successMessage}
+              onClose={() => setSuccessMessage(null)}
+              className="mt-4"
+            />
           )}
 
           <div className="d-flex flex-wrap gap-2 mt-4">

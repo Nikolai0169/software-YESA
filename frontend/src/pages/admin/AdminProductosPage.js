@@ -11,6 +11,7 @@ import { Container, Card, Table, Button, Modal, Form, Alert, Badge, Row, Col, Dr
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import SuccessBanner from '../../components/SuccessBanner';
 import { exportarProductosAPDF, exportarProductosAExcel } from '../../utils/exportUtils';
 
 const ProductImage = memo(({ imagen, nombre }) => {
@@ -38,8 +39,11 @@ const AdminProductosPage = () => {
   const [tipoExportacion, setTipoExportacion] = useState('pdf');
   const [accionMasivaLoading, setAccionMasivaLoading] = useState(false);
   const fileInputRef = useRef(null);
-  const [imagenFile, setImagenFile] = useState(null);
+  const [imagenesFiles, setImagenesFiles] = useState([]);
   const [imagenPreview, setImagenPreview] = useState('');
+  const [showGalleryModal, setShowGalleryModal] = useState(false);
+  const [imagenesServidor, setImagenesServidor] = useState([]);
+  const [loadingGaleria, setLoadingGaleria] = useState(false);
   
   // Estados para filtros
   const [busqueda, setBusqueda] = useState('');
@@ -50,7 +54,7 @@ const AdminProductosPage = () => {
   const [ordenNombre, setOrdenNombre] = useState('asc');
   
   const [formData, setFormData] = useState({
-    nombre: '', descripcion: '', precio: '', stock: '', categoriaId: '', subcategoriaId: '', activo: true
+    nombre: '', descripcion: '', precio: '', stock: '', categoriaId: '', subcategoriaId: '', imagenUrl: '', activo: true
   });
   
   // Productos filtrados y ordenados
@@ -96,6 +100,20 @@ const AdminProductosPage = () => {
 
   useEffect(() => { loadData(); }, [loadData]);
 
+  const cargarImagenesServidor = useCallback(async () => {
+    setLoadingGaleria(true);
+    try {
+      const response = await api.get('uploads/imagenes');
+      const imagenes = response.data?.data?.imagenes || [];
+      setImagenesServidor(imagenes);
+    } catch (error) {
+      console.error('Error al cargar la galería del servidor:', error);
+      setMensaje({ tipo: 'danger', texto: 'No se pudieron cargar las imágenes del servidor' });
+    } finally {
+      setLoadingGaleria(false);
+    }
+  }, []);
+
   const handleShowModal = (producto = null) => {
     if (producto) {
       setEditando(producto);
@@ -106,19 +124,20 @@ const AdminProductosPage = () => {
         stock: producto.stock,
         categoriaId: producto.categoriaId, 
         subcategoriaId: producto.subcategoriaId || '', 
+        imagenUrl: producto.imagen && /^https?:\/\//i.test(producto.imagen) ? producto.imagen : '',
         activo: producto.activo
       });
       setImagenPreview(producto.imagen || '');
-      setImagenFile(null);
+      setImagenesFiles([]);
     } else {
       setEditando(null);
       setFormData({ 
         nombre: '', descripcion: '', precio: '', stock: '', 
-        categoriaId: '', subcategoriaId: '', 
+        categoriaId: '', subcategoriaId: '', imagenUrl: '',
         activo: true 
       });
       setImagenPreview('');
-      setImagenFile(null);
+      setImagenesFiles([]);
     }
     setShowModal(true);
   };
@@ -126,8 +145,8 @@ const AdminProductosPage = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setEditando(null);
-    setFormData({ nombre: '', descripcion: '', precio: '', stock: '', categoriaId: '', subcategoriaId: '', activo: true });
-    setImagenFile(null);
+    setFormData({ nombre: '', descripcion: '', precio: '', stock: '', categoriaId: '', subcategoriaId: '', imagenUrl: '', activo: true });
+    setImagenesFiles([]);
     setImagenPreview('');
   };
 
@@ -136,16 +155,58 @@ const AdminProductosPage = () => {
     setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value, ...(name === 'categoriaId' ? { subcategoriaId: '' } : {}) });
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImagenFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagenPreview(reader.result);
-      };
-      reader.readAsDataURL(file);
+  const subirImagenesAServidor = useCallback(async (files) => {
+    if (!files || files.length === 0) return [];
+
+    const promesasSubida = files.map(async (archivo) => {
+      const formDataUpload = new FormData();
+      formDataUpload.append('texture', archivo);
+      const response = await api.post('uploads/texture', formDataUpload, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      return response.data?.url || null;
+    });
+
+    return Promise.all(promesasSubida);
+  }, []);
+
+  const handleImageChange = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    setImagenesFiles(files);
+    const primeraImagen = files[0];
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagenPreview(reader.result);
+    };
+    reader.readAsDataURL(primeraImagen);
+
+    try {
+      await subirImagenesAServidor(files);
+      await cargarImagenesServidor();
+      setMensaje({ tipo: 'success', texto: 'Imágenes subidas correctamente a la galería del servidor' });
+    } catch (error) {
+      console.error('Error al subir imágenes al servidor:', error);
+      setMensaje({ tipo: 'danger', texto: 'No se pudieron subir las imágenes al servidor' });
+    } finally {
+      if (e.target) {
+        e.target.value = '';
+      }
     }
+  };
+
+  const abrirGaleria = async () => {
+    setShowGalleryModal(true);
+    await cargarImagenesServidor();
+  };
+
+  const seleccionarImagenServidor = (imagenUrl) => {
+    setFormData(prev => ({ ...prev, imagenUrl }));
+    setImagenPreview(imagenUrl);
+    setImagenesFiles([]);
+    setShowGalleryModal(false);
+    setMensaje({ tipo: 'success', texto: 'Imagen importada desde la galería del servidor' });
   };
 
   const handleSubmit = async (e) => {
@@ -159,9 +220,14 @@ const AdminProductosPage = () => {
       formDataToSend.append('categoriaId', formData.categoriaId);
       formDataToSend.append('subcategoriaId', formData.subcategoriaId || null);
       formDataToSend.append('activo', formData.activo);
+      if (formData.imagenUrl?.trim()) {
+        formDataToSend.append('imagenUrl', formData.imagenUrl.trim());
+      }
       
-      if (imagenFile) {
-        formDataToSend.append('imagen', imagenFile);
+      if (imagenesFiles.length > 0) {
+        imagenesFiles.forEach((archivo) => {
+          formDataToSend.append('imagenes', archivo);
+        });
       }
       
       if (editando) {
@@ -274,10 +340,22 @@ const AdminProductosPage = () => {
         .tabla-productos-scroll th:last-child, .tabla-productos-scroll td:last-child { min-width: 220px; }
       `}</style>
 
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        onChange={handleImageChange}
+        style={{ display: 'none' }}
+      />
+
       {/* Cabecera */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div><h1><i className="bi bi-box-seam me-2"></i>Gestión de Productos</h1><p className="text-muted">Administra el inventario de productos</p></div>
         <div className="d-flex gap-2">
+          <Button variant="outline-primary" onClick={() => fileInputRef.current?.click()}>
+            <i className="bi bi-images me-1"></i> Importar imagen
+          </Button>
           <Dropdown as={ButtonGroup} className="me-2">
             <Button variant="success" onClick={async () => { if (tipoExportacion === 'pdf') exportarProductosAPDF(productosFiltradosYOrdenados); else await exportarProductosAExcel(productosFiltradosYOrdenados); }}>
               <i className={`bi bi-file-earmark-${tipoExportacion === 'pdf' ? 'pdf' : 'excel'} me-1`}></i> Exportar
@@ -305,7 +383,16 @@ const AdminProductosPage = () => {
         </div>
       </div>
 
-      {mensaje.texto && <Alert variant={mensaje.tipo} dismissible onClose={() => setMensaje({ tipo: '', texto: '' })}>{mensaje.texto}</Alert>}
+      {mensaje.texto && mensaje.tipo === 'success' && (
+        <SuccessBanner
+          message={mensaje.texto}
+          onClose={() => setMensaje({ tipo: '', texto: '' })}
+          className="mb-3"
+        />
+      )}
+      {mensaje.texto && mensaje.tipo !== 'success' && (
+        <Alert variant={mensaje.tipo} dismissible onClose={() => setMensaje({ tipo: '', texto: '' })}>{mensaje.texto}</Alert>
+      )}
 
       {/* Tarjetas */}
       <Row className="mb-4">
@@ -357,6 +444,35 @@ const AdminProductosPage = () => {
         <Card.Footer className="text-light"><small><i className="bi bi-file-text me-1"></i> Mostrando <strong>{productosFiltradosYOrdenados.length}</strong> producto(s)</small></Card.Footer>
       </Card>
 
+      <Modal show={showGalleryModal} onHide={() => setShowGalleryModal(false)} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Galería del servidor</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {loadingGaleria ? (
+            <div className="text-center py-4">Cargando imágenes...</div>
+          ) : imagenesServidor.length === 0 ? (
+            <div className="text-center py-4 text-muted">No hay imágenes subidas en el servidor todavía.</div>
+          ) : (
+            <Row className="g-3">
+              {imagenesServidor.map((imagen) => (
+                <Col md={4} key={imagen.url}>
+                  <Card className="h-100 shadow-sm border-0">
+                    <Card.Img variant="top" src={imagen.url} style={{ height: '160px', objectFit: 'cover' }} />
+                    <Card.Body>
+                      <Card.Title className="h6">{imagen.name}</Card.Title>
+                      <Button variant="primary" size="sm" className="w-100" onClick={() => seleccionarImagenServidor(imagen.url)}>
+                        <i className="bi bi-plus-circle me-1"></i> Importar
+                      </Button>
+                    </Card.Body>
+                  </Card>
+                </Col>
+              ))}
+            </Row>
+          )}
+        </Modal.Body>
+      </Modal>
+
       {/* Modal */}
       <Modal show={showModal} onHide={handleCloseModal} size="lg">
         <Modal.Header closeButton><Modal.Title>{editando ? 'Editar Producto' : 'Nuevo Producto'}</Modal.Title></Modal.Header>
@@ -373,13 +489,17 @@ const AdminProductosPage = () => {
                   <Form.Label>Imagen del Producto</Form.Label>
                   <Form.Control 
                     type="file" 
-                    ref={fileInputRef}
                     accept="image/*"
+                    multiple
                     onChange={handleImageChange}
+                    ref={fileInputRef}
                   />
                   <Form.Text className="text-muted">
-                    JPG, PNG, GIF (máx. 5MB)
+                    JPG, PNG, GIF (máx. 5MB). Puedes seleccionar varios archivos a la vez.
                   </Form.Text>
+                  <Button variant="outline-primary" size="sm" className="mt-2" type="button" onClick={abrirGaleria}>
+                    <i className="bi bi-images me-1"></i> Importar desde galería
+                  </Button>
                 </Form.Group>
               </Col>
               <Col md={6}>
@@ -402,6 +522,7 @@ const AdminProductosPage = () => {
           <Modal.Footer><Button variant="secondary" onClick={handleCloseModal}>Cancelar</Button><Button variant="primary" type="submit">{editando ? 'Actualizar' : 'Crear'}</Button></Modal.Footer>
         </Form>
       </Modal>
+
     </Container>
   );
 };

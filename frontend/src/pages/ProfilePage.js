@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import authService from '../services/authService';
+import SuccessBanner from '../components/SuccessBanner';
 
 function ProfilePage() {
   const { user, updateProfile } = useAuth();
@@ -8,6 +9,7 @@ function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [pwdLoading, setPwdLoading] = useState(false);
   const [passwords, setPasswords] = useState({ actual: '', nueva: '', confirmar: '' });
+  const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
 
   useEffect(() => {
     if (user) {
@@ -26,13 +28,12 @@ function ProfilePage() {
     e.preventDefault();
     setSaving(true);
     try {
-      // updateProfile viene del context y usa /auth/me
       await updateProfile(form);
-      alert('Perfil actualizado correctamente');
+      setMensaje({ tipo: 'success', texto: 'Perfil actualizado correctamente' });
     } catch (err) {
       console.error('Error al actualizar perfil:', err);
       const msg = err.response?.data?.message || err.message || 'Error al actualizar perfil';
-      alert(msg);
+      setMensaje({ tipo: 'danger', texto: msg });
     } finally {
       setSaving(false);
     }
@@ -41,23 +42,23 @@ function ProfilePage() {
   const handleChangePassword = async (e) => {
     e.preventDefault();
     if (!passwords.actual || !passwords.nueva) {
-      alert('Completa las contraseñas');
+      setMensaje({ tipo: 'warning', texto: 'Completa las contraseñas' });
       return;
     }
     if (passwords.nueva !== passwords.confirmar) {
-      alert('La nueva contraseña y su confirmación no coinciden');
+      setMensaje({ tipo: 'warning', texto: 'La nueva contraseña y su confirmación no coinciden' });
       return;
     }
 
     setPwdLoading(true);
     try {
       await authService.changePassword(passwords.actual, passwords.nueva);
-      alert('Contraseña cambiada correctamente');
+      setMensaje({ tipo: 'success', texto: 'Contraseña cambiada correctamente' });
       setPasswords({ actual: '', nueva: '', confirmar: '' });
     } catch (err) {
       console.error('Error al cambiar contraseña:', err);
       const msg = err.response?.data?.message || err.message || 'Error al cambiar contraseña';
-      alert(msg);
+      setMensaje({ tipo: 'danger', texto: msg });
     } finally {
       setPwdLoading(false);
     }
@@ -70,6 +71,14 @@ function ProfilePage() {
           <div className="card shadow-sm">
             <div className="card-body">
               <h3 className="card-title mb-3">Mi Perfil</h3>
+              {mensaje.texto && mensaje.tipo === 'success' && (
+                <SuccessBanner message={mensaje.texto} onClose={() => setMensaje({ tipo: '', texto: '' })} className="mb-3" />
+              )}
+              {mensaje.texto && mensaje.tipo !== 'success' && (
+                <div className={`alert alert-${mensaje.tipo} mb-3`} role="alert">
+                  {mensaje.texto}
+                </div>
+              )}
               <form onSubmit={handleSave}>
                 <div className="mb-3">
                   <label className="form-label">Nombre</label>

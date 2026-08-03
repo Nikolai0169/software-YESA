@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import SuccessBanner from '../../components/SuccessBanner';
 
 const AdminSoportePage = () => {
   useAuth();
@@ -204,7 +205,14 @@ const handleEnviarRespuesta = async () => {
       </div>
 
       {/* Mensajes */}
-      {mensaje.texto && (
+      {mensaje.texto && mensaje.tipo === 'success' && (
+        <SuccessBanner
+          message={mensaje.texto}
+          onClose={() => setMensaje({ tipo: '', texto: '' })}
+          className="mb-3"
+        />
+      )}
+      {mensaje.texto && mensaje.tipo !== 'success' && (
         <Alert variant={mensaje.tipo} dismissible onClose={() => setMensaje({ tipo: '', texto: '' })}>
           {mensaje.texto}
         </Alert>

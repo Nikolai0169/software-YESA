@@ -11,11 +11,13 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import pedidoService from '../services/pedidoService';
 import LoadingSpinner from '../components/LoadingSpinner';
+import SuccessBanner from '../components/SuccessBanner';
 
 const MisPedidosPage = () => {
   const [pedidos, setPedidos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
+  const [mensajeExito, setMensajeExito] = useState('');
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
@@ -99,6 +101,24 @@ const MisPedidosPage = () => {
     return textos[estado] || estado;
   };
 
+  const handleCancelarPedido = async (pedido) => {
+    if (pedido.estado !== 'pendiente') return;
+
+    if (!window.confirm('¿Estás seguro de cancelar este pedido?')) return;
+
+    try {
+      await pedidoService.cancelarPedido(pedido.id);
+      setMensajeExito(`Pedido #${pedido.id} cancelado exitosamente`);
+      await loadPedidos();
+    } catch (error) {
+      console.error('Error al cancelar pedido:', error);
+      setMensaje({
+        tipo: 'danger',
+        texto: error.message || 'No se pudo cancelar el pedido',
+      });
+    }
+  };
+
   if (loading) {
     return <LoadingSpinner message="Cargando pedidos..." />;
   }
@@ -120,6 +140,14 @@ const MisPedidosPage = () => {
         <Alert variant={mensaje.tipo} dismissible onClose={() => setMensaje({ tipo: '', texto: '' })}>
           {mensaje.texto}
         </Alert>
+      )}
+
+      {mensajeExito && (
+        <SuccessBanner
+          message={mensajeExito}
+          onClose={() => setMensajeExito('')}
+          className="mb-3"
+        />
       )}
 
       {pedidos.length === 0 ? (
@@ -170,14 +198,26 @@ const MisPedidosPage = () => {
                       <strong>{formatearPrecio(pedido.total)}</strong>
                     </td>
                     <td className="align-middle text-center">
-                      <Button
-                        variant="outline-primary"
-                        size="sm"
-                        onClick={() => navigate(`/pedido-confirmado/${pedido.id}`)}
-                      >
-                        <i className="bi bi-eye me-1"></i>
-                        Ver Detalle
-                      </Button>
+                      <div className="d-flex justify-content-center gap-2 flex-wrap">
+                        <Button
+                          variant="outline-primary"
+                          size="sm"
+                          onClick={() => navigate(`/pedido-confirmado/${pedido.id}`)}
+                        >
+                          <i className="bi bi-eye me-1"></i>
+                          Ver Detalle
+                        </Button>
+                        {pedido.estado === 'pendiente' && (
+                          <Button
+                            variant="outline-danger"
+                            size="sm"
+                            onClick={() => handleCancelarPedido(pedido)}
+                          >
+                            <i className="bi bi-x-circle me-1"></i>
+                            Cancelar
+                          </Button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
