@@ -42,7 +42,12 @@ El rol **auxiliar** es un rol intermedio entre cliente y administrador que permi
 - ✅ Actualizar estado de pedidos
 - ✅ Ver estadísticas de pedidos
 
-### 👥 Gestión de Usuarios
+### � Soporte
+- ✅ Revisar consultas recibidas
+- ✅ Responder tickets de soporte
+- ✅ Cerrar casos resueltos
+
+### �👥 Gestión de Usuarios
 - ✅ Ver lista de usuarios (solo consultar)
 - ✅ Ver detalles de usuarios
 - ✅ Ver estadísticas de usuarios
@@ -55,9 +60,10 @@ El rol **auxiliar** es un rol intermedio entre cliente y administrador que permi
 
 ## ❌ Lo que NO PUEDE hacer un auxiliar:
 
-1. **Eliminar NADA** - Ninguna operación DELETE está permitida
-2. **Gestionar usuarios** - Solo puede consultarlos, no modificarlos
-3. **Cambiar su propio rol** - Requiere un administrador
+1. **Eliminar registros críticos** - No puede eliminar categorías, subcategorías, productos, usuarios ni cotizaciones
+2. **Gestionar usuarios** - Solo puede consultarlos, no modificarlos ni asignar roles
+3. **Gestionar cotizaciones administrativas** - No puede asignar precios ni administrar estados de cotización complejos
+4. **Cambiar su propio rol** - Requiere un administrador
 
 ---
 
