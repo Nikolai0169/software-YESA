@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Button, Card, Row, Col, Badge } from 'react-bootstrap';
+import { Button, Card, Row, Col, Badge, Form } from 'react-bootstrap';
 import Personalizacion3D from '../components/Personalizacion3D';
 import { formatCurrency, normalizePersonalizacionDesign } from '../utils/helpers';
 import { useAuth } from '../context/AuthContext';
@@ -55,6 +55,7 @@ const SavedDesignsPage = () => {
   const [quoteSummary, setQuoteSummary] = useState(null);
   const [quotedDesigns, setQuotedDesigns] = useState([]);
   const [quotingSelected, setQuotingSelected] = useState(false);
+  const [sortOrder, setSortOrder] = useState('default');
   const { isAuthenticated } = useAuth();
 
   useEffect(() => {
@@ -155,6 +156,27 @@ const SavedDesignsPage = () => {
     clearSavedDesigns();
     reloadDesigns();
   };
+
+  const sortedDesigns = [...designs].sort((a, b) => {
+    const getTime = (design) => {
+      const candidates = [design?.savedAt, design?.createdAt, design?.updatedAt];
+      for (const value of candidates) {
+        if (!value) continue;
+        const parsed = Date.parse(value);
+        if (!Number.isNaN(parsed)) return parsed;
+      }
+      return 0;
+    };
+
+    const timeA = getTime(a);
+    const timeB = getTime(b);
+
+    if (sortOrder === 'oldest-first') {
+      return timeA - timeB;
+    }
+
+    return timeB - timeA;
+  });
 
   return (
     <div className="container py-5 saved-designs-page">
@@ -285,8 +307,25 @@ const SavedDesignsPage = () => {
               </Button>
             </div>
           ) : (
-            <Row className="g-4">
-              {designs.map((design) => {
+            <>
+              <div className="d-flex justify-content-end mb-3">
+                <Form.Group className="d-flex align-items-center gap-2 mb-0">
+                  <Form.Label className="mb-0 text-muted small">Ordenar:</Form.Label>
+                  <Form.Select
+                    size="sm"
+                    value={sortOrder}
+                    onChange={(event) => setSortOrder(event.target.value)}
+                    style={{ minWidth: '220px' }}
+                  >
+                    <option value="default">Por defecto (más reciente primero)</option>
+                    <option value="recent-desc">Más reciente → más antiguo</option>
+                    <option value="oldest-first">Más antiguo → más reciente</option>
+                  </Form.Select>
+                </Form.Group>
+              </div>
+
+              <Row className="g-4">
+                {sortedDesigns.map((design) => {
                 const previewZoom = 1.3;
                 return (
                   <Col key={design.id} xs={12} md={6} lg={4}>
@@ -409,7 +448,8 @@ const SavedDesignsPage = () => {
                   </Col>
                 );
               })}
-            </Row>
+              </Row>
+            </>
           )}
         </div>
       </div>
