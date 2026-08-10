@@ -248,7 +248,7 @@ const NavigationBar = memo(({ onOpenFAQ, theme = 'light', toggleTheme }) => {
                             </NavDropdown.Item>
                           ))}
                         </div>
-                      ) : (
+                            ) : (
                         <div className="small text-muted">No hay subcategorías para esta categoría.</div>
                       )}
                     </div>
@@ -278,11 +278,9 @@ const NavigationBar = memo(({ onOpenFAQ, theme = 'light', toggleTheme }) => {
     <NavDropdown.Item as={Link} to="/favoritos">
       <i className="bi bi-heart-fill me-2" style={{ color: '#dc3545' }}></i>Favoritos
     </NavDropdown.Item>
-    {isCliente && (
-      <NavDropdown.Item as={Link} to="/mis-consultas">
-        <i className="bi bi-chat-dots-fill me-2" style={{ color: '#0dcaf0' }}></i>Mis Consultas
-      </NavDropdown.Item>
-    )}
+    <NavDropdown.Item as={Link} to="/mis-consultas">
+      <i className="bi bi-chat-dots-fill me-2" style={{ color: '#0dcaf0' }}></i>Mis consultas
+    </NavDropdown.Item>
   </>
 )}
           </NavDropdown>

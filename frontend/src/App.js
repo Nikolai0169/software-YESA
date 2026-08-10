@@ -82,7 +82,11 @@ function App() {
               <Route path="/producto/:id" element={<ProductDetailPage />} />
               <Route path="/producto/:id/resenas" element={<ProductReviewsPage />} />
               <Route path="/producto/:id/escribir-resena" element={<ProductReviewFormPage />} />
-              <Route path="/mis-consultas" element={<MisConsultasPage />} />
+              <Route path="/mis-consultas" element={
+                <ProtectedRoute>
+                  <MisConsultasPage />
+                </ProtectedRoute>
+              } />
               <Route path="/favoritos" element={
                 <ProtectedRoute>
                   <FavoritesPage />
