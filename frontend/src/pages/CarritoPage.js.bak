@@ -104,7 +104,7 @@ const CarritoPage = () => {
   }
 
   const items = carrito?.items || [];
-  const total = Number.parseFloat(carrito?.resumen?.total || carrito?.total || 0);
+  const total = parseFloat(carrito?.resumen?.total || carrito?.total || 0);
 
   return (
     <Container className="py-4">

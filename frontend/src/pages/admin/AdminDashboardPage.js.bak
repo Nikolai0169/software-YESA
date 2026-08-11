@@ -68,9 +68,9 @@ const AdminDashboardPage = () => {
     const lastDot = cleaned.lastIndexOf('.');
     try {
       if (lastComma > lastDot) {
-        return Number.parseFloat(cleaned.replace(/\./g, '').replace(',', '.')) || 0;
+        return parseFloat(cleaned.replace(/\./g, '').replace(',', '.')) || 0;
       }
-      return Number.parseFloat(cleaned.replace(/,/g, '')) || 0;
+      return parseFloat(cleaned.replace(/,/g, '')) || 0;
     } catch (e) {
       return 0;
     }

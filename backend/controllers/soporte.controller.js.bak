@@ -78,8 +78,8 @@ exports.obtenerContactos = async (req, res) => {
     const { count, rows } = await ContactoSoporte.findAndCountAll({
       where: whereCondition,
       order: [['createdAt', 'DESC']],
-      limit: Number.parseInt(limit),
-      offset: Number.parseInt(offset),
+      limit: parseInt(limit),
+      offset: parseInt(offset),
     });
 
     return res.status(200).json({
@@ -87,8 +87,8 @@ exports.obtenerContactos = async (req, res) => {
       data: rows,
       pagination: {
         total: count,
-        page: Number.parseInt(page),
-        limit: Number.parseInt(limit),
+        page: parseInt(page),
+        limit: parseInt(limit),
         pages: Math.ceil(count / limit),
       },
     });

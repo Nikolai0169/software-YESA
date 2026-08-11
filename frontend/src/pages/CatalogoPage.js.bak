@@ -31,7 +31,7 @@ const CatalogoPage = () => {
       categoriaId: params.get('categoriaId') || '',
       subcategoriaId: params.get('subcategoriaId') || '',
       buscar: params.get('buscar') || '',
-      pagina: Number.parseInt(params.get('pagina')) || 1,
+      pagina: parseInt(params.get('pagina')) || 1,
     };
   }, [location.search]);
 

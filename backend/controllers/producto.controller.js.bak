@@ -85,7 +85,7 @@ const getProductos = async (req, res) => {
       ];
     }
     
-    const offset = (Number.parseInt(pagina) - 1) * Number.parseInt(limite);
+    const offset = (parseInt(pagina) - 1) * parseInt(limite);
     
     const opciones = {
       where,
@@ -93,7 +93,7 @@ const getProductos = async (req, res) => {
         { model: Categoria, as: 'categoria', attributes: ['id', 'nombre'] },
         { model: Subcategoria, as: 'subcategoria', attributes: ['id', 'nombre'] }
       ],
-      limit: Number.parseInt(limite),
+      limit: parseInt(limite),
       offset,
       order: [['nombre', 'ASC']]
     };
@@ -109,9 +109,9 @@ const getProductos = async (req, res) => {
         productos: productosConURL,
         paginacion: {
           total: count,
-          pagina: Number.parseInt(pagina),
-          limite: Number.parseInt(limite),
-          totalPaginas: Math.ceil(count / Number.parseInt(limite))
+          pagina: parseInt(pagina),
+          limite: parseInt(limite),
+          totalPaginas: Math.ceil(count / parseInt(limite))
         }
       }
     });
@@ -197,21 +197,21 @@ const crearProducto = async (req, res) => {
       });
     }
     
-    if (subcategoria.categoriaId !== Number.parseInt(categoriaId)) {
+    if (subcategoria.categoriaId !== parseInt(categoriaId)) {
       return res.status(400).json({
         success: false,
         message: `La subcategoría no pertenece a la categoría seleccionada`
       });
     }
     
-    if (Number.parseFloat(precio) <= 0) {
+    if (parseFloat(precio) <= 0) {
       return res.status(400).json({
         success: false,
         message: 'El precio debe ser mayor a 0'
       });
     }
     
-    if (Number.parseInt(stock) < 0) {
+    if (parseInt(stock) < 0) {
       return res.status(400).json({
         success: false,
         message: 'El stock no puede ser negativo'
@@ -223,10 +223,10 @@ const crearProducto = async (req, res) => {
     const nuevoProducto = await Producto.create({
       nombre,
       descripcion: descripcion || null,
-      precio: Number.parseFloat(precio),
-      stock: Number.parseInt(stock) || 0,
-      categoriaId: Number.parseInt(categoriaId),
-      subcategoriaId: Number.parseInt(subcategoriaId),
+      precio: parseFloat(precio),
+      stock: parseInt(stock) || 0,
+      categoriaId: parseInt(categoriaId),
+      subcategoriaId: parseInt(subcategoriaId),
       imagen,
       imagenes,
       activo: true
@@ -308,10 +308,10 @@ const actualizarProducto = async (req, res) => {
     
     if (nombre) producto.nombre = nombre;
     if (descripcion !== undefined) producto.descripcion = descripcion || null;
-    if (precio !== undefined) producto.precio = Number.parseFloat(precio);
-    if (stock !== undefined) producto.stock = Number.parseInt(stock);
-    if (categoriaId) producto.categoriaId = Number.parseInt(categoriaId);
-    if (subcategoriaId) producto.subcategoriaId = Number.parseInt(subcategoriaId);
+    if (precio !== undefined) producto.precio = parseFloat(precio);
+    if (stock !== undefined) producto.stock = parseInt(stock);
+    if (categoriaId) producto.categoriaId = parseInt(categoriaId);
+    if (subcategoriaId) producto.subcategoriaId = parseInt(subcategoriaId);
     if (activo !== undefined) producto.activo = activo;
     
     const { imagen: imagenDesdeRequest, imagenes: nuevasImagenes } = await resolverImagenProducto(req.body, req.files);
@@ -472,7 +472,7 @@ const actualizarStock = async (req, res) => {
       });
     }
     
-    const cantidadNum = Number.parseInt(cantidad);
+    const cantidadNum = parseInt(cantidad);
     if (cantidadNum < 0) {
       return res.status(400).json({
         success: false,

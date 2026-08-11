@@ -55,7 +55,7 @@ const AdminSubcategoriasPage = () => {
                         (categoria && categoria.nombre.toLowerCase().includes(busqueda));
         if (!coincide) return false;
       }
-      if (filtros.categoriaId !== 'todas' && sub.categoriaId !== Number.parseInt(filtros.categoriaId)) return false;
+      if (filtros.categoriaId !== 'todas' && sub.categoriaId !== parseInt(filtros.categoriaId)) return false;
       if (filtros.estado !== 'todos') {
         if (filtros.estado === 'activos' && !sub.activo) return false;
         if (filtros.estado === 'inactivos' && sub.activo) return false;

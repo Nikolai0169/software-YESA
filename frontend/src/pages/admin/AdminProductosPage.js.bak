@@ -63,10 +63,10 @@ const AdminProductosPage = () => {
       const coincideBusqueda = busqueda === '' || 
         prod.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
         prod.descripcion?.toLowerCase().includes(busqueda.toLowerCase());
-      const coincideCategoria = filtroCategoria === '' || prod.categoriaId === Number.parseInt(filtroCategoria);
-      const coincideSubcategoria = filtroSubcategoria === '' || prod.subcategoriaId === Number.parseInt(filtroSubcategoria);
-      const min = precioMin === '' ? 0 : Number.parseFloat(precioMin);
-      const max = precioMax === '' ? Infinity : Number.parseFloat(precioMax);
+      const coincideCategoria = filtroCategoria === '' || prod.categoriaId === parseInt(filtroCategoria);
+      const coincideSubcategoria = filtroSubcategoria === '' || prod.subcategoriaId === parseInt(filtroSubcategoria);
+      const min = precioMin === '' ? 0 : parseFloat(precioMin);
+      const max = precioMax === '' ? Infinity : parseFloat(precioMax);
       const coincidePrecio = prod.precio >= min && prod.precio <= max;
       return coincideBusqueda && coincideCategoria && coincideSubcategoria && coincidePrecio;
     });
@@ -215,8 +215,8 @@ const AdminProductosPage = () => {
       const formDataToSend = new FormData();
       formDataToSend.append('nombre', formData.nombre);
       formDataToSend.append('descripcion', formData.descripcion);
-      formDataToSend.append('precio', Number.parseFloat(formData.precio));
-      formDataToSend.append('stock', Number.parseInt(formData.stock));
+      formDataToSend.append('precio', parseFloat(formData.precio));
+      formDataToSend.append('stock', parseInt(formData.stock));
       formDataToSend.append('categoriaId', formData.categoriaId);
       formDataToSend.append('subcategoriaId', formData.subcategoriaId || null);
       formDataToSend.append('activo', formData.activo);
@@ -264,8 +264,8 @@ const AdminProductosPage = () => {
       const formDataToSend = new FormData();
       formDataToSend.append('nombre', producto.nombre);
       formDataToSend.append('descripcion', producto.descripcion);
-      formDataToSend.append('precio', Number.parseFloat(producto.precio));
-      formDataToSend.append('stock', Number.parseInt(producto.stock));
+      formDataToSend.append('precio', parseFloat(producto.precio));
+      formDataToSend.append('stock', parseInt(producto.stock));
       formDataToSend.append('categoriaId', producto.categoriaId);
       formDataToSend.append('subcategoriaId', producto.subcategoriaId || null);
       formDataToSend.append('activo', !producto.activo);
@@ -299,8 +299,8 @@ const AdminProductosPage = () => {
         const formDataToSend = new FormData();
         formDataToSend.append('nombre', prod.nombre);
         formDataToSend.append('descripcion', prod.descripcion);
-        formDataToSend.append('precio', Number.parseFloat(prod.precio));
-        formDataToSend.append('stock', Number.parseInt(prod.stock));
+        formDataToSend.append('precio', parseFloat(prod.precio));
+        formDataToSend.append('stock', parseInt(prod.stock));
         formDataToSend.append('categoriaId', prod.categoriaId);
         formDataToSend.append('subcategoriaId', prod.subcategoriaId || null);
         formDataToSend.append('activo', nuevoEstado);
@@ -324,7 +324,7 @@ const AdminProductosPage = () => {
   };
 
   const formatearPrecio = (precio) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(precio);
-  const subcategoriasFiltradas = useMemo(() => subcategorias.filter(sub => sub.categoriaId === Number.parseInt(formData.categoriaId)), [subcategorias, formData.categoriaId]);
+  const subcategoriasFiltradas = useMemo(() => subcategorias.filter(sub => sub.categoriaId === parseInt(formData.categoriaId)), [subcategorias, formData.categoriaId]);
 
   const totalProductos = productos.length;
   const productosActivos = productos.filter(p => p.activo).length;
@@ -408,7 +408,7 @@ const AdminProductosPage = () => {
           <Row className="g-3 align-items-end">
             <Col md={3}><Form.Label className="small">Buscar</Form.Label><InputGroup><InputGroup.Text><i className="bi bi-search"></i></InputGroup.Text><Form.Control placeholder="Nombre o descripción..." value={busqueda} onChange={e => setBusqueda(e.target.value)} /></InputGroup></Col>
             <Col md={2}><Form.Label className="small">Categoría</Form.Label><Form.Select value={filtroCategoria} onChange={e => { setFiltroCategoria(e.target.value); setFiltroSubcategoria(''); }}><option value="">Todas</option>{categorias.filter(c => c.activo).map(cat => <option key={cat.id} value={cat.id}>{cat.nombre}</option>)}</Form.Select></Col>
-            <Col md={2}><Form.Label className="small">Subcategoría</Form.Label><Form.Select value={filtroSubcategoria} onChange={e => setFiltroSubcategoria(e.target.value)} disabled={!filtroCategoria}><option value="">Todas</option>{filtroCategoria && subcategorias.filter(s => s.categoriaId === Number.parseInt(filtroCategoria) && s.activo).map(sub => <option key={sub.id} value={sub.id}>{sub.nombre}</option>)}</Form.Select></Col>
+            <Col md={2}><Form.Label className="small">Subcategoría</Form.Label><Form.Select value={filtroSubcategoria} onChange={e => setFiltroSubcategoria(e.target.value)} disabled={!filtroCategoria}><option value="">Todas</option>{filtroCategoria && subcategorias.filter(s => s.categoriaId === parseInt(filtroCategoria) && s.activo).map(sub => <option key={sub.id} value={sub.id}>{sub.nombre}</option>)}</Form.Select></Col>
             <Col md={2}><Form.Label className="small">Precio min</Form.Label><Form.Control type="number" placeholder="0" value={precioMin} onChange={e => setPrecioMin(e.target.value)} min="0" /></Col>
             <Col md={2}><Form.Label className="small">Precio max</Form.Label><Form.Control type="number" placeholder="Ilimitado" value={precioMax} onChange={e => setPrecioMax(e.target.value)} min="0" /></Col>
             <Col md={1}><Button variant="outline-secondary" className="w-100" onClick={() => { setBusqueda(''); setFiltroCategoria(''); setFiltroSubcategoria(''); setPrecioMin(''); setPrecioMax(''); setOrdenNombre('asc'); }}><i className="bi bi-eraser"></i></Button></Col>

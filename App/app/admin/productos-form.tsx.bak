@@ -116,8 +116,8 @@ export default function AdminProductoForm() {
             const data = {
                 nombre,
                 descripcion,
-                precio: Number.parseFloat(precio),
-                stock: Number.parseInt(stock, 10),
+                precio: parseFloat(precio),
+                stock: parseInt(stock, 10),
               imagen,
               categoriaId: selectedCategoriaId,
               subcategoriaId: selectedSubcategoriaId,

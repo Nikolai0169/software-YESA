@@ -45,7 +45,7 @@ const AdminCotizacionesPage = () => {
     setError(null);
     setSuccessMessage(null);
     const inputValue = priceInputs[cotizacionId];
-    const precio = Number.parseFloat(inputValue);
+    const precio = parseFloat(inputValue);
 
     if (Number.isNaN(precio) || precio <= 0) {
       setError('Ingresa un precio válido mayor a 0.');

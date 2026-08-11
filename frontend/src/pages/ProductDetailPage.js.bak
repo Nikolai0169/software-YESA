@@ -284,7 +284,7 @@ const ProductDetailPage = () => {
                   min="1"
                   max={producto.stock}
                   value={cantidad}
-                  onChange={(e) => setCantidad(Number.parseInt(e.target.value))}
+                  onChange={(e) => setCantidad(parseInt(e.target.value))}
                   style={{ maxWidth: '100px' }}
                 />
               </Form.Group>

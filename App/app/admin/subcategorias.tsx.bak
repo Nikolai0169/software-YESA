@@ -74,7 +74,7 @@ export default function SubcategoriasAdmin() {
     }
 
     try {
-      await createSubcategoria({ nombre: nombre.trim(), categoriaId: Number.parseInt(categoriaId, 10) });
+      await createSubcategoria({ nombre: nombre.trim(), categoriaId: parseInt(categoriaId, 10) });
       setNombre('');
       setCategoriaId('');
       loadSubcategorias();
@@ -95,7 +95,7 @@ export default function SubcategoriasAdmin() {
     try {
       await updateSubcategoria(editingSubcategoria.id, {
         nombre: editingSubcategoria.nombre.trim(),
-        categoriaId: Number.parseInt(editingSubcategoria.categoriaId, 10),
+        categoriaId: parseInt(editingSubcategoria.categoriaId, 10),
       });
       setEditingSubcategoria(null);
       await loadSubcategorias();
@@ -208,7 +208,7 @@ export default function SubcategoriasAdmin() {
     }
 
     try {
-      await createSubcategoria({ nombre: nombre.trim(), categoriaId: Number.parseInt(categoriaId, 10) });
+      await createSubcategoria({ nombre: nombre.trim(), categoriaId: parseInt(categoriaId, 10) });
       setNombre('');
       setCategoriaId('');
       loadSubcategorias();

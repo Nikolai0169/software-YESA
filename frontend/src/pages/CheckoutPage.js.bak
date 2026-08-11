@@ -84,13 +84,13 @@ const CheckoutPage = () => {
 
         if (cot) {
           const itemsFromCot = Array.isArray(cot.items) ? cot.items : [cot];
-          const total = Number.parseFloat(cot.precio || 0);
+          const total = parseFloat(cot.precio || 0);
           const perItem = itemsFromCot.length > 0 ? Math.round((total / itemsFromCot.length) * 100) / 100 : 0;
           const mapped = itemsFromCot.map((it, idx) => ({
             id: idx,
             nombre: it.nombre || it.modelo || `Diseño ${idx + 1}`,
             cantidad: it.cantidad || 1,
-            precio: it.precio !== undefined ? Number.parseFloat(it.precio) : perItem,
+            precio: it.precio !== undefined ? parseFloat(it.precio) : perItem,
           }));
           setCarrito({ items: mapped, resumen: { total }, cotizacionId });
           setLoading(false);
@@ -182,7 +182,7 @@ const CheckoutPage = () => {
   }
 
   const items = carrito?.items || [];
-  const total = Number.parseFloat(carrito?.resumen?.total || 0);
+  const total = parseFloat(carrito?.resumen?.total || 0);
 
   return (
     <Container className="py-4">
