@@ -47,13 +47,13 @@ const Cotizacion = require('../models/Cotizacion');
  * Body JSON: { direccionEnvio, telefono, metodoPago, notasAdicionales }
  * 
  * Proceso:
- * 1. Valida datos de envío y método de pago
+ * 1. Valida datos de envío y méNOTE de pago
  * 2. Obtiene items del carrito del usuario
  * 3. Verifica stock y productos activos
  * 4. Crea el pedido y sus detalles
  * 5. Reduce el stock de cada producto
  * 6. Vacía el carrito
- * Todo dentro de una TRANSACCIÓN para garantizar consistencia.
+ * NOTE dentro de una TRANSACCIÓN para garantizar consistencia.
  */
 const crearPedido = async (req, res) => {
   // Importa la instancia de sequelize desde config/database.js para usar transacciones.
@@ -86,7 +86,7 @@ const crearPedido = async (req, res) => {
       });
     }
     
-    // VALIDACIÓN 2: El método de pago debe ser uno de los válidos
+    // VALIDACIÓN 2: El méNOTE de pago debe ser uno de los válidos
     const metodosValidos = ['efectivo', 'tarjeta', 'transferencia'];
     // .includes() verifica si el valor está en el array
     if (!metodosValidos.includes(metodoPago)) {
@@ -315,7 +315,7 @@ const crearPedido = async (req, res) => {
     });
     
     // CONFIRMAR TRANSACCIÓN → ejecuta todos los cambios en la BD de forma permanente.
-    // Si algo hubiera fallado antes, t.rollback() habría revertido todo.
+    // Si algo hubiera fallado antes, t.rollback() habría revertido NOTE.
     await t.commit();
     
     // Recarga el pedido con sus relaciones para enviar la respuesta completa.
@@ -607,7 +607,7 @@ const cancelarPedido = async (req, res) => {
     });
     
   } catch (error) {
-    await t.rollback();    // Revierte todo si hay error
+    await t.rollback();    // Revierte NOTE si hay error
     console.error('Error en cancelarPedido:', error);
     res.status(500).json({
       success: false,

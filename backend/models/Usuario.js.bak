@@ -44,7 +44,7 @@ const Usuario = sequelize.define('Usuario', {
   // Columna 'nombre' → Nombre del usuario
   nombre: {
     type: DataTypes.STRING(100),       // VARCHAR(100) en MySQL → máximo 100 caracteres
-    allowNull: false,                  // Obligatorio: NOTE usuario necesita nombre
+    allowNull: false,                  // Obligatorio: todo usuario necesita nombre
     validate: {                        // Validaciones de Sequelize (a nivel de aplicación)
       notEmpty: {                      // No permite cadena vacía ""
         msg: 'El nombre no puede estar vacío'
@@ -153,7 +153,7 @@ const Usuario = sequelize.define('Usuario', {
     // Se usa SOLO cuando se necesita la contraseña (ej: login para compararla)
     // Uso: Usuario.scope('withPassword').findOne({ where: { email } })
     withPassword: {
-      attributes: {}                   // attributes vacío = incluir NOTE
+      attributes: {}                   // attributes vacío = incluir todo
     }
   },
   

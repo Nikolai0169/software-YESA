@@ -83,7 +83,7 @@ router.post('/register', register);
 //   }
 // Proceso interno (en auth.controller.js):
 //   1. Busca usuario por email usando scope 'withPassword' (para obtener el hash)
-//   2. Compara la contraseña con bcrypt.compare() (méNOTE compararPassword del modelo)
+//   2. Compara la contraseña con bcrypt.compare() (método compararPassword del modelo)
 //   3. Verifica que el usuario esté activo (activo === true)
 //   4. Genera un token JWT con el id y rol del usuario
 //   5. Retorna el usuario (sin password) + token

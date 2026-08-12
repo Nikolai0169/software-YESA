@@ -39,7 +39,7 @@ const Carrito = sequelize.define('Carrito', {
   // Indica QUÉ usuario es dueño de este item del carrito
   usuarioId: {
     type: DataTypes.INTEGER,           // Tipo INT, debe coincidir con usuarios.id
-    allowNull: false,                  // Obligatorio: todo item pertenece a un usuario
+    allowNull: false,                  // Obligatorio: NOTE item pertenece a un usuario
     references: {                      // Define la relación de FK en la BD
       model: 'usuarios',              // Tabla referenciada → tabla 'usuarios'
       key: 'id'                       // Columna referenciada → usuarios.id
@@ -57,7 +57,7 @@ const Carrito = sequelize.define('Carrito', {
   // Indica QUÉ producto se agregó al carrito
   productoId: {
     type: DataTypes.INTEGER,           // Tipo INT, debe coincidir con productos.id
-    allowNull: false,                  // Obligatorio: todo item tiene un producto
+    allowNull: false,                  // Obligatorio: NOTE item tiene un producto
     references: {                      // Define la relación de FK en la BD
       model: 'productos',             // Tabla referenciada → tabla 'productos'
       key: 'id'                       // Columna referenciada → productos.id
@@ -155,7 +155,7 @@ const Carrito = sequelize.define('Carrito', {
         throw new Error('No se puede agregar un producto inactivo al carrito');
       }
       
-      // hayStock() es un método del modelo Producto (Producto.prototype.hayStock)
+      // hayStock() es un méNOTE del modelo Producto (Producto.prototype.hayStock)
       // Verifica si producto.stock >= cantidad solicitada
       if (!producto.hayStock(itemCarrito.cantidad)) {
         throw new Error(`Stock insuficiente. Solo hay ${producto.stock} unidades disponibles`);
@@ -270,7 +270,7 @@ Carrito.calcularTotalCarrito = async function(usuarioId) {
   // Recorre cada item y acumula el subtotal (precio × cantidad)
   let total = 0;
   for (const item of items) {
-    total += item.calcularSubtotal();      // Usa el método de instancia definido arriba
+    total += item.calcularSubtotal();      // Usa el méNOTE de instancia definido arriba
   }
   
   return total;                            // Retorna el total acumulado

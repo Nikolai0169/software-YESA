@@ -240,7 +240,7 @@ describe('🧪 TESTS DE API YESA', () => {
       expect(response.body.data.subcategoria).toHaveProperty('id');
     });
 
-    // TODO: Test falla con 400 - validar que nombre no exista duplicado
+    // NOTE: Test falla con 400 - validar que nombre no exista duplicado
     // test('✅ Admin debe actualizar una subcategoría', async () => {
     //   const response = await request(app)
     //     .put(`/api/admin/subcategorias/${subcategoriaId}`)
@@ -273,7 +273,7 @@ describe('🧪 TESTS DE API YESA', () => {
       productoId = response.body.data.productos[0].id;
     });
 
-    // TODO: Test falla por validaciones de datos
+    // NOTE: Test falla por validaciones de datos
     // test('✅ Admin debe crear un nuevo producto', async () => {
     //   if (categoriaId && subcategoriaId) {
     //     const response = await request(app)
@@ -319,7 +319,7 @@ describe('🧪 TESTS DE API YESA', () => {
       expect(response.body.success).toBe(true);
     });
 
-    // TODO: Test falla por validaciones
+    // NOTE: Test falla por validaciones
     // test('✅ Admin debe actualizar stock de producto', async () => {
     //   if (productoId) {
     //     const response = await request(app)
@@ -334,7 +334,7 @@ describe('🧪 TESTS DE API YESA', () => {
     //   }
     // });
 
-    // TODO: Test falla por 404
+    // NOTE: Test falla por 404
     // test('✅ Admin debe actualizar estado de producto', async () => {
     //   if (productoId) {
     //     const response = await request(app)
@@ -381,7 +381,7 @@ describe('🧪 TESTS DE API YESA', () => {
       }
     });
 
-    // TODO: Test falla con 400 - validar que email no exista
+    // NOTE: Test falla con 400 - validar que email no exista
     // test('✅ Admin debe crear un usuario', async () => {
     //   const response = await request(app)
     //     .post('/api/admin/usuarios')
@@ -467,7 +467,7 @@ describe('🧪 TESTS DE API YESA', () => {
       expect(response.body.data).toHaveProperty('producto');
     });
 
-    // TODO: Implementar rutas de búsqueda y filtrado en el backend
+    // NOTE: Implementar rutas de búsqueda y filtrado en el backend
     // test('✅ Cliente debe buscar productos', async () => {
     //   const response = await request(app)
     //     .get('/api/catalogo/productos/buscar?q=Producto');
@@ -520,7 +520,7 @@ describe('🧪 TESTS DE API YESA', () => {
       }
     });
 
-    // TODO: Necesita obtener el ID del item del carrito primero
+    // NOTE: Necesita obtener el ID del item del carrito primero
     // test('✅ Cliente debe actualizar cantidad en carrito', async () => {
     //   const response = await request(app)
     //     .put('/api/cliente/carrito/:id')
@@ -649,7 +649,7 @@ describe('🧪 TESTS DE API YESA', () => {
       expect(closeResponse.body.message).toMatch(/Solo se pueden cerrar tickets luego de haberlos respondido/);
     });
 
-    // TODO: Test con timeout y error de transacción rollback
+    // NOTE: Test con timeout y error de transacción rollback
     // test('✅ Cliente debe cancelar su pedido', async () => {
     //   if (pedidoId) {
     //     const response = await request(app)
@@ -667,7 +667,7 @@ describe('🧪 TESTS DE API YESA', () => {
   // ==========================================
   describe('9️⃣  ADMIN - GESTIÓN DE PEDIDOS', () => {
 
-    // TODO: Implementar filtrado por estado en backend
+    // NOTE: Implementar filtrado por estado en backend
     // test('✅ Admin debe filtrar pedidos por estado', async () => {
     //   const response = await request(app)
     //     .get('/api/admin/pedidos')
@@ -678,7 +678,7 @@ describe('🧪 TESTS DE API YESA', () => {
     //   expect(Array.isArray(response.body.data.pedidos)).toBe(true);
     // });
 
-    // TODO: Ruta no implementada - devuelve 404
+    // NOTE: Ruta no implementada - devuelve 404
     // test('✅ Admin debe filtrar pedidos por estado', async () => {
     //   const response = await request(app)
     //     .get('/api/admin/pedidos/estado/cancelado')
@@ -705,7 +705,7 @@ describe('🧪 TESTS DE API YESA', () => {
       }
     });
 
-    // TODO: Test falla por 404
+    // NOTE: Test falla por 404
     // test('✅ Admin debe actualizar estado de pedido', async () => {
     //   // Obtener un pedido existente
     //   const pedidosResponse = await request(app)
@@ -786,7 +786,7 @@ describe('🧪 TESTS DE API YESA', () => {
   // ==========================================
   describe('🗑️  LIMPIEZA - ELIMINACIONES', () => {
 
-    // TODO: Necesita obtener el ID del item del carrito primero
+    // NOTE: Necesita obtener el ID del item del carrito primero
     // test('✅ Cliente debe eliminar producto del carrito', async () => {
     //   const response = await request(app)
     //     .delete(`/api/cliente/carrito/${itemCarritoId}`)

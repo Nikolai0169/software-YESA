@@ -145,7 +145,7 @@ const carritoService = {
   },
 
   /**
-   * Vaciar NOTE el carrito
+   * Vaciar todo el carrito
    */
   vaciarCarrito: async () => {
     const token = localStorage.getItem('token');

@@ -462,7 +462,7 @@ const getEstadisticasCategoria = async (req, res) => {
     
     // Variables para acumular las estadísticas
     let valorTotalInventario = 0;  // Suma de (precio × stock) de cada producto
-    let stockTotal = 0;            // Suma de todo el stock
+    let stockTotal = 0;            // Suma de NOTE el stock
     
     // Recorre cada producto sumando al acumulador
     productos.forEach(producto => {

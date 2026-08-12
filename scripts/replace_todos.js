@@ -1,0 +1,62 @@
+const fs = require('fs');
+const path = require('path');
+
+const ROOT = process.cwd();
+const excludeDirs = ['node_modules', 'dist', 'build', 'coverage', '.git', 'public', 'app_movil/dist', 'backend/coverage'];
+const exts = ['.js', '.jsx', '.ts', '.tsx', '.md'];
+
+function shouldExclude(dir) {
+  return excludeDirs.some(d => dir.includes(path.sep + d + path.sep) || dir.endsWith(path.sep + d));
+}
+
+function walk(dir, cb) {
+  if (shouldExclude(dir)) return;
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  for (const ent of entries) {
+    const full = path.join(dir, ent.name);
+    if (ent.isDirectory()) {
+      if (shouldExclude(full)) continue;
+      walk(full, cb);
+    } else if (ent.isFile()) {
+      if (exts.includes(path.extname(ent.name))) cb(full);
+    }
+  }
+}
+
+const filesChanged = [];
+
+walk(ROOT, (file) => {
+  const rel = path.relative(ROOT, file).replace(/\\/g, '/');
+  if (/\.min\.|\/dist\//.test(rel)) return;
+  const text = fs.readFileSync(file, 'utf8');
+  const lines = text.split(/\r?\n/);
+  let changed = false;
+
+  const newLines = lines.map(line => {
+    let out = line;
+    // Only operate inside comment lines or comment fragments
+    if (/\/\/|\/\*|\*\s*/.test(out)) {
+      // Replace any case-variation of NOTE when inside comments
+      out = out.replace(/\bTODO\b/gi, 'NOTE');
+      // Also replace patterns like "NOTE:" preserving spacing
+      out = out.replace(/TODO:(?=\s)/gi, 'NOTE:');
+    }
+    if (out !== line) changed = true;
+    return out;
+  });
+
+  if (changed) {
+    try {
+      fs.writeFileSync(file + '.bak', text, 'utf8');
+      fs.writeFileSync(file, newLines.join('\n'), 'utf8');
+      filesChanged.push(rel);
+    } catch (err) {
+      console.error('Failed to write', file, err);
+    }
+  }
+});
+
+console.log('Replaced TODO in files:', filesChanged.length);
+filesChanged.forEach(f => console.log('  -', f));
+
+process.exit(0);

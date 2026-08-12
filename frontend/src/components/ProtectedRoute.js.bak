@@ -31,7 +31,7 @@ const ProtectedRoute = ({ children, requireAdmin = false, requireAdminOnly = fal
     return <Navigate to="/" replace />;
   }
 
-  // Si NOTE está bien, renderizar el componente
+  // Si todo está bien, renderizar el componente
   return children;
 };
 

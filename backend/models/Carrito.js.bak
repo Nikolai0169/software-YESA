@@ -200,11 +200,11 @@ const Carrito = sequelize.define('Carrito', {
 
 /**
  * calcularSubtotal() → Calcula precio × cantidad de este item
- * parseFloat() convierte el DECIMAL de la BD a número JavaScript
+ * Number.parseFloat() convierte el DECIMAL de la BD a número JavaScript
  * @returns {number} Subtotal de este item del carrito
  */
 Carrito.prototype.calcularSubtotal = function() {
-  return parseFloat(this.precioUnitario) * this.cantidad;
+  return Number.parseFloat(this.precioUnitario) * this.cantidad;
 };
 
 /**

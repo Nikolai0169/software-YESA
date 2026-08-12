@@ -136,7 +136,7 @@ const carritoService = {
         await writeLocalCart(filtered);
     },
 
-    //vacia NOTE el carrito
+    //vacia todo el carrito
     vaciarCarrito: async(isAuthenticated) => {
         if (isAuthenticated) {
             await apiClient.delete('/cliente/carrito');

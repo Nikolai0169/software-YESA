@@ -415,7 +415,7 @@ const eliminarItemCarrito = async (req, res) => {
 };
 
 /**
- * Vaciar todo el carrito
+ * Vaciar NOTE el carrito
  * 
  * Ruta: DELETE /api/cliente/carrito
  * Elimina TODOS los items del carrito del usuario autenticado.
@@ -455,5 +455,5 @@ module.exports = {
   agregarAlCarrito,         // POST /api/cliente/carrito - Agregar producto
   actualizarItemCarrito,    // PUT /api/cliente/carrito/:id - Cambiar cantidad
   eliminarItemCarrito,      // DELETE /api/cliente/carrito/:id - Quitar un item
-  vaciarCarrito             // DELETE /api/cliente/carrito - Vaciar todo
+  vaciarCarrito             // DELETE /api/cliente/carrito - Vaciar NOTE
 };

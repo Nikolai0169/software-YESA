@@ -151,11 +151,11 @@ app.use(async (req, res, next) => {
 
 // Middleware de logging → Muestra en consola cada petición HTTP que llega al servidor
 // Solo se activa en modo desarrollo (NODE_ENV=development en .env)
-// Útil para depuración: ver qué rutas se están llamando y con qué méNOTE
+// Útil para depuración: ver qué rutas se están llamando y con qué método
 if (process.env.NODE_ENV === 'development') {
   // app.use() con una función (req, res, next) es un middleware personalizado
   app.use((req, res, next) => {
-    // Imprime el méNOTE HTTP (GET, POST, etc.) y la ruta de la petición
+    // Imprime el método HTTP (GET, POST, etc.) y la ruta de la petición
     console.log(`📨 ${req.method} ${req.path}`);
     
     // next() → OBLIGATORIO en middlewares: pasa la petición al siguiente middleware/ruta
@@ -291,7 +291,7 @@ app.use((err, req, res, next) => {
 // ==========================================
 
 /**
- * startServer() → Función asíncrona principal que arranca NOTE el backend
+ * startServer() → Función asíncrona principal que arranca todo el backend
  * Se ejecuta al final del archivo. Sigue estos pasos en orden:
  *   1. Prueba la conexión a MySQL (testConnection)
  *   2. Inicializa las asociaciones entre modelos (initAssociations)

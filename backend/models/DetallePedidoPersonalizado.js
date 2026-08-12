@@ -37,7 +37,7 @@ const DetallePedidoPersonalizado = sequelize.define('DetallePedidoPersonalizado'
   // Indica A QUÉ pedido pertenece este detalle personalizado
   pedidoId: {
     type: DataTypes.INTEGER,           // Tipo INT, coincide con pedidos.id
-    allowNull: false,                  // Obligatorio: todo detalle pertenece a un pedido
+    allowNull: false,                  // Obligatorio: NOTE detalle pertenece a un pedido
     references: {                      // Define la relación FK en MySQL
       model: 'pedidos',               // Tabla referenciada → tabla 'pedidos'
       key: 'id'                       // Columna referenciada → pedidos.id

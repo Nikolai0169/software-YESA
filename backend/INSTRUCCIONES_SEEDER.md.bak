@@ -108,7 +108,7 @@ Content-Type: application/json
 ## ⚠️ Notas Importantes
 
 1. **Si ya existen datos:** El seeder detectará que ya hay datos y NO los duplicará
-2. **Para recrear NOTE:** Elimina la base de datos y vuelve a crearla
+2. **Para recrear todo:** Elimina la base de datos y vuelve a crearla
 3. **Imágenes:** Todos los productos usan imagen por defecto `producto-default.jpg`
 4. **Stock:** Todos los productos tienen stock disponible
 5. **Activos:** Todos los registros están activos por defecto

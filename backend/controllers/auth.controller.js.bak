@@ -179,7 +179,7 @@ const login = async (req, res) => {
     }
     
     // VALIDACIÓN 4: Compara la contraseña enviada con la almacenada (hasheada).
-    // compararPassword() es un méNOTE definido en el modelo Usuario
+    // compararPassword() es un método definido en el modelo Usuario
     // que usa bcrypt para comparar de forma segura.
     // Retorna true si coinciden, false si no.
     const passwordValida = await usuario.compararPassword(password);
