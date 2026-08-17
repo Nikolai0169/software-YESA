@@ -25,8 +25,9 @@ const {
 const { verificarAuth, verificarAuthOpcional } = require('../middleware/auth');
 const { esAdministrador, esAdminOAuxiliar, soloAdministrador } = require('../middleware/checkRole');
 
-// Ahora se requiere autenticación para enviar mensajes de soporte
-router.post('/contact', verificarAuth, enviarContacto);
+// El formulario de soporte puede enviarse con o sin autenticación.
+// Si hay usuario logueado, se usa su id; si no, el mensaje queda anónimo.
+router.post('/contact', verificarAuthOpcional, enviarContacto);
 
 router.get('/mis-consultas', verificarAuth, misConsultas); // ← agregado
 

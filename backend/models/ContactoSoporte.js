@@ -43,7 +43,7 @@ const ContactoSoporte = sequelize.define('ContactoSoporte', {
     type: DataTypes.STRING(200),
     allowNull: false,
     validate: {
-      len: [5, 200],
+      len: [1, 200],
     },
   },
   mensaje: {

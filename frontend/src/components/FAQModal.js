@@ -125,21 +125,6 @@ const FAQModal = ({ show, onHide, openSection, setShowFAQ, openContact = false }
 
   const handleContactSupport = () => {
     setFormMessage('');
-
-    if (!isAuthenticated) {
-      onHide();
-      navigate('/login', {
-        state: {
-          from: {
-            pathname: location.pathname,
-            search: location.search,
-          },
-          returnToSupport: true,
-        },
-      });
-      return;
-    }
-
     setShowContactForm(true);
   };
   
@@ -149,14 +134,6 @@ const FAQModal = ({ show, onHide, openSection, setShowFAQ, openContact = false }
   e.preventDefault();
 
   const token = localStorage.getItem('token');
-  if (!token) {
-    setFormMessage('❌ Debes iniciar sesión para enviar la consulta. Serás redirigido al login.');
-    setTimeout(() => {
-      onHide();
-      navigate('/login');
-    }, 1400);
-    return;
-  }
 
   const data = {
     nombre: nombreValue,
@@ -165,7 +142,10 @@ const FAQModal = ({ show, onHide, openSection, setShowFAQ, openContact = false }
     mensaje: mensajeValue,
   };
 
-  const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
 
   try {
 const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/support/contact`, {
