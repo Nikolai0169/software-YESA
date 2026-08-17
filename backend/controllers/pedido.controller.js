@@ -120,7 +120,7 @@ const crearPedido = async (req, res) => {
       }
 
       const totalCotizacion = Number.parseFloat(cot.precio);
-      if (Number.isNaNtotalCotizacion) || totalCotizacion <= 0) {
+      if (Number.isNaN(totalCotizacion) || totalCotizacion <= 0) {
         await t.rollback();
         return res.status(400).json({
           success: false,
