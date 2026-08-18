@@ -12,7 +12,7 @@ export const formatCurrency = (value) => {
   if (value === null || value === undefined || value === '') return '$0';
 
   const raw = typeof value === 'string'
-    ? value.trim().replace(/\$/g, '').replace(/\s+/g, '').replace(/[^0-9,.-]/g, '')
+      ? value.trim().replaceAll('$', '').replaceAll(/\s+/g, '').replaceAll(/[^0-9,.-]/g, '')
     : String(value);
 
   const normalized = (() => {
@@ -21,26 +21,26 @@ export const formatCurrency = (value) => {
       const lastDot = raw.lastIndexOf('.');
 
       if (lastComma > lastDot) {
-        return raw.replace(/\./g, '').replace(/,/g, '.');
+        return raw.replaceAll('.', '').replaceAll(',', '.');
       }
 
-      return raw.replace(/,/g, '');
+      return raw.replaceAll(',', '');
     }
 
     if (raw.includes(',')) {
       const parts = raw.split(',');
 
-      if (parts.length > 1 && parts[parts.length - 1].length === 3 && parts[0].length <= 3) {
+      if (parts.length > 1 && parts.at(-1).length === 3 && parts[0].length <= 3) {
         return parts.join('');
       }
 
-      return raw.replace(/,/g, '.');
+      return raw.replaceAll(',', '.');
     }
 
     if (raw.includes('.')) {
       const parts = raw.split('.');
 
-      if (parts.length > 1 && parts[parts.length - 1].length === 3 && parts[0].length <= 3) {
+      if (parts.length > 1 && parts.at(-1).length === 3 && parts[0].length <= 3) {
         return parts.join('');
       }
 
@@ -95,15 +95,28 @@ export const formatDateTime = (dateString) => {
 export const getImageUrl = (imagePath) => {
   if (!imagePath) return '/placeholder.png';
   if (imagePath.startsWith('http')) return imagePath;
-  return `${process.env.REACT_APP_API_URL?.replace(/\/api\/?$/, '') || 'http://localhost:5000'}/${imagePath.replace(/^\//, '')}`;
+  const configuredApiUrl = process.env.REACT_APP_API_URL;
+  let baseUrl = configuredApiUrl || 'http://localhost:5000';
+  if (configuredApiUrl?.endsWith('/api/')) {
+    baseUrl = configuredApiUrl.slice(0, -5);
+  } else if (configuredApiUrl?.endsWith('/api')) {
+    baseUrl = configuredApiUrl.slice(0, -4);
+  }
+  const relativePath = imagePath.startsWith('/') ? imagePath.slice(1) : imagePath;
+  return `${baseUrl}/${relativePath}`;
 };
 
 /**
  * Validar email
  */
 export const isValidEmail = (email) => {
-  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return re.test(email);
+  const normalizedEmail = email.trim();
+  const atIndex = normalizedEmail.indexOf('@');
+  return atIndex > 0
+    && atIndex === normalizedEmail.lastIndexOf('@')
+    && atIndex < normalizedEmail.length - 1
+    && !/\s/.test(normalizedEmail)
+    && normalizedEmail.slice(atIndex + 1).includes('.');
 };
 
 /**

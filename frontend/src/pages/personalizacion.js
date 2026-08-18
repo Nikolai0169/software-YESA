@@ -511,7 +511,7 @@ const PersonalizacionPage = () => {
             formData.append('texture', blob, 'texture.png');
           }
           const uploadResp = await uploadFile('/uploads/texture', formData);
-          textureUrlToSend = getAllowedUploadPath(uploadResp.data?.url) || textureUrlToSend;
+          textureUrlToSend = getAllowedUploadPath(uploadResp.data?.url);
         } catch (err) {
           console.error('Error subiendo textura antes de cotizar:', err);
           throw new Error('No se pudo subir la textura');
@@ -584,6 +584,9 @@ const PersonalizacionPage = () => {
           if (allowedUrl) {
             disenoData.textureUrl = allowedUrl;
             disenoData.texture = allowedUrl;
+          } else {
+            disenoData.textureUrl = null;
+            disenoData.texture = null;
           }
         }
       } catch (err) {

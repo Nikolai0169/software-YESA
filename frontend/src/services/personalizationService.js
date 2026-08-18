@@ -1,34 +1,42 @@
 import { normalizePersonalizacionDesign } from '../utils/helpers';
 
 const STORAGE_KEY = 'saved_personalization_designs';
+const ALLOWED_UPLOAD_PATH = /^\/uploads\/[A-Za-z0-9._/-]+$/;
+const URL_FIELDS = new Set(['textureUrl', 'texture', 'imagen', 'composedTextureUrl']);
 
-const sanitizeForStorage = (value) => {
+const sanitizeForStorage = (value, fieldName = '') => {
   if (typeof value === 'string') {
-    return value.replace(/[\u0000-\u001f\u007f]/g, '').slice(0, 5000);
+    const sanitized = value.replace(/[\u0000-\u001f\u007f]/g, '').slice(0, 5000);
+    if (URL_FIELDS.has(fieldName)) {
+      return ALLOWED_UPLOAD_PATH.test(sanitized) ? sanitized : null;
+    }
+    return sanitized;
   }
   if (Array.isArray(value)) {
-    return value.map(sanitizeForStorage);
+    return value.map((entry) => sanitizeForStorage(entry, fieldName));
   }
   if (value && typeof value === 'object') {
     return Object.fromEntries(
-      Object.entries(value).map(([key, entry]) => [key, sanitizeForStorage(entry)])
+      Object.entries(value).map(([key, entry]) => [key, sanitizeForStorage(entry, key)])
     );
   }
   return value;
 };
 
-const encodeDesignForStorage = (design) => encodeURIComponent(
-  JSON.stringify(sanitizeForStorage(normalizePersonalizacionDesign(design)))
-);
+const writeSanitizedStorageValue = (key, value) => {
+  const sanitizedValue = sanitizeForStorage(value);
+  const encodedValue = encodeURIComponent(JSON.stringify(sanitizedValue));
+  localStorage.setItem(key, encodedValue);
+};
 
 const decodeDesignFromStorage = (value) => normalizePersonalizacionDesign(
-  JSON.parse(decodeURIComponent(value))
+  sanitizeForStorage(JSON.parse(decodeURIComponent(value)))
 );
 
 export const getSavedDesigns = () => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    const savedDesigns = raw ? JSON.parse(decodeURIComponent(raw)) : [];
+    const savedDesigns = raw ? sanitizeForStorage(JSON.parse(decodeURIComponent(raw))) : [];
     return Array.isArray(savedDesigns)
       ? savedDesigns.map((design) => normalizePersonalizacionDesign(design))
       : [];
@@ -50,7 +58,7 @@ export const saveDesignLocally = (design) => {
     const updated = found
       ? existing.map((item) => (item.id === designWithId.id ? designWithId : item))
       : [...existing, designWithId];
-    localStorage.setItem(STORAGE_KEY, encodeURIComponent(JSON.stringify(sanitizeForStorage(updated))));
+    writeSanitizedStorageValue(STORAGE_KEY, updated);
     return designWithId;
   } catch (error) {
     console.error('Error guardando diseño localmente:', error);
@@ -62,7 +70,7 @@ export const deleteSavedDesign = (designId) => {
   try {
     const existing = getSavedDesigns();
     const filtered = existing.filter((design) => design.id !== designId);
-    localStorage.setItem(STORAGE_KEY, encodeURIComponent(JSON.stringify(sanitizeForStorage(filtered))));
+    writeSanitizedStorageValue(STORAGE_KEY, filtered);
     return filtered;
   } catch (error) {
     console.error('Error al eliminar diseño guardado:', error);
@@ -85,10 +93,7 @@ const PENDING_DESIGN_KEY = 'pending_personalization_design';
 
 export const setDesignToEdit = (design) => {
   try {
-    localStorage.setItem(
-      CURRENT_DESIGN_KEY,
-      encodeDesignForStorage(design)
-    );
+    writeSanitizedStorageValue(CURRENT_DESIGN_KEY, normalizePersonalizacionDesign(design));
   } catch (error) {
     console.error('Error al guardar diseño para edición:', error);
   }
@@ -114,10 +119,7 @@ export const clearDesignToEdit = () => {
 
 export const setPendingDesignToEdit = (design) => {
   try {
-    localStorage.setItem(
-      PENDING_DESIGN_KEY,
-      encodeDesignForStorage(design)
-    );
+    writeSanitizedStorageValue(PENDING_DESIGN_KEY, normalizePersonalizacionDesign(design));
   } catch (error) {
     console.error('Error al guardar diseño pendiente para edición:', error);
   }

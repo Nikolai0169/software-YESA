@@ -15,6 +15,37 @@ import authService from '../../../src/services/authService';
 import { updateUsuario } from '../../../src/services/adminService';
 import { Colors } from '../../../constants/theme';
 
+const validateUserForm = (formData: {
+  nombre: string;
+  apellido: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  telefono: string;
+}, isEditing: boolean) => {
+  const email = formData.email.trim();
+
+  if (!isEditing && (!formData.nombre.trim() || !formData.apellido.trim() || !email)) {
+    return 'Nombre, apellido y email son obligatorios al crear un usuario.';
+  }
+  if (!isEditing && !formData.password.trim()) {
+    return 'La contraseña es obligatoria para crear un usuario.';
+  }
+  if (!isEditing && formData.password.length < 6) {
+    return 'La contraseña debe tener al menos 6 caracteres.';
+  }
+  if (!isEditing && formData.password !== formData.confirmPassword) {
+    return 'Las contraseñas no coinciden.';
+  }
+  if (email && !/^[^\s@]+@[^.\s@]+(?:\.[^.\s@]+)+$/.test(email)) {
+    return 'El email ingresado no es válido.';
+  }
+  if (formData.telefono && !/^3\d{9}$/.test(formData.telefono)) {
+    return 'El teléfono debe tener 10 dígitos iniciando con 3.';
+  }
+  return null;
+};
+
 export default function CrearUsuarioAdmin() {
   const { isChecking, isAuthorized } = useAdminRole();
   const params = useLocalSearchParams();
@@ -50,35 +81,9 @@ export default function CrearUsuarioAdmin() {
   };
 
   const handleSubmit = async () => {
-    if (!isEditing) {
-      if (!formData.nombre.trim() || !formData.apellido.trim() || !formData.email.trim()) {
-        Alert.alert('Validación', 'Nombre, apellido y email son obligatorios al crear un usuario.');
-        return;
-      }
-
-      if (!formData.password.trim()) {
-        Alert.alert('Validación', 'La contraseña es obligatoria para crear un usuario.');
-        return;
-      }
-
-      if (formData.password.length < 6) {
-        Alert.alert('Validación', 'La contraseña debe tener al menos 6 caracteres.');
-        return;
-      }
-
-      if (formData.password !== formData.confirmPassword) {
-        Alert.alert('Validación', 'Las contraseñas no coinciden.');
-        return;
-      }
-    }
-
-    if (formData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
-      Alert.alert('Validación', 'El email ingresado no es válido.');
-      return;
-    }
-
-    if (formData.telefono && !/^3\d{9}$/.test(formData.telefono)) {
-      Alert.alert('Validación', 'El teléfono debe tener 10 dígitos iniciando con 3.');
+    const validationError = validateUserForm(formData, isEditing);
+    if (validationError) {
+      Alert.alert('Validación', validationError);
       return;
     }
 

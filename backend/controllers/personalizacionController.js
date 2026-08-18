@@ -30,6 +30,62 @@ const normalizeDesign = (design = {}) => {
   };
 };
 
+const buildCotizacionItems = (designs) => designs.map((design, index) => ({
+  nombre: design.nombre || `Diseño ${index + 1}`,
+  modelo: design.modelo || 'taza',
+  colorInterior: design.colorInterior,
+  colorBase: design.colorBase,
+  colorExterior: design.colorExterior,
+  colorAsa: design.colorAsa,
+  textInterior: design.textInterior,
+  textExterior: design.textExterior,
+  textureUrl: design.textureUrl || null,
+  overlayText: design.overlayText,
+  overlayTextFontFamily: design.overlayTextFontFamily,
+  overlayTextFontSize: design.overlayTextFontSize,
+  overlayTextColor: design.overlayTextColor,
+  textureOffset: design.textureOffset || {
+    x: design.textureOffsetX ?? 0,
+    y: design.textureOffsetY ?? 0,
+  },
+  textureOffsetX: design.textureOffsetX,
+  textureOffsetY: design.textureOffsetY,
+  textureScale: design.textureScale,
+  zoom: design.zoom,
+  notas: design.notas || null,
+}));
+
+const buildCotizacionValues = (design, isMultiple, itemCount, items) => {
+  const nullable = (value) => (isMultiple ? null : value);
+
+  return {
+  usuarioId: design.usuarioId,
+  nombre: isMultiple
+    ? `Cotización múltiple (${itemCount} diseños)`
+    : design.firstDesign.nombre || 'Cotización de producto personalizado',
+  modelo: isMultiple ? 'multiple' : design.firstDesign.modelo,
+  colorInterior: nullable(design.firstDesign.colorInterior),
+  colorBase: nullable(design.firstDesign.colorBase),
+  colorExterior: nullable(design.firstDesign.colorExterior),
+  colorAsa: nullable(design.firstDesign.colorAsa),
+  textInterior: nullable(design.firstDesign.textInterior),
+  textExterior: nullable(design.firstDesign.textExterior),
+  textureUrl: nullable(design.firstDesign.textureUrl || null),
+  overlayText: nullable(design.firstDesign.overlayText),
+  overlayTextFontFamily: nullable(design.firstDesign.overlayTextFontFamily),
+  overlayTextFontSize: nullable(design.firstDesign.overlayTextFontSize),
+  overlayTextColor: nullable(design.firstDesign.overlayTextColor),
+  textureOffsetX: nullable(design.firstDesign.textureOffsetX),
+  textureOffsetY: nullable(design.firstDesign.textureOffsetY),
+  textureScale: nullable(design.firstDesign.textureScale),
+  zoom: nullable(design.firstDesign.zoom),
+  items,
+  precio: 0,
+  estado: 'pendiente',
+  notas: design.firstDesign.notas || `Cotización con ${itemCount} diseño(s) pendiente(s) de revisión`,
+  };
+};
+
 // Guardar diseño
 exports.guardarDiseno = async (req, res) => {
   try {
@@ -72,12 +128,8 @@ exports.guardarDiseno = async (req, res) => {
 exports.cotizarProducto = async (req, res) => {
   try {
     // Log de diagnóstico: cuántos diseños y tamaño aproximado del payload
-    try {
-      const raw = JSON.stringify(req.body || {});
-      console.log(`📦 Cotizar request - payload bytes: ${Buffer.byteLength(raw, 'utf8')}`);
-    } catch (e) {
-      console.log('📦 Cotizar request - no fue posible calcular tamaño del payload');
-    }
+    const raw = JSON.stringify(req.body || {});
+    console.log(`📦 Cotizar request - payload bytes: ${Buffer.byteLength(raw, 'utf8')}`);
 
     const disenos = Array.isArray(req.body.disenos) ? req.body.disenos : [req.body];
     const normalizedDesigns = disenos.map((design) => normalizeDesign(design));
@@ -86,59 +138,11 @@ exports.cotizarProducto = async (req, res) => {
 
     console.log(`✉️ Cotizar request - diseños: ${normalizedDesigns.length}`);
 
-    const items = normalizedDesigns.map((design, index) => ({
-      nombre: design.nombre || `Diseño ${index + 1}`,
-      modelo: design.modelo || 'taza',
-      colorInterior: design.colorInterior,
-      colorBase: design.colorBase,
-      colorExterior: design.colorExterior,
-      colorAsa: design.colorAsa,
-      textInterior: design.textInterior,
-      textExterior: design.textExterior,
-      textureUrl: design.textureUrl || null,
-      overlayText: design.overlayText,
-      overlayTextFontFamily: design.overlayTextFontFamily,
-      overlayTextFontSize: design.overlayTextFontSize,
-      overlayTextColor: design.overlayTextColor,
-      textureOffset: design.textureOffset || {
-        x: design.textureOffsetX ?? 0,
-        y: design.textureOffsetY ?? 0,
-      },
-      textureOffsetX: design.textureOffsetX,
-      textureOffsetY: design.textureOffsetY,
-      textureScale: design.textureScale,
-      zoom: design.zoom,
-      notas: design.notas || null,
-    }));
-
-    const cotizacionNotas = firstDesign.notas ? firstDesign.notas : `Cotización con ${disenos.length} diseño(s) pendiente(s) de revisión`;
-
-    const nuevaCotizacion = await Cotizacion.create({
+    const items = buildCotizacionItems(normalizedDesigns);
+    const nuevaCotizacion = await Cotizacion.create(buildCotizacionValues({
       usuarioId: req.usuario ? req.usuario.id : null,
-      nombre: isMultiple
-        ? `Cotización múltiple (${disenos.length} diseños)`
-        : firstDesign.nombre || 'Cotización de producto personalizado',
-      modelo: isMultiple ? 'multiple' : firstDesign.modelo,
-      colorInterior: isMultiple ? null : firstDesign.colorInterior,
-      colorBase: isMultiple ? null : firstDesign.colorBase,
-      colorExterior: isMultiple ? null : firstDesign.colorExterior,
-      colorAsa: isMultiple ? null : firstDesign.colorAsa,
-      textInterior: isMultiple ? null : firstDesign.textInterior,
-      textExterior: isMultiple ? null : firstDesign.textExterior,
-      textureUrl: !isMultiple ? (firstDesign.textureUrl || null) : null,
-      overlayText: isMultiple ? null : firstDesign.overlayText,
-      overlayTextFontFamily: isMultiple ? null : firstDesign.overlayTextFontFamily,
-      overlayTextFontSize: isMultiple ? null : firstDesign.overlayTextFontSize,
-      overlayTextColor: isMultiple ? null : firstDesign.overlayTextColor,
-      textureOffsetX: isMultiple ? null : firstDesign.textureOffsetX,
-      textureOffsetY: isMultiple ? null : firstDesign.textureOffsetY,
-      textureScale: isMultiple ? null : firstDesign.textureScale,
-      zoom: isMultiple ? null : firstDesign.zoom,
-      items,
-      precio: 0,
-      estado: 'pendiente',
-      notas: cotizacionNotas,
-    });
+      firstDesign,
+    }, isMultiple, disenos.length, items));
 
     res.json({ mensaje: 'Cotización enviada y pendiente', cotizacion: nuevaCotizacion });
   } catch (error) {
@@ -147,8 +151,7 @@ exports.cotizarProducto = async (req, res) => {
     const errMsg = process.env.NODE_ENV === 'development'
       ? (error.message || String(error))
       : 'Error al cotizar producto';
-    const status = error.name && error.name.includes('Sequelize') ? 500 : 500;
-    return res.status(status).json({ error: errMsg, detail: process.env.NODE_ENV === 'development' ? error.stack : undefined });
+    return res.status(500).json({ error: errMsg, detail: process.env.NODE_ENV === 'development' ? error.stack : undefined });
   }
 };
 

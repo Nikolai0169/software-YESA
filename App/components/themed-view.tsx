@@ -1,4 +1,5 @@
 import { View, Text, type ViewProps } from 'react-native';
+import { Children } from 'react';
 import type { ReactNode } from 'react';
 
 import { useThemeColor } from '../hooks/use-theme-color';
@@ -19,7 +20,9 @@ export function ThemedView({ style, lightColor, darkColor, children, ...otherPro
     if (ch === null || ch === undefined) return ch;
     if (typeof ch === 'string' || typeof ch === 'number') return <Text>{String(ch)}</Text>;
     if (Array.isArray(ch)) {
-      return ch.map((c, i) => (typeof c === 'string' || typeof c === 'number' ? <Text key={i}>{String(c)}</Text> : c));
+      return Children.toArray(ch).map((c) => (
+        typeof c === 'string' || typeof c === 'number' ? <Text key={String(c)}>{String(c)}</Text> : c
+      ));
     }
     return ch;
   };
