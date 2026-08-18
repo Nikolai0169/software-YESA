@@ -21,19 +21,6 @@ const validateRequestUrl = (value) => {
   return requestUrl;
 };
 
-const sanitizeLogValue = (value) => {
-  const text = value instanceof Error ? value.message : String(value);
-  return text.replace(/[\r\n]/g, ' ');
-};
-
-const log = (...args) => {
-  process.stdout.write(`${args.map(sanitizeLogValue).join(' ')}\n`);
-};
-
-const error = (...args) => {
-  process.stderr.write(`${args.map(sanitizeLogValue).join(' ')}\n`);
-};
-
 const request = async (url, options = {}) => {
   const requestUrl = validateRequestUrl(url);
   const res = await fetch(requestUrl, options);
@@ -48,42 +35,42 @@ const request = async (url, options = {}) => {
 };
 
 const main = async () => {
-  log('=== AUDITORÍA DE CONEXIÓN ===');
+  process.stdout.write('=== AUDITORÍA DE CONEXIÓN ===\n');
 
   await request(frontendUrl);
-  log('FRONTEND CHECK COMPLETED');
+  process.stdout.write('FRONTEND CHECK COMPLETED\n');
 
   const adminLogin = await request(`${baseUrl}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email: 'admin@yesa.com', password: 'admin1234' }),
   });
-  log('ADMIN LOGIN CHECK COMPLETED');
+  process.stdout.write('ADMIN LOGIN CHECK COMPLETED\n');
   const adminToken = adminLogin.body?.data?.token;
 
   await request(`${baseUrl}/api/auth/me`, {
     headers: { Authorization: `Bearer ${adminToken}` },
   });
-  log('AUTH ME CHECK COMPLETED');
+  process.stdout.write('AUTH ME CHECK COMPLETED\n');
 
   const catalog = await request(`${baseUrl}/api/catalogo/productos?categoriaId=1&pagina=1&limite=5`);
-  log('CATALOG CHECK COMPLETED');
+  process.stdout.write('CATALOG CHECK COMPLETED\n');
 
   const productoId = catalog.body?.data?.productos?.[0]?.id || 1;
   await request(`${baseUrl}/api/catalogo/productos/${productoId}`);
-  log('PRODUCT DETAIL CHECK COMPLETED');
+  process.stdout.write('PRODUCT DETAIL CHECK COMPLETED\n');
 
   const categorias = await request(`${baseUrl}/api/catalogo/categorias`);
   const categoriaId = categorias.body?.data?.categorias?.[0]?.id;
-  log('CATEGORIES CHECK COMPLETED');
+  process.stdout.write('CATEGORIES CHECK COMPLETED\n');
 
   if (categoriaId) {
     await request(`${baseUrl}/api/catalogo/categorias/${categoriaId}/subcategorias`);
-    log('SUBCATEGORIES CHECK COMPLETED');
+    process.stdout.write('SUBCATEGORIES CHECK COMPLETED\n');
   }
 
   await request(`${baseUrl}/api/catalogo/destacados`);
-  log('HIGHLIGHTED PRODUCTS CHECK COMPLETED');
+  process.stdout.write('HIGHLIGHTED PRODUCTS CHECK COMPLETED\n');
 
   const registerEmail = `maria.garcia.${Date.now()}@yesa.com`;
   const register = await request(`${baseUrl}/api/auth/register`, {
@@ -98,7 +85,7 @@ const main = async () => {
       direccion: 'Calle 123 #45-67',
     }),
   });
-  log('REGISTER USER CHECK COMPLETED');
+  process.stdout.write('REGISTER USER CHECK COMPLETED\n');
   const newUserToken = register.body?.data?.token;
 
   if (newUserToken) {
@@ -112,7 +99,7 @@ const main = async () => {
         direccion: 'Nueva Dirección 456',
       }),
     });
-    log('UPDATE PROFILE CHECK COMPLETED');
+    process.stdout.write('UPDATE PROFILE CHECK COMPLETED\n');
   }
 
   const clientLogin = await request(`${baseUrl}/api/auth/login`, {
@@ -120,7 +107,7 @@ const main = async () => {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email: 'cliente1@yesa.com', password: 'cliente1' }),
   });
-  log('CLIENT LOGIN CHECK COMPLETED');
+  process.stdout.write('CLIENT LOGIN CHECK COMPLETED\n');
   const clientToken = clientLogin.body?.data?.token;
 
   await request(`${baseUrl}/api/cliente/carrito`, {
@@ -128,13 +115,13 @@ const main = async () => {
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${clientToken}` },
     body: JSON.stringify({ productoId, cantidad: 1 }),
   });
-  log('CART ADD CHECK COMPLETED');
+  process.stdout.write('CART ADD CHECK COMPLETED\n');
 
   const cartGet = await request(`${baseUrl}/api/cliente/carrito`, {
     headers: { Authorization: `Bearer ${clientToken}` },
   });
   const cartItems = Array.isArray(cartGet.body?.data?.carrito) ? cartGet.body.data.carrito : [];
-  log('CART GET CHECK COMPLETED');
+  process.stdout.write('CART GET CHECK COMPLETED\n');
 
   if (cartItems.length > 0) {
     const itemId = cartItems[0].id;
@@ -143,13 +130,13 @@ const main = async () => {
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${clientToken}` },
       body: JSON.stringify({ cantidad: 2 }),
     });
-    log('CART UPDATE CHECK COMPLETED');
+    process.stdout.write('CART UPDATE CHECK COMPLETED\n');
 
     await request(`${baseUrl}/api/cliente/carrito/${itemId}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${clientToken}` },
     });
-    log('CART DELETE ITEM CHECK COMPLETED');
+    process.stdout.write('CART DELETE ITEM CHECK COMPLETED\n');
   }
 
   const order = await request(`${baseUrl}/api/cliente/pedidos`, {
@@ -157,31 +144,31 @@ const main = async () => {
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${clientToken}` },
     body: JSON.stringify({ direccionEnvio: 'Calle Prueba 123', telefono: '3001112233', notas: 'Pedido de prueba' }),
   });
-  log('ORDER POST CHECK COMPLETED');
+  process.stdout.write('ORDER POST CHECK COMPLETED\n');
   const orderId = order.body?.data?.pedido?.id || order.body?.data?.id;
 
   await request(`${baseUrl}/api/cliente/pedidos`, {
     headers: { Authorization: `Bearer ${clientToken}` },
   });
-  log('ORDERS GET CHECK COMPLETED');
+  process.stdout.write('ORDERS GET CHECK COMPLETED\n');
 
   if (orderId) {
     await request(`${baseUrl}/api/cliente/pedidos/${orderId}`, {
       headers: { Authorization: `Bearer ${clientToken}` },
     });
-    log('ORDER DETAIL CHECK COMPLETED');
+    process.stdout.write('ORDER DETAIL CHECK COMPLETED\n');
 
     await request(`${baseUrl}/api/cliente/pedidos/${orderId}/cancelar`, {
       method: 'PUT',
       headers: { Authorization: `Bearer ${clientToken}` },
     });
-    log('ORDER CANCEL CHECK COMPLETED');
+    process.stdout.write('ORDER CANCEL CHECK COMPLETED\n');
   }
 
-  log('=== AUDITORÍA COMPLETA ===');
+  process.stdout.write('=== AUDITORÍA COMPLETA ===\n');
 };
 
-main().catch((err) => {
-  error('ERROR DURANTE AUDITORÍA', err);
+main().catch(() => {
+  process.stderr.write('ERROR DURANTE AUDITORÍA\n');
   process.exit(1);
 });

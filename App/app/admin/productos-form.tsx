@@ -14,7 +14,7 @@ import {useState, useEffect} from 'react';
 //dimensions obtiene el ancho y alto de la pantalla para hacer diseños responsivos
 //flatilist lista optimizada con virtualizacion para mostras grandes cantidades de datos 
 //modal mostrar detalles de contenido en ventana emergente
-import {ActivityIndicator, ScrollView, StyleSheet,TextInput, Text, Alert, Button, View, TouchableOpacity} from 'react-native';
+import {ScrollView, StyleSheet,TextInput, Text, Alert, Button, View, TouchableOpacity} from 'react-native';
 import apiClient from '../../src/api/apiClient';
 import { Colors } from '../../constants/theme';
 
@@ -126,7 +126,7 @@ export default function AdminProductoForm() {
             if(editing && producto) {
                 //modo edicion llama a updateProduct con el id del prdoucto
                 //se usa id como fallback 
-                await updateProduct(producto.id || producto.id, data);
+                await updateProduct(producto.id, data);
                 Alert.alert('Exitoso', 'Producto actualizado correctamente');
             }else {
                 //cuando el formulario esta vacio se comporta como creacion 

@@ -114,13 +114,10 @@ export default function MisPedidos() {
     <View style={styles.container}>
       <Text style={styles.title}>Mis pedidos</Text>
 
-      {loading ? (
-        <ActivityIndicator size="large" color="#7d2181" />
-      ) : error ? (
-        <Text style={styles.error}>{error}</Text>
-      ) : pedidos.length === 0 ? (
-        <Text style={styles.empty}>No tienes pedidos aún.</Text>
-      ) : (
+      {loading && <ActivityIndicator size="large" color="#7d2181" />}
+      {!loading && Boolean(error) && <Text style={styles.error}>{error}</Text>}
+      {!loading && !error && pedidos.length === 0 && <Text style={styles.empty}>No tienes pedidos aún.</Text>}
+      {!loading && !error && pedidos.length > 0 && (
         <FlatList
           data={pedidos}
           keyExtractor={(p) => String(p.id || p._id || p.idPedido)}

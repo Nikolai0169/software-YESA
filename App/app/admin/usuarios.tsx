@@ -14,6 +14,22 @@ import useAdminRole from '../../src/hooks/useAdminRole';
 import { getUsuarios, toggleUsuario } from '../../src/services/adminService';
 import { Colors } from '../../constants/theme';
 
+function handleEdit(usuario: { id: number | string; nombre?: string; apellido?: string; email?: string; telefono?: string; direccion?: string; rol?: string }) {
+  router.push({
+    pathname: '/admin/usuarios/crear',
+    params: {
+      mode: 'edit',
+      id: String(usuario.id),
+      nombre: usuario.nombre || '',
+      apellido: usuario.apellido || '',
+      email: usuario.email || '',
+      telefono: usuario.telefono || '',
+      direccion: usuario.direccion || '',
+      rol: usuario.rol || 'cliente',
+    },
+  });
+}
+
 export default function UsuariosAdmin() {
   const { isChecking, isAuthorized } = useAdminRole();
   const [usuarios, setUsuarios] = useState<{ id: number | string; nombre?: string; apellido?: string; email?: string; activo?: boolean; telefono?: string; direccion?: string; rol?: string }[]>([]);
@@ -79,22 +95,6 @@ export default function UsuariosAdmin() {
         },
       ]
     );
-  }
-
-  function handleEdit(usuario: { id: number | string; nombre?: string; apellido?: string; email?: string; telefono?: string; direccion?: string; rol?: string }) {
-    router.push({
-      pathname: '/admin/usuarios/crear',
-      params: {
-        mode: 'edit',
-        id: String(usuario.id),
-        nombre: usuario.nombre || '',
-        apellido: usuario.apellido || '',
-        email: usuario.email || '',
-        telefono: usuario.telefono || '',
-        direccion: usuario.direccion || '',
-        rol: usuario.rol || 'cliente',
-      },
-    });
   }
 
   const getNombreCompleto = (usuario: { nombre?: string; apellido?: string; email?: string }) => {
@@ -176,15 +176,13 @@ export default function UsuariosAdmin() {
         </Text>
       )}
 
-      {loading ? (
-        <ActivityIndicator size="large" color="#7d2181" style={styles.loader} />
-      ) : usuariosFiltrados.length === 0 ? (
+      {loading ? <ActivityIndicator size="large" color="#7d2181" style={styles.loader} /> : null}
+      {!loading && usuariosFiltrados.length === 0 ? (
         <Text style={styles.emptyText}>
           {buscar !== '' ? 'No se encontraron usuarios.' : 'No hay usuarios registrados.'}
         </Text>
-      ) : (
-        usuariosFiltrados.map(renderUsuario)
-      )}
+      ) : null}
+      {!loading && usuariosFiltrados.length > 0 ? usuariosFiltrados.map(renderUsuario) : null}
     </ScrollView>
   );
 }

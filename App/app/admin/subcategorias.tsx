@@ -38,9 +38,7 @@ export default function SubcategoriasAdmin() {
   const [loading, setLoading] = useState(true);
   const [nombre, setNombre] = useState('');
   const [categoriaId, setCategoriaId] = useState('');
-  const [busquedaCategoria, setBusquedaCategoria] = useState('');
   const [busquedaTexto, setBusquedaTexto] = useState('');
-  const [showCategoriaModal, setShowCategoriaModal] = useState(false);
 
   const loadSubcategorias = useCallback(async () => {
     setLoading(true);
@@ -143,12 +141,6 @@ export default function SubcategoriasAdmin() {
     );
   }
 
-  const categoriasFiltradas = categorias.filter((categoria) => {
-    const texto = busquedaCategoria.trim().toLowerCase();
-    if (!texto) return true;
-    return (categoria.nombre || categoria.titulo || '').toLowerCase().includes(texto);
-  });
-
   const subcategoriasFiltradas = subcategorias.filter((subcategoria) => {
     const texto = busquedaTexto.trim().toLowerCase();
     if (!texto) return true;
@@ -156,38 +148,6 @@ export default function SubcategoriasAdmin() {
     const categoria = (subcategoria.categoria?.nombre || subcategoria.categoria?.titulo || '').toLowerCase();
     return nombre.includes(texto) || categoria.includes(texto);
   });
-
-  const getCategoriaNombre = () => {
-    if (!categoriaId) return 'Selecciona una categoría';
-    const categoria = categorias.find((item) => String(item.id) === String(categoriaId));
-    return categoria?.nombre || categoria?.titulo || 'Selecciona una categoría';
-  };
-
-  const renderSubcategoria = (subcategoria: { id: number | string; nombre?: string; categoriaId?: number | string; categoria?: { nombre?: string; titulo?: string }; activo?: boolean }) => {
-    const category = categorias.find((item) => String(item.id) === String(subcategoria.categoriaId)) || subcategoria.categoria || {};
-    const title = subcategoria.nombre || `Subcategoría ${subcategoria.id}`;
-    const active = subcategoria.activo !== false;
-    return (
-      <View key={String(subcategoria.id)} style={styles.itemContainer}>
-        <View style={styles.itemInfo}>
-          <Text style={styles.itemTitle}>{title}</Text>
-          <Text style={styles.itemSubtitle}>{category.nombre || category.titulo || 'Categoría desconocida'}</Text>
-          <Text style={styles.itemStatus}>{active ? 'Activo' : 'Inactivo'}</Text>
-        </View>
-        <View style={styles.itemActions}>
-          <TouchableOpacity style={[styles.itemButton, styles.editButton]} onPress={() => handleEditSubcategoria(subcategoria)}>
-            <Text style={styles.itemButtonText}>Editar</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.itemButton, active ? styles.buttonInactive : styles.buttonActive]}
-            onPress={() => confirmToggle(subcategoria)}
-          >
-            <Text style={styles.itemButtonText}>{active ? 'Desactivar' : 'Activar'}</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  };
 
   if (isChecking) {
     return (
@@ -199,24 +159,6 @@ export default function SubcategoriasAdmin() {
 
   if (!isAuthorized) {
     return null;
-  }
-
-  async function handleCreateSubcategoriaMobile() {
-    if (!nombre.trim() || !categoriaId.trim()) {
-      Alert.alert('Validación', 'Completa el nombre y la categoría.');
-      return;
-    }
-
-    try {
-      await createSubcategoria({ nombre: nombre.trim(), categoriaId: Number.parseInt(categoriaId, 10) });
-      setNombre('');
-      setCategoriaId('');
-      loadSubcategorias();
-    } catch (error: unknown) {
-      const err = error as Error;
-      console.error('Error creando subcategoría:', err.message || error);
-      Alert.alert('Error', 'No se pudo crear la subcategoría.');
-    }
   }
 
   return (
@@ -237,11 +179,11 @@ export default function SubcategoriasAdmin() {
             />
           </View>
           <View style={styles.formRow}>
-            <TouchableOpacity style={styles.selector} onPress={() => setShowCategoriaModal(true)}>
+            <View style={styles.selector}>
               <Text style={styles.selectorText}>
                 {categorias.find((c) => String(c.id) === String(editingSubcategoria.categoriaId))?.nombre || 'Seleccionar categoría'}
               </Text>
-            </TouchableOpacity>
+            </View>
           </View>
           <View style={styles.editButtonsRow}>
             <TouchableOpacity style={[styles.addButton, styles.saveButton]} onPress={handleSaveSubcategoria}>
@@ -273,22 +215,20 @@ export default function SubcategoriasAdmin() {
         <Text style={styles.addButtonText }>Crear nueva subcategoria</Text>
       </TouchableOpacity>
 
-      {loading ? (
-        <ActivityIndicator size="large" color="#7d2181" style={styles.loader} />
-      ) : subcategoriasFiltradas.length === 0 ? (
+      {loading ? <ActivityIndicator size="large" color="#7d2181" style={styles.loader} /> : null}
+      {!loading && subcategoriasFiltradas.length === 0 && (
         <Text style={styles.emptyText}>No se encontraron subcategorías.</Text>
-      ) : (
-        categorias.length > 0 ? (
-          categorias.map((cat) => {
-            const subs = subcategoriasFiltradas.filter((s) => String(s.categoriaId) === String(cat.id) || String(s.categoria?.id) === String(cat.id));
-            return (
-              <View key={String(cat.id)} style={styles.categoryCard}>
-                <Text style={styles.categoryTitle}>{cat.nombre || cat.titulo || `Categoría ${cat.id}`}</Text>
-                {subs.length === 0 ? (
-                  <Text style={styles.emptyTextSmall}>No hay subcategorías en esta categoría.</Text>
-                ) : (
-                  subs.map((s) => (
-                    <View key={String(s.id)} style={styles.itemContainer}>
+      )}
+      {!loading && subcategoriasFiltradas.length > 0 && categorias.length > 0 && categorias.map((cat) => {
+        const subs = subcategoriasFiltradas.filter((s) => String(s.categoriaId) === String(cat.id) || String(s.categoria?.id) === String(cat.id));
+        return (
+          <View key={String(cat.id)} style={styles.categoryCard}>
+            <Text style={styles.categoryTitle}>{cat.nombre || cat.titulo || `Categoría ${cat.id}`}</Text>
+            {subs.length === 0 && (
+              <Text style={styles.emptyTextSmall}>No hay subcategorías en esta categoría.</Text>
+            )}
+            {subs.length > 0 && subs.map((s) => (
+              <View key={String(s.id)} style={styles.itemContainer}>
                       <View style={styles.itemInfo}>
                         <Text style={styles.itemTitle}>{s.nombre || `Sub ${s.id}`}</Text>
                         <Text style={styles.itemStatus}>{s.activo !== false ? 'Activo' : 'Inactivo'}</Text>
@@ -304,14 +244,12 @@ export default function SubcategoriasAdmin() {
                           <Text style={styles.itemButtonText}>{s.activo !== false ? 'Desactivar' : 'Activar'}</Text>
                         </TouchableOpacity>
                       </View>
-                    </View>
-                  ))
-                )}
               </View>
-            );
-          })
-        ) : (
-          subcategoriasFiltradas.map((s) => (
+            ))}
+          </View>
+        );
+      })}
+      {!loading && subcategoriasFiltradas.length > 0 && categorias.length === 0 && subcategoriasFiltradas.map((s) => (
             <View key={String(s.id)} style={styles.itemContainer}>
               <View style={styles.itemInfo}>
                 <Text style={styles.itemTitle}>{s.nombre || `Sub ${s.id}`}</Text>
@@ -330,9 +268,7 @@ export default function SubcategoriasAdmin() {
                 </TouchableOpacity>
               </View>
             </View>
-          ))
-        )
-      )}
+          ))}
 
     </ScrollView>
   );

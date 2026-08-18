@@ -82,7 +82,6 @@ const PersonalizacionPage = () => {
   const [overlayTextSettingsByModel, setOverlayTextSettingsByModel] = useState({
     taza: { fontFamily: "sans-serif", fontSize: 24, color: "#000000" },
   });
-  const [, setComposedTextureUrl] = useState(null);
   const [cotizacion, setCotizacion] = useState(null);
   const [saveSuccess, setSaveSuccess] = useState('');
   const [cotizando, setCotizando] = useState(false);
@@ -105,11 +104,6 @@ const PersonalizacionPage = () => {
   const canvasRef = useRef(null);
   const blobUrlRef = useRef(null);
   const CANVAS_SIZE = 2048;
-
-  const modelOptions = [];
-  // const modelOptions = [
-  //   { id: "taza", label: "Taza", description: "Modelo actual con asa y base redonda." },
-  // ];
 
   const handleFileSelect = () => {
     if (fileInputRef.current) {
@@ -206,12 +200,9 @@ const PersonalizacionPage = () => {
       textExterior: currentTexts.exterior,
       textureUrl: texturesByModel[modelo3D] || null,
       overlayText: overlayTextByModel[modelo3D] || '',
-      overlayTextFontFamily:
-        (overlayTextSettingsByModel[modelo3D] && overlayTextSettingsByModel[modelo3D].fontFamily) || 'sans-serif',
-      overlayTextFontSize:
-        (overlayTextSettingsByModel[modelo3D] && overlayTextSettingsByModel[modelo3D].fontSize) || 24,
-      overlayTextColor:
-        (overlayTextSettingsByModel[modelo3D] && overlayTextSettingsByModel[modelo3D].color) || '#ffffff',
+      overlayTextFontFamily: overlayTextSettingsByModel[modelo3D]?.fontFamily || 'sans-serif',
+      overlayTextFontSize: overlayTextSettingsByModel[modelo3D]?.fontSize || 24,
+      overlayTextColor: overlayTextSettingsByModel[modelo3D]?.color || '#ffffff',
       zoom: zoomLevel,
       textureOffset: textureOffset || { x: 0, y: 0 },
       textureOffsetX: textureOffset?.x,
@@ -375,7 +366,6 @@ const PersonalizacionPage = () => {
 
         const url = URL.createObjectURL(blob);
         blobUrlRef.current = url;
-        setComposedTextureUrl(url);
       }, 'image/png');
     };
 
@@ -491,14 +481,12 @@ const PersonalizacionPage = () => {
       } else if (document.msExitFullscreen) {
         await document.msExitFullscreen();
       }
-    } else {
-      if (el.requestFullscreen) {
-        await el.requestFullscreen();
-      } else if (el.webkitRequestFullscreen) {
-        await el.webkitRequestFullscreen();
-      } else if (el.msRequestFullscreen) {
-        await el.msRequestFullscreen();
-      }
+    } else if (el.requestFullscreen) {
+      await el.requestFullscreen();
+    } else if (el.webkitRequestFullscreen) {
+      await el.webkitRequestFullscreen();
+    } else if (el.msRequestFullscreen) {
+      await el.msRequestFullscreen();
     }
   };
 
@@ -552,11 +540,11 @@ const PersonalizacionPage = () => {
         textureUrl: textureUrlToSend || null,
         overlayText: overlayTextByModel[modelo3D] || '',
         overlayTextFontFamily:
-          (overlayTextSettingsByModel[modelo3D] && overlayTextSettingsByModel[modelo3D].fontFamily) || 'sans-serif',
+          overlayTextSettingsByModel[modelo3D]?.fontFamily || 'sans-serif',
         overlayTextFontSize:
-          (overlayTextSettingsByModel[modelo3D] && overlayTextSettingsByModel[modelo3D].fontSize) || 24,
+          overlayTextSettingsByModel[modelo3D]?.fontSize || 24,
         overlayTextColor:
-          (overlayTextSettingsByModel[modelo3D] && overlayTextSettingsByModel[modelo3D].color) || '#ffffff',
+          overlayTextSettingsByModel[modelo3D]?.color || '#ffffff',
         textureOffsetX: textureOffset?.x,
         textureOffsetY: textureOffset?.y,
         textureScale,
@@ -620,7 +608,10 @@ const PersonalizacionPage = () => {
 
       try {
         const result = await guardarDiseno(disenoData);
-        setSaveSuccess(`Diseño guardado${result?.mensaje ? ' en servidor y localmente' : ''}${result?.id || result?._id ? ` con ID: ${result.id || result._id}` : ''}`);
+        const saveMessage = result?.mensaje ? ' en servidor y localmente' : '';
+        const savedId = result?.id || result?._id;
+        const idMessage = savedId ? ` con ID: ${savedId}` : '';
+        setSaveSuccess(`Diseño guardado${saveMessage}${idMessage}`);
         resetPersonalizacionState();
       } catch (error) {
         console.error("Error al guardar diseño en servidor:", error);
@@ -663,22 +654,6 @@ const PersonalizacionPage = () => {
                   Ajusta color, textura y diseños con la misma experiencia visual de las demás pantallas.
                 </p>
 
-                <div className="personalizacion-model-buttons d-flex flex-wrap gap-2 mb-3">
-                  {modelOptions.map((option) => (
-                    <button
-                      key={option.id}
-                      type="button"
-                      className={`btn btn-sm ${modelo3D === option.id ? 'btn-yesa-primary' : 'btn-outline-secondary'}`}
-                      disabled={option.id === 'taza'}
-                      onClick={() => option.id !== 'taza' && setModelo3D(option.id)}
-                    >
-                      <div className="text-start">
-                        <strong>{option.label}</strong>
-                        <div className="small text-muted">{option.description}</div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
               </div>
 
               <div className="personalizacion-preview-fullscreen-wrapper" ref={previewRef}>
@@ -686,17 +661,17 @@ const PersonalizacionPage = () => {
                   <Personalizacion3D 
                     key={previewKey}
                     modelo={modelo3D}
-                    colorInterior={(colorsByModel[modelo3D] && colorsByModel[modelo3D].interior) || '#ffffff'}
-                    colorBase={(colorsByModel[modelo3D] && colorsByModel[modelo3D].base) || '#ffffff'}
-                    colorExterior={(colorsByModel[modelo3D] && colorsByModel[modelo3D].exterior) || '#ffffff'}
-                    colorAsa={(colorsByModel[modelo3D] && colorsByModel[modelo3D].asa) || '#ffffff'}
+                    colorInterior={colorsByModel[modelo3D]?.interior || '#ffffff'}
+                    colorBase={colorsByModel[modelo3D]?.base || '#ffffff'}
+                    colorExterior={colorsByModel[modelo3D]?.exterior || '#ffffff'}
+                    colorAsa={colorsByModel[modelo3D]?.asa || '#ffffff'}
                     texture={texturesByModel[modelo3D] || null}
                     overlayText={overlayTextByModel[modelo3D] || ''}
-                    overlayTextFontFamily={(overlayTextSettingsByModel[modelo3D] && overlayTextSettingsByModel[modelo3D].fontFamily) || 'sans-serif'}
-                    overlayTextFontSize={(overlayTextSettingsByModel[modelo3D] && overlayTextSettingsByModel[modelo3D].fontSize) || 24}
-                    overlayTextColor={(overlayTextSettingsByModel[modelo3D] && overlayTextSettingsByModel[modelo3D].color) || '#ffffff'}
-                    textInterior={(textsByModel[modelo3D] && textsByModel[modelo3D].interior) || ''}
-                    textExterior={(textsByModel[modelo3D] && textsByModel[modelo3D].exterior) || ''}
+                    overlayTextFontFamily={overlayTextSettingsByModel[modelo3D]?.fontFamily || 'sans-serif'}
+                    overlayTextFontSize={overlayTextSettingsByModel[modelo3D]?.fontSize || 24}
+                    overlayTextColor={overlayTextSettingsByModel[modelo3D]?.color || '#ffffff'}
+                    textInterior={textsByModel[modelo3D]?.interior || ''}
+                    textExterior={textsByModel[modelo3D]?.exterior || ''}
                     zoom={zoomLevel}
                     autoRotate={isRotating}
                     textureOffset={textureOffset}
@@ -820,7 +795,7 @@ const PersonalizacionPage = () => {
                           <span className="small text-dark">Exterior</span>
                           <input
                             type="color"
-                            value={(colorsByModel[modelo3D] && colorsByModel[modelo3D].exterior) || '#3b82f6'}
+                            value={colorsByModel[modelo3D]?.exterior || '#3b82f6'}
                             onChange={(e) => setModelColor('exterior', e.target.value)}
                             className="form-control form-control-color"
                             style={{ width: "44px", height: "44px", padding: 0, border: "1px solid rgba(148, 163, 184, 0.4)", borderRadius: "0.75rem", background: "transparent" }}
@@ -830,7 +805,7 @@ const PersonalizacionPage = () => {
                           <span className="small text-dark">Texto interior</span>
                           <input
                             type="text"
-                            value={(textsByModel[modelo3D] && textsByModel[modelo3D].interior) || ''}
+                            value={textsByModel[modelo3D]?.interior || ''}
                             onChange={(e) => setModelText('interior', e.target.value)}
                             className="form-control"
                             style={{ width: "180px", minWidth: "180px" }}
@@ -841,7 +816,7 @@ const PersonalizacionPage = () => {
                           <span className="small text-dark">Texto exterior</span>
                           <input
                             type="text"
-                            value={(textsByModel[modelo3D] && textsByModel[modelo3D].exterior) || ''}
+                            value={textsByModel[modelo3D]?.exterior || ''}
                             onChange={(e) => setModelText('exterior', e.target.value)}
                             className="form-control"
                             style={{ width: "180px", minWidth: "180px" }}
@@ -855,7 +830,7 @@ const PersonalizacionPage = () => {
                           <span className="small text-dark">Interior</span>
                           <input
                             type="color"
-                            value={(colorsByModel[modelo3D] && colorsByModel[modelo3D].interior) || '#ffffff'}
+                            value={colorsByModel[modelo3D]?.interior || '#ffffff'}
                             onChange={(e) => setModelColor('interior', e.target.value)}
                             className="form-control form-control-color"
                             style={{ width: "44px", height: "44px", padding: 0, border: "1px solid rgba(148, 163, 184, 0.4)", borderRadius: "0.75rem", background: "transparent" }}
@@ -865,7 +840,7 @@ const PersonalizacionPage = () => {
                           <span className="small text-dark">Base</span>
                           <input
                             type="color"
-                            value={(colorsByModel[modelo3D] && colorsByModel[modelo3D].base) || '#ffffff'}
+                            value={colorsByModel[modelo3D]?.base || '#ffffff'}
                             onChange={(e) => setModelColor('base', e.target.value)}
                             className="form-control form-control-color"
                             style={{ width: "44px", height: "44px", padding: 0, border: "1px solid rgba(148, 163, 184, 0.4)", borderRadius: "0.75rem", background: "transparent" }}
@@ -875,7 +850,7 @@ const PersonalizacionPage = () => {
                           <span className="small text-dark">Exterior</span>
                           <input
                             type="color"
-                            value={(colorsByModel[modelo3D] && colorsByModel[modelo3D].exterior) || '#ffffff'}
+                            value={colorsByModel[modelo3D]?.exterior || '#ffffff'}
                             onChange={(e) => setModelColor('exterior', e.target.value)}
                             className="form-control form-control-color"
                             style={{ width: "44px", height: "44px", padding: 0, border: "1px solid rgba(148, 163, 184, 0.4)", borderRadius: "0.75rem", background: "transparent" }}
@@ -885,7 +860,7 @@ const PersonalizacionPage = () => {
                           <span className="small text-dark">Oreja</span>
                           <input
                             type="color"
-                            value={(colorsByModel[modelo3D] && colorsByModel[modelo3D].asa) || '#ffffff'}
+                            value={colorsByModel[modelo3D]?.asa || '#ffffff'}
                             onChange={(e) => setModelColor('asa', e.target.value)}
                             className="form-control form-control-color"
                             style={{ width: "44px", height: "44px", padding: 0, border: "1px solid rgba(148, 163, 184, 0.4)", borderRadius: "0.75rem", background: "transparent" }}
@@ -942,8 +917,9 @@ const PersonalizacionPage = () => {
                         <button type="button" className="btn-close" aria-label="Cerrar" onClick={() => setTextEditorOpen(false)} />
                       </div>
                       <div className="text-editor-toolbar d-flex flex-wrap align-items-center gap-2 mt-3">
-                        <label className="mb-0 small text-muted">Fuente</label>
+                        <label htmlFor="editor-font-family" className="mb-0 small text-muted">Fuente</label>
                         <select
+                          id="editor-font-family"
                           className="form-select form-select-sm"
                           value={textEditorFontFamily}
                           onChange={(e) => setTextEditorFontFamily(e.target.value)}
@@ -963,8 +939,9 @@ const PersonalizacionPage = () => {
                           <option value="Brush Script MT, cursive">Brush Script</option>
                           <option value="Comic Sans MS, cursive, sans-serif">Comic Sans</option>
                         </select>
-                        <label className="mb-0 small text-muted">Tamaño</label>
+                        <label htmlFor="editor-font-size" className="mb-0 small text-muted">Tamaño</label>
                         <select
+                          id="editor-font-size"
                           className="form-select form-select-sm"
                           value={textEditorFontSize}
                           onChange={(e) => setTextEditorFontSize(Number(e.target.value))}
@@ -982,8 +959,9 @@ const PersonalizacionPage = () => {
                           <option value={40}>40px</option>
                           <option value={48}>48px</option>
                         </select>
-                        <label className="mb-0 small text-muted">Color</label>
+                        <label htmlFor="editor-font-color" className="mb-0 small text-muted">Color</label>
                         <input
+                          id="editor-font-color"
                           type="color"
                           value={textEditorColor}
                           onChange={(e) => setTextEditorColor(e.target.value)}
@@ -1037,8 +1015,9 @@ const PersonalizacionPage = () => {
                 {!isFullscreen && (
                   <>
                     <div className="mt-4 w-100">
-                      <label className="form-label small fw-semibold">Nombre del diseño para la cotización</label>
+                      <label htmlFor="nombre-cotizacion" className="form-label small fw-semibold">Nombre del diseño para la cotización</label>
                       <input
+                        id="nombre-cotizacion"
                         type="text"
                         className="form-control"
                         placeholder="Ej: Taza personalizada para regalo"
@@ -1048,8 +1027,9 @@ const PersonalizacionPage = () => {
                     </div>
 
                     <div className="mt-3 w-100">
-                      <label className="form-label small fw-semibold">Notas para la cotización</label>
+                      <label htmlFor="notas-cotizacion" className="form-label small fw-semibold">Notas para la cotización</label>
                       <textarea
+                        id="notas-cotizacion"
                         className="form-control"
                         rows={3}
                         placeholder="Agrega detalles o comentarios para el equipo de cotización"

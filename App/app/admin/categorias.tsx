@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   ScrollView,
   View,
@@ -40,10 +40,6 @@ export default function CategoriasAdmin() {
       setLoading(false);
     }
   }, []);
-
-  useEffect(() => {
-    loadCategorias();
-  }, [loadCategorias]);
 
   useFocusEffect(
     useCallback(() => {

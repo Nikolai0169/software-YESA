@@ -8,7 +8,6 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Link } from 'expo-router';
-import { useAuth } from '../../src/context/authContext';
 import { Colors } from '../../constants/theme';
 import useAdminRole from '../../src/hooks/useAdminRole';
 import {

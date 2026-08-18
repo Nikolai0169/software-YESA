@@ -133,10 +133,8 @@ export default function CrearSubcategoriaScreen() {
               placeholderTextColor="#9ca3af"
             />
             <View style={styles.dropdownList}>
-              {loading ? (
-                <ActivityIndicator size="small" color={Colors.light.primary} />
-              ) : categoriasFiltradas.length > 0 ? (
-                categoriasFiltradas.map((categoria) => {
+              {loading && <ActivityIndicator size="small" color={Colors.light.primary} />}
+              {!loading && categoriasFiltradas.length > 0 && categoriasFiltradas.map((categoria) => {
                   const isSelected = String(categoria.id) === String(categoriaId);
                   return (
                     <TouchableOpacity
@@ -153,8 +151,8 @@ export default function CrearSubcategoriaScreen() {
                       </Text>
                     </TouchableOpacity>
                   );
-                })
-              ) : (
+                })}
+              {!loading && categoriasFiltradas.length === 0 && (
                 <Text style={styles.emptyText}>No se encontraron categorías.</Text>
               )}
             </View>

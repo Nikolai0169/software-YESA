@@ -64,7 +64,9 @@ type PedidoDetalle = {
   direccionEnvio?: string;
   telefono?: string;
   metodoPago?: string;
+  notas?: string;
   notasAdicionales?: string;
+  observaciones?: string;
   detalles?: Array<any>;
   detallesPersonalizados?: Array<any>;
   items?: Array<any>;
@@ -72,6 +74,28 @@ type PedidoDetalle = {
   usuario?: { nombre?: string; email?: string };
   cliente?: { nombre?: string; email?: string };
 };
+
+function normalizePedidoItems(pedido: PedidoDetalle) {
+  let source: any[] = [];
+  if (Array.isArray(pedido.detalles)) {
+    source = pedido.detalles;
+  } else if (Array.isArray(pedido.items)) {
+    source = pedido.items;
+  } else if (Array.isArray(pedido.detalle)) {
+    source = pedido.detalle;
+  }
+
+  return source.map((item: any) => {
+    const cantidad = item?.cantidad ?? item?.quantity ?? 1;
+    const precio = Number(item?.precioUnitario ?? item?.precio ?? item?.producto?.precio ?? 0);
+    return {
+      nombre: item?.producto?.nombre || item?.nombre || item?.producto?.titulo || 'Producto',
+      cantidad,
+      precio,
+      subtotal: Number(item?.subtotal ?? (precio * cantidad)),
+    };
+  });
+}
 
 export default function PedidoDetalleAdmin() {
   const { id } = useLocalSearchParams();
@@ -109,7 +133,7 @@ export default function PedidoDetalleAdmin() {
       const pedidoData = (data as any)?.data?.pedido || (data as any)?.pedido || (data as any) || null;
       const normalizedPedido = (pedidoData as PedidoDetalle) || null;
 
-      if (normalizedPedido && normalizedPedido.id && String(normalizedPedido.id) !== String(pedidoId)) {
+      if (normalizedPedido?.id && String(normalizedPedido.id) !== String(pedidoId)) {
         setPedido(null);
         return;
       }
@@ -182,28 +206,7 @@ export default function PedidoDetalleAdmin() {
   const cliente = pedido.usuario || pedido.cliente || {};
   const estado = String(pedido.estado || 'desconocido').toLowerCase();
   const fecha = pedido.createdAt || pedido.fecha || '';
-  const items = Array.isArray(pedido.detalles)
-    ? pedido.detalles.map((detalle: any) => ({
-        nombre: detalle?.producto?.nombre || detalle?.nombre || detalle?.producto?.titulo || 'Producto',
-        cantidad: detalle?.cantidad ?? detalle?.quantity ?? 1,
-        precio: Number(detalle?.precioUnitario ?? detalle?.precio ?? detalle?.producto?.precio ?? 0),
-        subtotal: Number(detalle?.subtotal ?? (Number(detalle?.precioUnitario ?? detalle?.precio ?? detalle?.producto?.precio ?? 0) * (detalle?.cantidad ?? detalle?.quantity ?? 1))),
-      }))
-    : Array.isArray(pedido.items)
-      ? pedido.items.map((item: any) => ({
-          nombre: item?.producto?.nombre || item?.nombre || item?.producto?.titulo || 'Producto',
-          cantidad: item?.cantidad ?? item?.quantity ?? 1,
-          precio: Number(item?.precioUnitario ?? item?.precio ?? item?.producto?.precio ?? 0),
-          subtotal: Number(item?.subtotal ?? (Number(item?.precioUnitario ?? item?.precio ?? item?.producto?.precio ?? 0) * (item?.cantidad ?? item?.quantity ?? 1))),
-        }))
-      : Array.isArray(pedido.detalle)
-        ? pedido.detalle.map((item: any) => ({
-            nombre: item?.producto?.nombre || item?.nombre || item?.producto?.titulo || 'Producto',
-            cantidad: item?.cantidad ?? item?.quantity ?? 1,
-            precio: Number(item?.precioUnitario ?? item?.precio ?? item?.producto?.precio ?? 0),
-            subtotal: Number(item?.subtotal ?? (Number(item?.precioUnitario ?? item?.precio ?? item?.producto?.precio ?? 0) * (item?.cantidad ?? item?.quantity ?? 1))),
-          }))
-        : [];
+  const items = normalizePedidoItems(pedido);
 
   const personalizados = Array.isArray(pedido.detallesPersonalizados)
     ? pedido.detallesPersonalizados.map((detalle: any) => ({

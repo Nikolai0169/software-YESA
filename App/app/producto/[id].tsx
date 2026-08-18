@@ -32,6 +32,7 @@ export default function ProductoDetalleScreen() {
         const response = await catalogoService.getProductoById(productoId);
         setProducto(response?.producto || response?.data || response);
       } catch (err) {
+        console.error('Error cargando producto:', err);
         setError('No se pudo cargar el producto.');
       } finally {
         setLoading(false);
@@ -95,13 +96,16 @@ export default function ProductoDetalleScreen() {
 
       <View style={styles.reviewSection}>
         <Text style={styles.reviewTitle}>Reseñas de clientes</Text>
-        {resenasLoading ? (
+        {resenasLoading && (
           <ActivityIndicator size="small" color="#7c3aed" style={styles.reviewLoader} />
-        ) : resenasError ? (
+        )}
+        {!resenasLoading && Boolean(resenasError) && (
           <Text style={styles.reviewError}>{resenasError}</Text>
-        ) : resenas.length === 0 ? (
+        )}
+        {!resenasLoading && !resenasError && resenas.length === 0 && (
           <Text style={styles.reviewEmpty}>Aún no hay reseñas para este producto.</Text>
-        ) : (
+        )}
+        {!resenasLoading && !resenasError && resenas.length > 0 && (
           resenas.map((resena) => (
             <View key={resena.id || `${resena.usuarioId}-${resena.createdAt}`} style={styles.reviewCard}>
               <View style={styles.reviewHeader}>

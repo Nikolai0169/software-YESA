@@ -146,13 +146,11 @@ export default function PedidosAdmin() {
         ))}
       </View>
 
-      {loading ? (
-        <ActivityIndicator size="large" color={Colors.light.primary} style={styles.loader} />
-      ) : pedidosFiltrados.length === 0 ? (
+      {loading ? <ActivityIndicator size="large" color={Colors.light.primary} style={styles.loader} /> : null}
+      {!loading && pedidosFiltrados.length === 0 ? (
         <Text style={styles.emptyText}>No hay pedidos que coincidan con la búsqueda.</Text>
-      ) : (
-        pedidosFiltrados.map(renderPedido)
-      )}
+      ) : null}
+      {!loading && pedidosFiltrados.length > 0 ? pedidosFiltrados.map(renderPedido) : null}
 
       <Link href="/admin/dashboard" asChild>
         <TouchableOpacity style={styles.backButton}>

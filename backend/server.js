@@ -34,7 +34,7 @@ const cors = require('cors');
 // Importa 'path' desde Node.js (módulo nativo, no necesita npm install)
 // path proporciona utilidades para trabajar con rutas de archivos del sistema operativo
 // Se usa aquí para construir la ruta absoluta de la carpeta 'uploads/'
-const path = require('path');
+const path = require('node:path');
 
 // Ejecuta dotenv.config() para cargar las variables del archivo .env
 // Lee el archivo .env en la raíz del backend y las pone en process.env
@@ -64,6 +64,7 @@ const { runSeeders } = require('./seeders/adminSeeder');
 // Crea la instancia de la aplicación Express
 // 'app' es el objeto principal del servidor: se le agregan middlewares, rutas y se pone a escuchar
 const app = express();
+app.disable('x-powered-by');
 
 let server = null;
 const isTestEnv = process.env.NODE_ENV === 'test';
@@ -105,8 +106,12 @@ app.use(cors({
     // [Dispositivo físico / red local]
     // Permite orígenes en localhost, 127.0.0.1 y redes privadas típicas del desarrollo.
     const localhostRegex = /^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0|10\.0\.2\.2)(:\d+)?$/;
-    const privateNetworkRegex = /^https?:\/\/(192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+)(:\d+)?$/;
-    if (localhostRegex.test(origin) || privateNetworkRegex.test(origin)) {
+    const privateNetworkRegexes = [
+      /^https?:\/\/192\.168\.\d+\.\d+(?::\d+)?$/,
+      /^https?:\/\/10\.\d+\.\d+\.\d+(?::\d+)?$/,
+      /^https?:\/\/172\.(?:1[6-9]|2\d|3[0-1])\.\d+\.\d+(?::\d+)?$/,
+    ];
+    if (localhostRegex.test(origin) || privateNetworkRegexes.some((regex) => regex.test(origin))) {
       return callback(null, true);
     }
 

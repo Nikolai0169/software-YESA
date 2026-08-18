@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 import { Link, router, useFocusEffect } from 'expo-router';
 import useAdminRole from '../../src/hooks/useAdminRole';
-import { useAuth } from '../../src/context/authContext';
 import { Colors } from '../../constants/theme';
 import {
   getProductos,
@@ -20,8 +19,6 @@ import {
 
 export default function ProductosAdmin() {
   const { isChecking, isAuthorized } = useAdminRole();
-  const { user } = useAuth();
-  const isAuxiliar = String(user?.rol || user?.role || '').toLowerCase() === 'auxiliar';
   const [productos, setProductos] = useState<{ id: number | string; nombre?: string; titulo?: string; precio?: number; price?: number; activo?: boolean }[]>([]);
   const [loading, setLoading] = useState(true);
   const [buscar, setBuscar] = useState('');
@@ -75,13 +72,6 @@ export default function ProductosAdmin() {
     );
   }
 
-  function handleEdit(producto: { id: number | string; nombre?: string; titulo?: string }) {
-    if (producto.id) {
-      router.push({ pathname: '/admin/producto-form', params: { id: String(producto.id) } });
-    }
-  }
-
-
   const productosFiltrados = useMemo(() => {
     const termino = buscar.trim().toLowerCase();
     if (!termino) return productos;
@@ -105,7 +95,10 @@ export default function ProductosAdmin() {
           </Text>
         </View>
         <View style={styles.itemActions}>
-          <TouchableOpacity style={styles.smallButton} onPress={() => handleEdit(producto)}>
+          <TouchableOpacity
+            style={styles.smallButton}
+            onPress={() => producto.id && router.push({ pathname: '/admin/producto-form', params: { id: String(producto.id) } })}
+          >
             <Text style={styles.smallButtonText}>Editar</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.smallButton, active ? styles.toggleDeactivate : styles.toggleActivate]} onPress={() => confirmToggle(producto)}>
@@ -160,13 +153,13 @@ export default function ProductosAdmin() {
         </Text>
       )}
 
-      {loading ? (
-        <ActivityIndicator size="large" color="#7d2181" style={styles.loader} />
-      ) : productosFiltrados.length === 0 ? (
-        <Text style={styles.emptyText}>{buscar !== '' ? 'No se encontraron productos.' : 'No hay productos disponibles.'}</Text>
-      ) : (
-        productosFiltrados.map(renderProducto)
-      )}
+      {loading ? <ActivityIndicator size="large" color="#7d2181" style={styles.loader} /> : null}
+      {!loading && productosFiltrados.length === 0 ? (
+        <Text style={styles.emptyText}>
+          {buscar !== '' ? 'No se encontraron productos.' : 'No hay productos disponibles.'}
+        </Text>
+      ) : null}
+      {!loading && productosFiltrados.length > 0 ? productosFiltrados.map(renderProducto) : null}
     </ScrollView>
   );
 }
