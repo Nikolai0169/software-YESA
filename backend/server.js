@@ -156,7 +156,7 @@ if (process.env.NODE_ENV === 'development') {
   // app.use() con una función (req, res, next) es un middleware personalizado
   app.use((req, res, next) => {
     // Imprime el méNOTE HTTP (GET, POST, etc.) y la ruta de la petición
-    console.log(`📨 ${req.method} ${req.path}`);
+    console.log('📨 HTTP request received');
     
     // next() → OBLIGATORIO en middlewares: pasa la petición al siguiente middleware/ruta
     // Sin next(), la petición se quedaría "colgada" aquí y el cliente nunca recibiría respuesta

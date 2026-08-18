@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Personalizacion3D from "../components/Personalizacion3D";
 import { useAuth } from "../context/AuthContext";
 import { guardarDiseno, cotizarProducto, uploadFile } from "../services/api";
+import { API_URL } from "../services/config";
 import SuccessBanner from '../components/SuccessBanner';
 import {
   saveDesignLocally,
@@ -25,6 +26,20 @@ const dataUrlToBlob = (dataUrl) => {
     : decodeURIComponent(data);
   const bytes = Uint8Array.from(binary, character => character.codePointAt(0));
   return new Blob([bytes], { type: mimeType });
+};
+
+const getAllowedUploadPath = (value) => {
+  if (typeof value !== 'string' || !value) return null;
+  try {
+    const apiOrigin = new URL(API_URL).origin;
+    const uploadUrl = new URL(value, API_URL);
+    if (uploadUrl.origin !== apiOrigin || !uploadUrl.pathname.startsWith('/uploads/')) {
+      return null;
+    }
+    return `${uploadUrl.pathname}${uploadUrl.search}`;
+  } catch {
+    return null;
+  }
 };
 
 const buildQuotePayload = (design) => {
@@ -518,7 +533,7 @@ const PersonalizacionPage = () => {
             formData.append('texture', blob, 'texture.png');
           }
           const uploadResp = await uploadFile('/uploads/texture', formData);
-          textureUrlToSend = uploadResp.data?.url || textureUrlToSend;
+          textureUrlToSend = getAllowedUploadPath(uploadResp.data?.url) || textureUrlToSend;
         } catch (err) {
           console.error('Error subiendo textura antes de cotizar:', err);
           throw new Error('No se pudo subir la textura');
@@ -587,9 +602,10 @@ const PersonalizacionPage = () => {
           }
           const uploadResp = await uploadFile('/uploads/texture', formData);
           const url = uploadResp.data?.url;
-          if (url) {
-            disenoData.textureUrl = url;
-            disenoData.texture = url;
+          const allowedUrl = getAllowedUploadPath(url);
+          if (allowedUrl) {
+            disenoData.textureUrl = allowedUrl;
+            disenoData.texture = allowedUrl;
           }
         }
       } catch (err) {

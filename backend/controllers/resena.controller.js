@@ -1,8 +1,6 @@
 const Resena = require('../models/Resena');
 
 exports.crearResena = async (req, res) => {
-  console.log('📝 Body recibido:', req.body);
-  console.log('📝 Params recibido:', req.params);
   try {
     const { productoId: bodyProductoId, nombre, email, calificacion, comentario } = req.body;
     const productoId = req.params.id || bodyProductoId;

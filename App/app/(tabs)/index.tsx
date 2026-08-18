@@ -10,7 +10,6 @@ import {
   TextInput,
   Dimensions,
   Modal,
-  Pressable,
 } from 'react-native';
 import { formatCurrency } from '../../src/utils/formatters';
 import { Link, useRouter } from 'expo-router';
@@ -27,6 +26,118 @@ const FEATURES = [
   { icon: '🔒', title: 'Compra segura', subtitle: 'Pago protegido y confiable' },
   { icon: '📞', title: 'Soporte 24/7', subtitle: 'Atención disponible siempre' },
 ];
+
+function EmptyProducts() {
+  return (
+    <View style={styles.centered}>
+      <Text style={styles.emptyText}>No hay productos que coincidan.</Text>
+    </View>
+  );
+}
+
+function ProductListItem({
+  producto,
+  onPress,
+  onAddToCart,
+}: Readonly<{
+  producto: any;
+  onPress: () => void;
+  onAddToCart: () => void;
+}>) {
+  return <ProductCard producto={producto} onPress={onPress} onAddToCart={onAddToCart} />;
+}
+
+function CategoryButton({ categoria, index, selectedCategoria, onSelect }: Readonly<{
+  categoria: any;
+  index: number;
+  selectedCategoria: string;
+  onSelect: (id: string) => void;
+}>) {
+  const categoryId = String(categoria.id || categoria._id || categoria.idCategoria || categoria._idCategoria || '');
+  const isSelected = selectedCategoria === categoryId;
+
+  return (
+    <TouchableOpacity
+      key={categoryId || `cat-${index}`}
+      style={[styles.categoryButton, isSelected && styles.categoryButtonSelected]}
+      onPress={() => onSelect(isSelected ? '' : categoryId)}
+    >
+      <Text style={[styles.categoryText, isSelected && styles.categoryTextSelected]}>{categoria.nombre || categoria.nombreCategoria || 'Categoría'}</Text>
+    </TouchableOpacity>
+  );
+}
+
+function SubcategoryButton({ subcategoria, index, selectedSubcategoria, onSelect, onClose }: Readonly<{
+  subcategoria: any;
+  index: number;
+  selectedSubcategoria: string;
+  onSelect: (id: string) => void;
+  onClose: () => void;
+}>) {
+  const subcategoryId = String(subcategoria.id || subcategoria._id || subcategoria.idSubcategoria || '');
+  const isSelected = selectedSubcategoria === subcategoryId;
+
+  return (
+    <TouchableOpacity
+      key={subcategoryId || `sub-${index}`}
+      style={[styles.subcategoryButton, isSelected && styles.subcategoryButtonSelected]}
+      onPress={() => {
+        onSelect(isSelected ? '' : subcategoryId);
+        onClose();
+      }}
+    >
+      <Text style={[styles.subcategoryText, isSelected && styles.subcategoryTextSelected]}>{subcategoria.nombre || 'Subcategoría'}</Text>
+    </TouchableOpacity>
+  );
+}
+
+function SubcategoryFilter({
+  subcategorias,
+  selectedSubcategoria,
+  showSubcategorias,
+  onToggle,
+  onSelect,
+  onClose,
+}: Readonly<{
+  subcategorias: any[];
+  selectedSubcategoria: string;
+  showSubcategorias: boolean;
+  onToggle: () => void;
+  onSelect: (id: string) => void;
+  onClose: () => void;
+}>) {
+  return (
+    <View style={styles.subcategoryFilterBox}>
+      <TouchableOpacity style={styles.subcategoryToggle} onPress={onToggle}>
+        <Text style={styles.subcategoryToggleText}>Subcategorías</Text>
+        <Text style={styles.subcategoryToggleText}>{showSubcategorias ? '▾' : '▸'}</Text>
+      </TouchableOpacity>
+      {showSubcategorias ? (
+        <View style={styles.subcategoryList}>
+          <TouchableOpacity
+            style={[styles.subcategoryButton, !selectedSubcategoria && styles.subcategoryButtonSelected]}
+            onPress={() => onSelect('')}
+          >
+            <Text style={[styles.subcategoryText, !selectedSubcategoria && styles.subcategoryTextSelected]}>Todas</Text>
+          </TouchableOpacity>
+          {subcategorias.length > 0 ? subcategorias.map((subcategoria, index) => (
+            <SubcategoryButton
+              key={`${subcategoria.id || subcategoria._id || subcategoria.idSubcategoria || index}`}
+              subcategoria={subcategoria}
+              index={index}
+              selectedSubcategoria={selectedSubcategoria}
+              onSelect={onSelect}
+              onClose={onClose}
+            />
+          )) : null}
+          {subcategorias.length === 0 ? (
+            <Text style={styles.subcategoryEmptyText}>No hay subcategorías activas para esta categoría.</Text>
+          ) : null}
+        </View>
+      ) : null}
+    </View>
+  );
+}
 
 export default function Index() {
   const router = useRouter();
@@ -92,7 +203,7 @@ export default function Index() {
     } catch (err) {
       // Loguear error detallado para diagnóstico
       console.error('loadCatalogo error', err);
-      const backendMsg = err?.responseData?.message || err?.message || 'Error desconocido';
+      const backendMsg = err instanceof Error ? err.message : 'Error desconocido';
       setError(`No se pudo cargar el catálogo: ${backendMsg}`);
       setProductos([]);
       setCategorias([]);
@@ -130,38 +241,13 @@ export default function Index() {
     router.push({ pathname: '/producto/[id]', params: { id } });
   };
 
-  const renderCategoria = (categoria: any) => {
-    const categoryId = String(categoria.id || categoria._id || categoria.idCategoria || categoria._idCategoria || '');
-    const isSelected = selectedCategoria === categoryId;
-
-    return (
-      <TouchableOpacity
-        key={categoryId || `cat-${Math.random()}`}
-        style={[styles.categoryButton, isSelected && styles.categoryButtonSelected]}
-        onPress={() => setSelectedCategoria(isSelected ? '' : categoryId)}
-      >
-        <Text style={[styles.categoryText, isSelected && styles.categoryTextSelected]}>{categoria.nombre || categoria.nombreCategoria || 'Categoría'}</Text>
-      </TouchableOpacity>
-    );
-  };
-
-  const renderSubcategoria = (subcategoria: any) => {
-    const subcategoryId = String(subcategoria.id || subcategoria._id || subcategoria.idSubcategoria || '');
-    const isSelected = selectedSubcategoria === subcategoryId;
-
-    return (
-      <TouchableOpacity
-        key={subcategoryId || `sub-${Math.random()}`}
-        style={[styles.subcategoryButton, isSelected && styles.subcategoryButtonSelected]}
-        onPress={() => {
-          setSelectedSubcategoria(isSelected ? '' : subcategoryId);
-          setShowSubcategorias(false);
-        }}
-      >
-        <Text style={[styles.subcategoryText, isSelected && styles.subcategoryTextSelected]}>{subcategoria.nombre || 'Subcategoría'}</Text>
-      </TouchableOpacity>
-    );
-  };
+  const renderProduct = ({ item }: { item: any }) => (
+    <ProductListItem
+      producto={item}
+      onPress={() => handlePressProducto(item)}
+      onAddToCart={() => agregarProducto(item, 1)}
+    />
+  );
 
   const renderHeader = () => (
     <View>
@@ -217,7 +303,7 @@ export default function Index() {
             <Text style={styles.quickButtonText}>Pedidos</Text>
           </TouchableOpacity>
         </Link>
-        <Link href="/faq" asChild>
+        <Link href="/Faq" asChild>
           <TouchableOpacity style={styles.quickButton}> 
             <Text style={styles.quickButtonText}>FAQ</Text>
           </TouchableOpacity>
@@ -241,63 +327,49 @@ export default function Index() {
         >
           <Text style={[styles.categoryText, !selectedCategoria && styles.categoryTextSelected]}>Todas</Text>
         </TouchableOpacity>
-        {categorias.map(renderCategoria)}
+        {categorias.map((categoria, index) => (
+          <CategoryButton
+            key={`${categoria.id || categoria._id || categoria.idCategoria || categoria._idCategoria || index}`}
+            categoria={categoria}
+            index={index}
+            selectedCategoria={selectedCategoria}
+            onSelect={setSelectedCategoria}
+          />
+        ))}
       </ScrollView>
 
       {selectedCategoria ? (
-        <View style={styles.subcategoryFilterBox}>
-          <TouchableOpacity
-            style={styles.subcategoryToggle}
-            onPress={() => setShowSubcategorias((value) => !value)}
-          >
-            <Text style={styles.subcategoryToggleText}>Subcategorías</Text>
-            <Text style={styles.subcategoryToggleText}>{showSubcategorias ? '▾' : '▸'}</Text>
-          </TouchableOpacity>
-          {showSubcategorias ? (
-            <View style={styles.subcategoryList}>
-              <TouchableOpacity
-                style={[styles.subcategoryButton, !selectedSubcategoria && styles.subcategoryButtonSelected]}
-                onPress={() => setSelectedSubcategoria('')}
-              >
-                <Text style={[styles.subcategoryText, !selectedSubcategoria && styles.subcategoryTextSelected]}>Todas</Text>
-              </TouchableOpacity>
-              {subcategorias.length > 0 ? subcategorias.map(renderSubcategoria) : (
-                <Text style={styles.subcategoryEmptyText}>No hay subcategorías activas para esta categoría.</Text>
-              )}
-            </View>
-          ) : null}
-        </View>
+        <SubcategoryFilter
+          subcategorias={subcategorias}
+          selectedSubcategoria={selectedSubcategoria}
+          showSubcategorias={showSubcategorias}
+          onToggle={() => setShowSubcategorias((value) => !value)}
+          onSelect={setSelectedSubcategoria}
+          onClose={() => setShowSubcategorias(false)}
+        />
       ) : null}
 
       {loading ? (
         <View style={styles.centered}>
           <ActivityIndicator size="large" color="#7c3aed" />
         </View>
-      ) : error ? (
+      ) : null}
+      {!loading && error ? (
         <View style={styles.centered}>
           <Text style={styles.errorText}>{error}</Text>
         </View>
-      ) : (
+      ) : null}
+      {!loading && !error ? (
         <FlatList
           data={productosVisibles}
           keyExtractor={(item) => String(item.id || item._id || item._idProducto || item.idProducto)}
-          renderItem={({ item }) => (
-            <ProductCard
-              producto={item}
-              onPress={() => handlePressProducto(item)}
-              onAddToCart={() => agregarProducto(item, 1)}
-            />
-          )}
+          renderItem={renderProduct}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
           ListHeaderComponent={renderHeader}
-          ListEmptyComponent={() => (
-            <View style={styles.centered}>
-              <Text style={styles.emptyText}>No hay productos que coincidan.</Text>
-            </View>
-          )}
+          ListEmptyComponent={EmptyProducts}
         />
-      )}
+      ) : null}
 
       <View style={styles.paginationRow}>
         <TouchableOpacity
@@ -563,31 +635,6 @@ const styles = StyleSheet.create({
   emptyText: {
     color: '#6b7280',
     fontSize: 16,
-  },
-  paginationRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginHorizontal: 20,
-    marginVertical: 16,
-    gap: 12,
-  },
-  pageButton: {
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    borderRadius: 12,
-    backgroundColor: '#7c3aed',
-  },
-  pageButtonDisabled: {
-    backgroundColor: '#c7d2fe',
-  },
-  pageButtonText: {
-    color: '#fff',
-    fontWeight: '700',
-  },
-  paginationInfo: {
-    color: '#374151',
-    fontWeight: '600',
   },
   paginationRow: {
     flexDirection: 'row',

@@ -41,40 +41,48 @@ export default function Carrito() {
     );
   };
 
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>Carrito</Text>
+        <Text style={styles.message}>Cargando carrito...</Text>
+      </View>
+    );
+  }
+
+  if (items && items.length > 0) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>Carrito</Text>
+        <FlatList
+          data={items}
+          keyExtractor={(i) => String(i.id)}
+          renderItem={renderItem}
+          style={styles.list}
+        />
+        <View style={styles.summaryRow}>
+          <Text style={styles.summary}>Productos: {totalItems || 0}</Text>
+          <Text style={styles.summary}>Total: {formatCurrency(Number(total || 0))}</Text>
+        </View>
+        <Link href="/checkout" asChild>
+          <TouchableOpacity style={styles.button}>
+            <Text style={styles.buttonText}>Ir a checkout</Text>
+          </TouchableOpacity>
+        </Link>
+        <TouchableOpacity style={styles.clearButton} onPress={vaciarCarrito}>
+          <Text style={styles.clearText}>Vaciar carrito</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Carrito</Text>
-      {loading ? (
-        <Text style={styles.message}>Cargando carrito...</Text>
-      ) : items && items.length > 0 ? (
-        <>
-          <FlatList
-            data={items}
-            keyExtractor={(i) => String(i.id)}
-            renderItem={renderItem}
-            style={styles.list}
-          />
-          <View style={styles.summaryRow}>
-            <Text style={styles.summary}>Productos: {totalItems || 0}</Text>
-            <Text style={styles.summary}>Total: {formatCurrency(Number(total || 0))}</Text>
-          </View>
-          <Link href="/checkout" asChild>
-            <TouchableOpacity style={styles.button}>
-              <Text style={styles.buttonText}>Ir a checkout</Text>
-            </TouchableOpacity>
-          </Link>
-          <TouchableOpacity style={styles.clearButton} onPress={vaciarCarrito}>
-            <Text style={styles.clearText}>Vaciar carrito</Text>
-          </TouchableOpacity>
-        </>
-      ) : (
-        <>
-          <Text style={styles.empty}>No hay productos en el carrito.</Text>
-          <Link href="/" style={styles.link}>
-            Volver a tienda
-          </Link>
-        </>
-      )}
+      <Text style={styles.empty}>No hay productos en el carrito.</Text>
+      <Link href="/" style={styles.link}>
+        Volver a tienda
+      </Link>
     </View>
   );
 }

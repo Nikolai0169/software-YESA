@@ -227,11 +227,13 @@ export default function CategoriasAdmin() {
 
       {loading ? (
         <ActivityIndicator size="large" color="#7d2181" style={styles.loader} />
-      ) : categoriasFiltradas.length === 0 ? (
-        <Text style={styles.emptyText}>{buscar !== '' ? 'No se encontraron categorías.' : 'No hay categorías registradas.'}</Text>
-      ) : (
-        categoriasFiltradas.map(renderCategoria)
-      )}
+      ) : null}
+      {!loading && categoriasFiltradas.length === 0 ? (
+        <Text style={styles.emptyText}>
+          {buscar !== '' ? 'No se encontraron categorías.' : 'No hay categorías registradas.'}
+        </Text>
+      ) : null}
+      {!loading && categoriasFiltradas.length > 0 ? categoriasFiltradas.map(renderCategoria) : null}
     </ScrollView>
   );
 }

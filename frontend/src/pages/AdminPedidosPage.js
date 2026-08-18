@@ -39,12 +39,11 @@ function AdminPedidosPage() {
   }, [cargarPedidos]);
 
   const handleCambiarEstado = async (pedidoId, nuevoEstado) => {
-  console.log('🔄 Cambiando estado del pedido:', pedidoId, 'a', nuevoEstado);
   try {
     const response = await pedidoService.actualizarEstadoPedido(pedidoId, nuevoEstado);
     
     // ✅ Verificar si fue exitoso
-    if (response && response.success) {
+    if (response?.success) {
       setMensajeExito('Estado del pedido actualizado correctamente');
       await cargarPedidos();
       if (showDetalleModal && pedidoSeleccionado?.id === pedidoId) {
@@ -61,16 +60,14 @@ function AdminPedidosPage() {
 };
 
   const handleVerDetalle = async (pedidoId) => {
-  console.log('👁️ Viendo detalle del pedido:', pedidoId);
   try {
     const pedidoResp = await pedidoService.obtenerPedidoPorId(pedidoId);
-    console.log('Detalle pedido response:', pedidoResp);
 
     // Normalizar diferentes formas de respuesta y obtener el objeto pedido
     const pedido = pedidoResp?.data?.pedido || pedidoResp?.pedido || pedidoResp?.data || pedidoResp;
 
     // ✅ Verificar que sea un objeto válido con id
-    if (pedido && pedido.id) {
+    if (pedido?.id) {
       setPedidoSeleccionado(pedido);
       setShowDetalleModal(true);
     } else {
@@ -163,9 +160,9 @@ function AdminPedidosPage() {
   if (loading) {
     return (
       <div className="container mt-5 text-center">
-        <div className="spinner-border text-primary" role="status">
+        <output className="spinner-border text-primary" aria-label="Cargando pedidos">
           <span className="visually-hidden">Cargando...</span>
-        </div>
+        </output>
       </div>
     );
   }
@@ -204,19 +201,19 @@ function AdminPedidosPage() {
       {/* Cabecera */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div className="d-flex align-items-center gap-2">
-          <button className="btn btn-outline-secondary" onClick={() => navigate('/admin/dashboard')}>
+          <button type="button" className="btn btn-outline-secondary" onClick={() => navigate('/admin/dashboard')}>
             <i className="bi bi-arrow-left me-1"></i> Volver
           </button>
           <h2 className="mb-0">Gestión de Pedidos</h2>
         </div>
         <div className="btn-group">
-          <button className="btn btn-success" onClick={() => exportarPedidosAPDF(pedidosFiltradosYOrdenados)}>
+          <button type="button" className="btn btn-success" onClick={() => exportarPedidosAPDF(pedidosFiltradosYOrdenados)}>
             <i className="bi bi-file-earmark-pdf me-1"></i> Exportar
           </button>
-          <button className="btn btn-success dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"></button>
+          <button type="button" className="btn btn-success dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"></button>
           <ul className="dropdown-menu">
-            <li><button className="dropdown-item" onClick={() => exportarPedidosAPDF(pedidosFiltradosYOrdenados)}>PDF</button></li>
-            <li><button className="dropdown-item" onClick={() => exportarPedidosAExcel(pedidosFiltradosYOrdenados)}>Excel</button></li>
+            <li><button type="button" className="dropdown-item" onClick={() => exportarPedidosAPDF(pedidosFiltradosYOrdenados)}>PDF</button></li>
+            <li><button type="button" className="dropdown-item" onClick={() => exportarPedidosAExcel(pedidosFiltradosYOrdenados)}>Excel</button></li>
           </ul>
         </div>
       </div>
@@ -279,10 +276,11 @@ function AdminPedidosPage() {
           <h5 className="mb-3"><i className="bi bi-funnel me-2"></i>Filtros</h5>
           <div className="row g-3 align-items-end">
             <div className="col-md-3">
-              <label className="form-label small">Buscar cliente</label>
+              <label htmlFor="filtro-busqueda" className="form-label small">Buscar cliente</label>
               <div className="input-group">
                 <span className="input-group-text"><i className="bi bi-search"></i></span>
                 <input
+                  id="filtro-busqueda"
                   type="text"
                   className="form-control"
                   placeholder="Nombre o email..."
@@ -292,8 +290,9 @@ function AdminPedidosPage() {
               </div>
             </div>
             <div className="col-md-2">
-              <label className="form-label small">Estado</label>
+              <label htmlFor="filtro-estado" className="form-label small">Estado</label>
               <select 
+                id="filtro-estado"
                 className="form-select"
                 value={filtros.estado}
                 onChange={(e) => setFiltros({ ...filtros, estado: e.target.value })}
@@ -307,22 +306,22 @@ function AdminPedidosPage() {
               </select>
             </div>
             <div className="col-md-2">
-              <label className="form-label small">Fecha inicio</label>
-              <input type="date" className="form-control" value={filtros.fechaInicio} onChange={(e) => setFiltros({ ...filtros, fechaInicio: e.target.value })} />
+              <label htmlFor="filtro-fecha-inicio" className="form-label small">Fecha inicio</label>
+              <input id="filtro-fecha-inicio" type="date" className="form-control" value={filtros.fechaInicio} onChange={(e) => setFiltros({ ...filtros, fechaInicio: e.target.value })} />
             </div>
             <div className="col-md-2">
-              <label className="form-label small">Fecha fin</label>
-              <input type="date" className="form-control" value={filtros.fechaFin} onChange={(e) => setFiltros({ ...filtros, fechaFin: e.target.value })} />
+              <label htmlFor="filtro-fecha-fin" className="form-label small">Fecha fin</label>
+              <input id="filtro-fecha-fin" type="date" className="form-control" value={filtros.fechaFin} onChange={(e) => setFiltros({ ...filtros, fechaFin: e.target.value })} />
             </div>
             <div className="col-md-2">
-              <label className="form-label small">Ordenar por fecha</label>
-              <select className="form-select" value={orden.direccion} onChange={(e) => setOrden({ campo: 'createdAt', direccion: e.target.value })}>
+              <label htmlFor="orden-fecha" className="form-label small">Ordenar por fecha</label>
+              <select id="orden-fecha" className="form-select" value={orden.direccion} onChange={(e) => setOrden({ campo: 'createdAt', direccion: e.target.value })}>
                 <option value="desc">Más reciente primero</option>
                 <option value="asc">Más antiguo primero</option>
               </select>
             </div>
             <div className="col-md-1 d-flex gap-2">
-              <button className="btn btn-outline-secondary w-100" onClick={() => setFiltros({ busqueda: '', estado: 'todos', fechaInicio: '', fechaFin: '' })}>
+              <button type="button" className="btn btn-outline-secondary w-100" onClick={() => setFiltros({ busqueda: '', estado: 'todos', fechaInicio: '', fechaFin: '' })}>
                 <i className="bi bi-eraser"></i>
               </button>
             </div>
@@ -370,25 +369,25 @@ function AdminPedidosPage() {
                       </td>
                       <td className="align-middle">
                         <div className="d-flex gap-2 flex-wrap">
-                          <button className="btn btn-outline-primary btn-sm" onClick={() => handleVerDetalle(pedido.id)}>Ver detalle</button>
+                          <button type="button" className="btn btn-outline-primary btn-sm" onClick={() => handleVerDetalle(pedido.id)}>Ver detalle</button>
                           
                           {pedido.estado === 'pendiente' && (
                             <>
-                              <button className="btn btn-outline-info btn-sm" onClick={() => handleCambiarEstado(pedido.id, 'en_proceso')}>En Proceso</button>
-                              <button className="btn btn-outline-danger btn-sm" onClick={() => handleCambiarEstado(pedido.id, 'cancelado')}>Cancelar</button>
+                              <button type="button" className="btn btn-outline-info btn-sm" onClick={() => handleCambiarEstado(pedido.id, 'en_proceso')}>En Proceso</button>
+                              <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => handleCambiarEstado(pedido.id, 'cancelado')}>Cancelar</button>
                             </>
                           )}
                           {pedido.estado === 'en_proceso' && (
-                            <button className="btn btn-outline-primary btn-sm" onClick={() => handleCambiarEstado(pedido.id, 'enviado')}>Enviar</button>
+                            <button type="button" className="btn btn-outline-primary btn-sm" onClick={() => handleCambiarEstado(pedido.id, 'enviado')}>Enviar</button>
                           )}
                           {pedido.estado === 'enviado' && (
-                            <button className="btn btn-outline-success btn-sm" onClick={() => handleCambiarEstado(pedido.id, 'entregado')}>Entregar</button>
+                            <button type="button" className="btn btn-outline-success btn-sm" onClick={() => handleCambiarEstado(pedido.id, 'entregado')}>Entregar</button>
                           )}
                           {pedido.estado === 'cancelado' && (
-                            <button className="btn btn-outline-secondary btn-sm" disabled>Cancelado</button>
+                            <button type="button" className="btn btn-outline-secondary btn-sm" disabled>Cancelado</button>
                           )}
                           {pedido.estado === 'entregado' && (
-                            <button className="btn btn-outline-secondary btn-sm" disabled>Completado</button>
+                            <button type="button" className="btn btn-outline-secondary btn-sm" disabled>Completado</button>
                           )}
                         </div>
                       </td>
@@ -439,8 +438,8 @@ function AdminPedidosPage() {
                   <table className="table table-sm">
                     <thead><tr><th>Producto</th><th>Cantidad</th><th>Precio Unit.</th><th>Subtotal</th></tr></thead>
                     <tbody>
-                      {pedidoSeleccionado.detalles?.map((detalle, index) => (
-                        <tr key={index}>
+                      {pedidoSeleccionado.detalles?.map((detalle) => (
+                        <tr key={detalle.id || detalle.productoId || detalle.producto?.id}>
                           <td>{detalle.producto?.nombre || 'Producto no disponible'}</td>
                           <td>{detalle.cantidad}</td>
                           <td>{formatearPrecio(detalle.precioUnitario)}</td>
@@ -454,11 +453,11 @@ function AdminPedidosPage() {
                 <div className="mt-4">
                   <h6>Cambiar Estado del Pedido</h6>
                   <div className="btn-group flex-wrap">
-                    <button className={`btn ${pedidoSeleccionado.estado === 'pendiente' ? 'btn-warning' : 'btn-outline-warning'}`} onClick={() => handleCambiarEstado(pedidoSeleccionado.id, 'pendiente')} disabled={pedidoSeleccionado.estado === 'pendiente'}>Pendiente</button>
-                    <button className={`btn ${pedidoSeleccionado.estado === 'en_proceso' ? 'btn-info' : 'btn-outline-info'}`} onClick={() => handleCambiarEstado(pedidoSeleccionado.id, 'en_proceso')} disabled={pedidoSeleccionado.estado === 'en_proceso'}>En Proceso</button>
-                    <button className={`btn ${pedidoSeleccionado.estado === 'enviado' ? 'btn-primary' : 'btn-outline-primary'}`} onClick={() => handleCambiarEstado(pedidoSeleccionado.id, 'enviado')} disabled={pedidoSeleccionado.estado === 'enviado'}>Enviado</button>
-                    <button className={`btn ${pedidoSeleccionado.estado === 'entregado' ? 'btn-success' : 'btn-outline-success'}`} onClick={() => handleCambiarEstado(pedidoSeleccionado.id, 'entregado')} disabled={pedidoSeleccionado.estado === 'entregado'}>Entregado</button>
-                    <button className={`btn ${pedidoSeleccionado.estado === 'cancelado' ? 'btn-danger' : 'btn-outline-danger'}`} onClick={() => handleCambiarEstado(pedidoSeleccionado.id, 'cancelado')} disabled={pedidoSeleccionado.estado === 'cancelado'}>Cancelado</button>
+                    <button type="button" className={`btn ${pedidoSeleccionado.estado === 'pendiente' ? 'btn-warning' : 'btn-outline-warning'}`} onClick={() => handleCambiarEstado(pedidoSeleccionado.id, 'pendiente')} disabled={pedidoSeleccionado.estado === 'pendiente'}>Pendiente</button>
+                    <button type="button" className={`btn ${pedidoSeleccionado.estado === 'en_proceso' ? 'btn-info' : 'btn-outline-info'}`} onClick={() => handleCambiarEstado(pedidoSeleccionado.id, 'en_proceso')} disabled={pedidoSeleccionado.estado === 'en_proceso'}>En Proceso</button>
+                    <button type="button" className={`btn ${pedidoSeleccionado.estado === 'enviado' ? 'btn-primary' : 'btn-outline-primary'}`} onClick={() => handleCambiarEstado(pedidoSeleccionado.id, 'enviado')} disabled={pedidoSeleccionado.estado === 'enviado'}>Enviado</button>
+                    <button type="button" className={`btn ${pedidoSeleccionado.estado === 'entregado' ? 'btn-success' : 'btn-outline-success'}`} onClick={() => handleCambiarEstado(pedidoSeleccionado.id, 'entregado')} disabled={pedidoSeleccionado.estado === 'entregado'}>Entregado</button>
+                    <button type="button" className={`btn ${pedidoSeleccionado.estado === 'cancelado' ? 'btn-danger' : 'btn-outline-danger'}`} onClick={() => handleCambiarEstado(pedidoSeleccionado.id, 'cancelado')} disabled={pedidoSeleccionado.estado === 'cancelado'}>Cancelado</button>
                   </div>
                 </div>
               </div>
