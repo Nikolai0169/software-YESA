@@ -26,8 +26,7 @@ exports.crearResena = async (req, res) => {
     });
 
     return res.status(201).json({ success: true, message: 'Reseña creada', data: nueva });
-  } catch (error) {
-    console.error('Error crear reseña:', error);
+  } catch {
     return res.status(500).json({ success: false, message: 'Error al crear reseña' });
   }
 };
@@ -37,8 +36,7 @@ exports.obtenerResenasPorProducto = async (req, res) => {
     const { id } = req.params;
     const resenas = await Resena.findAll({ where: { productoId: id, aprobado: true }, order: [['createdAt', 'DESC']] });
     return res.status(200).json({ success: true, data: resenas });
-  } catch (error) {
-    console.error('Error obtener reseñas:', error);
+  } catch {
     return res.status(500).json({ success: false, message: 'Error al obtener reseñas' });
   }
 };

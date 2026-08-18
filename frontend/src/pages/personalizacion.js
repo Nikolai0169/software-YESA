@@ -3,7 +3,6 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Personalizacion3D from "../components/Personalizacion3D";
 import { useAuth } from "../context/AuthContext";
 import { guardarDiseno, cotizarProducto, uploadFile } from "../services/api";
-import { API_URL } from "../services/config";
 import SuccessBanner from '../components/SuccessBanner';
 import {
   saveDesignLocally,
@@ -29,17 +28,8 @@ const dataUrlToBlob = (dataUrl) => {
 };
 
 const getAllowedUploadPath = (value) => {
-  if (typeof value !== 'string' || !value) return null;
-  try {
-    const apiOrigin = new URL(API_URL).origin;
-    const uploadUrl = new URL(value, API_URL);
-    if (uploadUrl.origin !== apiOrigin || !uploadUrl.pathname.startsWith('/uploads/')) {
-      return null;
-    }
-    return `${uploadUrl.pathname}${uploadUrl.search}`;
-  } catch {
-    return null;
-  }
+  if (typeof value !== 'string' || !/^\/uploads\/[A-Za-z0-9._/-]+$/.test(value)) return null;
+  return value;
 };
 
 const buildQuotePayload = (design) => {

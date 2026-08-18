@@ -8,11 +8,15 @@
 import api from './api';
 
 const validatePedidoId = (id) => {
-  const pedidoId = Number(id);
-  if (!Number.isInteger(pedidoId) || pedidoId < 1) {
+  const rawId = String(id);
+  if (!/^\d+$/.test(rawId)) {
     throw new Error('Identificador de pedido inválido');
   }
-  return pedidoId;
+  const pedidoId = Number.parseInt(rawId, 10);
+  if (!Number.isSafeInteger(pedidoId) || pedidoId < 1) {
+    throw new Error('Identificador de pedido inválido');
+  }
+  return String(pedidoId);
 };
 
 const pedidoService = {
@@ -50,7 +54,7 @@ const pedidoService = {
    */
   getPedidoById: async (id) => {
     try {
-      const response = await api.get(`/cliente/pedidos/${encodeURIComponent(String(validatePedidoId(id)))}`);
+      const response = await api.get(`/cliente/pedidos/${validatePedidoId(id)}`);
       return response.data;
     } catch (error) {
       throw error.response?.data || { success: false, message: 'Error de conexión' };
@@ -62,7 +66,7 @@ const pedidoService = {
    */
   cancelarPedido: async (id) => {
     try {
-      const response = await api.put(`/cliente/pedidos/${encodeURIComponent(String(validatePedidoId(id)))}/cancelar`);
+      const response = await api.put(`/cliente/pedidos/${validatePedidoId(id)}/cancelar`);
       return response.data;
     } catch (error) {
       throw error.response?.data || { success: false, message: 'Error de conexión' };
@@ -86,7 +90,7 @@ const pedidoService = {
    */
   obtenerPedidoPorId: async (id) => {
     try {
-      const response = await api.get(`/admin/pedidos/${encodeURIComponent(String(validatePedidoId(id)))}`);
+      const response = await api.get(`/admin/pedidos/${validatePedidoId(id)}`);
       return response.data.data?.pedido || response.data.pedido || response.data.data || response.data;
     } catch (error) {
       throw error.response?.data || { success: false, message: 'Error de conexión' };
@@ -98,7 +102,7 @@ const pedidoService = {
    */
   actualizarEstadoPedido: async (id, estado) => {
     try {
-      const response = await api.put(`/admin/pedidos/${encodeURIComponent(String(validatePedidoId(id)))}/estado`, { estado });
+      const response = await api.put(`/admin/pedidos/${validatePedidoId(id)}/estado`, { estado });
       return response.data;
     } catch (error) {
       throw error.response?.data || { success: false, message: 'Error de conexión' };

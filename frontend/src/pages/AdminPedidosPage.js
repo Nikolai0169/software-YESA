@@ -25,8 +25,7 @@ function AdminPedidosPage() {
     try {
       const data = await pedidoService.obtenerTodosPedidos({ limite: 1000 });
       setPedidos(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error('❌ Error al cargar pedidos:', error);
+    } catch {
       alert('Error al cargar pedidos');
       setPedidos([]);
     } finally {
@@ -54,7 +53,6 @@ function AdminPedidosPage() {
       alert(response?.message || 'Error al cambiar el estado del pedido');
     }
   } catch (error) {
-    console.error('❌ Error al cambiar estado:', error);
     alert(error?.message || 'Error al cambiar estado del pedido');
   }
 };
@@ -73,8 +71,7 @@ function AdminPedidosPage() {
     } else {
       alert('Error: pedido no encontrado o datos inválidos');
     }
-  } catch (error) {
-    console.error('❌ Error al cargar detalle:', error);
+  } catch {
     alert(error?.message || 'Error al cargar detalle del pedido');
   }
 };

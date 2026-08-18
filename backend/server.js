@@ -157,17 +157,6 @@ app.use(async (req, res, next) => {
 // Middleware de logging → Muestra en consola cada petición HTTP que llega al servidor
 // Solo se activa en modo desarrollo (NODE_ENV=development en .env)
 // Útil para depuración: ver qué rutas se están llamando y con qué méNOTE
-if (process.env.NODE_ENV === 'development') {
-  // app.use() con una función (req, res, next) es un middleware personalizado
-  app.use((req, res, next) => {
-    // Imprime el méNOTE HTTP (GET, POST, etc.) y la ruta de la petición
-    console.log('📨 HTTP request received');
-    
-    // next() → OBLIGATORIO en middlewares: pasa la petición al siguiente middleware/ruta
-    // Sin next(), la petición se quedaría "colgada" aquí y el cliente nunca recibiría respuesta
-    next();
-  });
-}
 
 // ==========================================
 // RUTAS BASE (no requieren autenticación)
@@ -269,7 +258,6 @@ app.use((req, res) => {
 // Si un controlador hace throw new Error() o next(error), llega aquí
 app.use((err, req, res, next) => {
   // Imprime el error en la consola del servidor para depuración
-  console.error('❌ Error:', err.message);
   
   // Manejo especial para errores de Multer (subida de archivos)
   // MulterError ocurre cuando: el archivo es muy grande, formato no permitido, etc.
@@ -345,7 +333,7 @@ const initializeApp = async () => {
     if (isTestEnv) {
       throw error;
     }
-    console.error('❌ Error fatal al inicializar el servidor:', error.message);
+    console.error('❌ Error fatal al inicializar el servidor');
     process.exit(1);
   }
 };
@@ -358,18 +346,18 @@ const startServer = async () => {
       server = app.listen(PORT, '0.0.0.0', () => {
         app.server = server;
         console.log('\n╔════════════════════════════════════════════════╗');
-        console.log(`║  ✅ Servidor corriendo en puerto ${PORT}          ║`);
-        console.log(`║  🌐 URL: http://localhost:${PORT}                ║`);
-        console.log(`║  📚 Documentación API: http://localhost:${PORT}  ║`);
-        console.log(`║  🗄️  Base de datos: ${process.env.DB_NAME}        ║`);
-        console.log(`║  🔧 Modo: ${process.env.NODE_ENV}                     ║`);
+        console.log('║  ✅ Servidor corriendo                         ║');
+        console.log('║  🌐 API disponible                             ║');
+        console.log('║  📚 Documentación API disponible               ║');
+        console.log('║  🗄️  Base de datos conectada                  ║');
+        console.log('║  🔧 Servidor inicializado                     ║');
         console.log('╚════════════════════════════════════════════════╝\n');
         console.log('📝 Servidor listo para recibir peticiones...\n');
         resolve();
       });
     });
-  } catch (error) {
-    console.error('❌ Error fatal al iniciar el servidor:', error.message);
+  } catch {
+    console.error('❌ Error fatal al iniciar el servidor');
     process.exit(1);
   }
 };
@@ -388,8 +376,8 @@ process.on('SIGINT', () => {
 // process.on('unhandledRejection') → Captura promesas rechazadas que no tienen .catch()
 // Si algún await falla y no está dentro de un try/catch, este handler lo captura
 // Evita que el servidor siga corriendo en un estado inconsistente
-process.on('unhandledRejection', (err) => {
-  console.error('❌ Error no manejado:', err);
+process.on('unhandledRejection', () => {
+  console.error('❌ Error no manejado');
   process.exit(1);                                 // Termina con código de error
 });
 

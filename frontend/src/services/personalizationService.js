@@ -17,10 +17,18 @@ const sanitizeForStorage = (value) => {
   return value;
 };
 
+const encodeDesignForStorage = (design) => encodeURIComponent(
+  JSON.stringify(sanitizeForStorage(normalizePersonalizacionDesign(design)))
+);
+
+const decodeDesignFromStorage = (value) => normalizePersonalizacionDesign(
+  JSON.parse(decodeURIComponent(value))
+);
+
 export const getSavedDesigns = () => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    const savedDesigns = raw ? JSON.parse(raw) : [];
+    const savedDesigns = raw ? JSON.parse(decodeURIComponent(raw)) : [];
     return Array.isArray(savedDesigns)
       ? savedDesigns.map((design) => normalizePersonalizacionDesign(design))
       : [];
@@ -42,7 +50,7 @@ export const saveDesignLocally = (design) => {
     const updated = found
       ? existing.map((item) => (item.id === designWithId.id ? designWithId : item))
       : [...existing, designWithId];
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(sanitizeForStorage(updated)));
+    localStorage.setItem(STORAGE_KEY, encodeURIComponent(JSON.stringify(sanitizeForStorage(updated))));
     return designWithId;
   } catch (error) {
     console.error('Error guardando diseño localmente:', error);
@@ -54,7 +62,7 @@ export const deleteSavedDesign = (designId) => {
   try {
     const existing = getSavedDesigns();
     const filtered = existing.filter((design) => design.id !== designId);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+    localStorage.setItem(STORAGE_KEY, encodeURIComponent(JSON.stringify(sanitizeForStorage(filtered))));
     return filtered;
   } catch (error) {
     console.error('Error al eliminar diseño guardado:', error);
@@ -79,7 +87,7 @@ export const setDesignToEdit = (design) => {
   try {
     localStorage.setItem(
       CURRENT_DESIGN_KEY,
-      JSON.stringify(sanitizeForStorage(normalizePersonalizacionDesign(design)))
+      encodeDesignForStorage(design)
     );
   } catch (error) {
     console.error('Error al guardar diseño para edición:', error);
@@ -89,7 +97,7 @@ export const setDesignToEdit = (design) => {
 export const getDesignToEdit = () => {
   try {
     const raw = localStorage.getItem(CURRENT_DESIGN_KEY);
-    return raw ? normalizePersonalizacionDesign(JSON.parse(raw)) : null;
+    return raw ? decodeDesignFromStorage(raw) : null;
   } catch (error) {
     console.error('Error al leer diseño para edición:', error);
     return null;
@@ -108,7 +116,7 @@ export const setPendingDesignToEdit = (design) => {
   try {
     localStorage.setItem(
       PENDING_DESIGN_KEY,
-      JSON.stringify(sanitizeForStorage(normalizePersonalizacionDesign(design)))
+      encodeDesignForStorage(design)
     );
   } catch (error) {
     console.error('Error al guardar diseño pendiente para edición:', error);
@@ -118,7 +126,7 @@ export const setPendingDesignToEdit = (design) => {
 export const getPendingDesignToEdit = () => {
   try {
     const raw = localStorage.getItem(PENDING_DESIGN_KEY);
-    return raw ? normalizePersonalizacionDesign(JSON.parse(raw)) : null;
+    return raw ? decodeDesignFromStorage(raw) : null;
   } catch (error) {
     console.error('Error al leer diseño pendiente para edición:', error);
     return null;
