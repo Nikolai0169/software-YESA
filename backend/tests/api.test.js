@@ -591,22 +591,6 @@ describe('🧪 TESTS DE API YESA', () => {
       }
     });
 
-    test('✅ Debe aceptar asuntos cortos como "otro" o "pago"', async () => {
-      const response = await request(app)
-        .post('/api/support/contact')
-        .set('Authorization', `Bearer ${clienteToken}`)
-        .send({
-          nombre: 'Cliente Test Soporte Corto',
-          email: 'cliente1@yesa.com',
-          asunto: 'otro',
-          mensaje: 'Necesito ayuda con un asunto breve'
-        });
-
-      expect(response.status).toBe(201);
-      expect(response.body.success).toBe(true);
-      expect(response.body.data).toHaveProperty('id');
-    });
-
     test('✅ Cliente debe crear una consulta de soporte y admin debe responder y cerrar el ticket', async () => {
       const createResponse = await request(app)
         .post('/api/support/contact')

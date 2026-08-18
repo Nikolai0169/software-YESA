@@ -3,8 +3,18 @@ const frontendUrl = 'http://localhost:3000';
 
 const fetch = globalThis.fetch || require('node-fetch');
 
-const log = console.log;
-const error = console.error;
+const sanitizeLogValue = (value) => {
+  const text = value instanceof Error ? value.message : String(value);
+  return text.replace(/[\r\n]/g, ' ');
+};
+
+const log = (...args) => {
+  process.stdout.write(`${args.map(sanitizeLogValue).join(' ')}\n`);
+};
+
+const error = (...args) => {
+  process.stderr.write(`${args.map(sanitizeLogValue).join(' ')}\n`);
+};
 
 const request = async (url, options = {}) => {
   const res = await fetch(url, options);
