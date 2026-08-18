@@ -597,16 +597,31 @@ def build_profile_manual(profile_name, role_label, role_description, focus_point
         "Revise el producto en detalle antes de agregarlo al carrito para asegurar precio y disponibilidad.",
     ])
 
-    add_section(doc, "8. Gestión del carrito, favoritos y pedidos", bullets=[
-        "Seleccione un producto y agrégalo al carrito cuando lo quiera comprar.",
-        "Revise los productos agregados antes de confirmar la compra.",
-        "Modifique cantidades o elimine artículos si cambió de opinión.",
-        "Use favoritos cuando quiera guardar un producto para revisarlo más tarde.",
-        "Confirme la compra solo cuando esté seguro de los productos, cantidades y total.",
-        "Revise la sección de pedidos para ver el estado del proceso de compra.",
+    add_section(doc, "8. Gestión de categorías y subcategorías", bullets=[
+        "Ingrese al módulo de administración y use el botón 'Categorías' para ver el listado disponible.",
+        "Presione 'Agregar categoría' para crear una nueva clasificación con nombre y descripción.",
+        "Use 'Editar' para modificar los datos de una categoría existente y guardar los cambios.",
+        "Use 'Eliminar' solo cuando desee quitar una categoría autorizada por el administrador o la política del negocio.",
+        "Seleccione una categoría y acceda a 'Subcategorías' para organizar productos por grupos más específicos.",
+        "Use 'Agregar subcategoría' para crear un nivel más detallado dentro de una categoría.",
+        "Use 'Editar' en una subcategoría para corregir su nombre, descripción o relación con la categoría padre.",
+        "Use 'Eliminar' en una subcategoría cuando ya no sea necesaria y confirme la acción si el sistema lo solicita.",
+        "Revise la lista de categorías y subcategorías antes de publicar productos para mantener una estructura ordenada.",
+        "Verifique que cada producto esté asociado a la categoría y subcategoría correctas para facilitar la búsqueda y navegación.",
     ])
 
-    add_section(doc, "9. Personalización y cotizaciones", bullets=[
+    add_section(doc, "9. Gestión de soporte", bullets=[
+        "Ingrese al módulo de soporte desde el panel administrativo usando el botón 'Soporte'.",
+        "Use los filtros por búsqueda, estado y asunto para ubicar rápidamente un ticket o consulta pendiente.",
+        "Seleccione 'Ver detalle' para abrir el contenido completo del mensaje y revisar la información del cliente.",
+        "Use 'Responder' para redactar la respuesta, indicar la solución o pedir información adicional.",
+        "Cuando el caso quede resuelto, use 'Cerrar ticket' para dejar el soporte actualizado y registrado.",
+        "Revise la historia de mensajes para evitar respuestas duplicadas o falta de contexto.",
+        "Si el problema requiere intervención del administrador, escale el caso y deje evidencia del diagnóstico y la resolución.",
+        "Mantenga una respuesta clara y respetuosa para mejorar la experiencia del cliente y la organización del soporte.",
+    ])
+
+    add_section(doc, "10. Personalización y cotizaciones", bullets=[
         "Acceda a la pantalla de personalización para modificar un producto con vista 3D.",
         "Use los botones '-' y '+' para ajustar el zoom, y el botón de rotación para iniciar o detener la rotación automática.",
         "Active la pantalla completa para ver el diseño en modo ampliado.",
@@ -623,10 +638,10 @@ def build_profile_manual(profile_name, role_label, role_description, focus_point
         "Si no está autenticado, el sistema muestra un aviso y redirige al login conservando el diseño.",
     ])
 
-    add_section(doc, "10. Restricciones y responsabilidades del rol", [role_description], bullets=focus_points)
+    add_section(doc, "11. Restricciones y responsabilidades del rol", [role_description], bullets=focus_points)
     add_paragraph(doc, "Estas restricciones existen para proteger la información, evitar cambios accidentales y mantener orden dentro del sistema. También ayudan a reducir errores que puedan afectar ventas, inventario o la confianza del cliente.")
 
-    add_section(doc, "10.1 Resumen de permisos por rol", level=2)
+    add_section(doc, "11.1 Resumen de permisos por rol", level=2)
     add_table(doc, ["Rol", "Qué puede hacer", "Por qué tiene esa limitación"], [
         ("Cliente", "Comprar, revisar pedidos, usar carrito y favoritos", "Solo debe interactuar con su propia experiencia de compra"),
         ("Auxiliar", "Revisar pedidos, mantener catálogo básico y atender soporte con permisos limitados", "Tiene acceso de apoyo, pero no gestiona usuarios ni elimina registros"),
@@ -634,7 +649,7 @@ def build_profile_manual(profile_name, role_label, role_description, focus_point
         ("Usuario sin registrar", "Navegar catálogo y conocer la plataforma", "No tiene cuenta activa ni acceso a funciones protegidas como comprar o guardar favoritos"),
     ])
 
-    add_section(doc, "11. Soporte, seguridad y resolución de problemas", bullets=[
+    add_section(doc, "12. Soporte, seguridad y resolución de problemas", bullets=[
         "Use soporte cuando tenga dudas, no pueda iniciar sesión, detecte un error o necesite ayuda con una compra.",
         "Explique el problema con claridad, indique el producto o pedido y describa la pantalla donde ocurrió el error.",
         "Nunca comparta su contraseña con otras personas.",
@@ -643,12 +658,12 @@ def build_profile_manual(profile_name, role_label, role_description, focus_point
         "Si detecta actividad sospechosa, reporte el caso de inmediato al soporte o al administrador.",
     ])
 
-    add_section(doc, "12. Preguntas frecuentes")
+    add_section(doc, "13. Preguntas frecuentes")
     for item, response in faq_items:
         doc.add_heading(item, level=2)
         add_paragraph(doc, response)
 
-    add_section(doc, "13. Glosario", bullets=[
+    add_section(doc, "14. Glosario", bullets=[
         "Catálogo: lista de productos visibles para el usuario.",
         "Carrito: espacio donde se colocan los productos elegidos para comprar.",
         "Pedido: compra confirmada dentro del sistema.",
@@ -659,7 +674,7 @@ def build_profile_manual(profile_name, role_label, role_description, focus_point
         "Rol: conjunto de permisos que determina qué acciones puede ejecutar el usuario.",
     ])
 
-    add_section(doc, "14. Anexos", bullets=[
+    add_section(doc, "15. Anexos", bullets=[
         "Guarde este manual como referencia para recordar procedimientos cuando los necesite.",
         "Revise el estado de los pedidos de forma periódica si está esperando una entrega o una aprobación.",
         "En caso de un problema grave, contacte al administrador o al equipo responsable.",
