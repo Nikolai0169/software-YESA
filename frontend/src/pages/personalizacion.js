@@ -17,6 +17,16 @@ import { formatCurrency, normalizePersonalizacionDesign } from "../utils/helpers
 
 const isDataUrl = (value) => typeof value === 'string' && value.startsWith('data:');
 
+const dataUrlToBlob = (dataUrl) => {
+  const [metadata, data] = dataUrl.split(',', 2);
+  const mimeType = metadata.match(/^data:([^;]+)/i)?.[1] || 'application/octet-stream';
+  const binary = metadata.includes(';base64')
+    ? atob(data)
+    : decodeURIComponent(data);
+  const bytes = Uint8Array.from(binary, character => character.codePointAt(0));
+  return new Blob([bytes], { type: mimeType });
+};
+
 const buildQuotePayload = (design) => {
   const payload = { ...design };
 
@@ -504,7 +514,7 @@ const PersonalizacionPage = () => {
           if (textureUrlToSend instanceof File) {
             formData.append('texture', textureUrlToSend, textureUrlToSend.name || 'texture.png');
           } else {
-            const blob = await (await fetch(textureUrlToSend)).blob();
+            const blob = dataUrlToBlob(textureUrlToSend);
             formData.append('texture', blob, 'texture.png');
           }
           const uploadResp = await uploadFile('/uploads/texture', formData);
@@ -572,7 +582,7 @@ const PersonalizacionPage = () => {
           const formData = new FormData();
           if (tex instanceof File) formData.append('texture', tex, tex.name || 'texture.png');
           else {
-            const blob = await (await fetch(tex)).blob();
+            const blob = dataUrlToBlob(tex);
             formData.append('texture', blob, 'texture.png');
           }
           const uploadResp = await uploadFile('/uploads/texture', formData);

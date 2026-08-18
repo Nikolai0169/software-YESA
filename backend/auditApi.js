@@ -2,6 +2,24 @@ const baseUrl = 'http://localhost:5000';
 const frontendUrl = 'http://localhost:3000';
 
 const fetch = globalThis.fetch || require('node-fetch');
+const allowedRequestOrigins = new Set([
+  new URL(baseUrl).origin,
+  new URL(frontendUrl).origin,
+]);
+
+const validateRequestUrl = (value) => {
+  const rawPath = String(value).split(/[?#]/, 1)[0];
+  const requestUrl = new URL(value);
+  const decodedPath = decodeURIComponent(requestUrl.pathname);
+  const hasTraversal = /(?:^|\/)(?:\.\.|%2e%2e)(?:\/|$)/i.test(rawPath)
+    || decodedPath.split('/').includes('..');
+
+  if (!allowedRequestOrigins.has(requestUrl.origin) || hasTraversal) {
+    throw new Error('URL de auditoría no permitida');
+  }
+
+  return requestUrl;
+};
 
 const sanitizeLogValue = (value) => {
   const text = value instanceof Error ? value.message : String(value);
@@ -17,7 +35,8 @@ const error = (...args) => {
 };
 
 const request = async (url, options = {}) => {
-  const res = await fetch(url, options);
+  const requestUrl = validateRequestUrl(url);
+  const res = await fetch(requestUrl, options);
   const text = await res.text();
   let body;
   try {

@@ -7,6 +7,14 @@
 
 import api from './api';
 
+const validatePedidoId = (id) => {
+  const pedidoId = Number(id);
+  if (!Number.isInteger(pedidoId) || pedidoId < 1) {
+    throw new Error('Identificador de pedido inválido');
+  }
+  return pedidoId;
+};
+
 const pedidoService = {
   /**
    * Crear pedido (checkout)
@@ -42,7 +50,7 @@ const pedidoService = {
    */
   getPedidoById: async (id) => {
     try {
-      const response = await api.get(`/cliente/pedidos/${id}`);
+      const response = await api.get(`/cliente/pedidos/${encodeURIComponent(String(validatePedidoId(id)))}`);
       return response.data;
     } catch (error) {
       throw error.response?.data || { success: false, message: 'Error de conexión' };
@@ -54,7 +62,7 @@ const pedidoService = {
    */
   cancelarPedido: async (id) => {
     try {
-      const response = await api.put(`/cliente/pedidos/${id}/cancelar`);
+      const response = await api.put(`/cliente/pedidos/${encodeURIComponent(String(validatePedidoId(id)))}/cancelar`);
       return response.data;
     } catch (error) {
       throw error.response?.data || { success: false, message: 'Error de conexión' };
@@ -64,9 +72,9 @@ const pedidoService = {
   /**
    * MÉTODOS ADMIN - Obtener todos los pedidos
    */
-  obtenerTodosPedidos: async (params = '') => {
+  obtenerTodosPedidos: async (params = {}) => {
     try {
-      const response = await api.get(`/admin/pedidos${params}`);
+      const response = await api.get('/admin/pedidos', { params });
       return response.data.data?.pedidos || response.data.pedidos || [];
     } catch (error) {
       throw error.response?.data || { success: false, message: 'Error de conexión' };
@@ -78,7 +86,7 @@ const pedidoService = {
    */
   obtenerPedidoPorId: async (id) => {
     try {
-      const response = await api.get(`/admin/pedidos/${id}`);
+      const response = await api.get(`/admin/pedidos/${encodeURIComponent(String(validatePedidoId(id)))}`);
       return response.data.data?.pedido || response.data.pedido || response.data.data || response.data;
     } catch (error) {
       throw error.response?.data || { success: false, message: 'Error de conexión' };
@@ -90,7 +98,7 @@ const pedidoService = {
    */
   actualizarEstadoPedido: async (id, estado) => {
     try {
-      const response = await api.put(`/admin/pedidos/${id}/estado`, { estado });
+      const response = await api.put(`/admin/pedidos/${encodeURIComponent(String(validatePedidoId(id)))}/estado`, { estado });
       return response.data;
     } catch (error) {
       throw error.response?.data || { success: false, message: 'Error de conexión' };

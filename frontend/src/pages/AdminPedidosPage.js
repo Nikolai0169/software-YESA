@@ -23,7 +23,7 @@ function AdminPedidosPage() {
 
   const cargarPedidos = useCallback(async () => {
     try {
-      const data = await pedidoService.obtenerTodosPedidos('?limite=1000');
+      const data = await pedidoService.obtenerTodosPedidos({ limite: 1000 });
       setPedidos(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('❌ Error al cargar pedidos:', error);
