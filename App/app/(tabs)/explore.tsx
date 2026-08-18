@@ -14,11 +14,93 @@ import {
 import { useAuth } from '../../src/context/authContext';
 import { useRouter } from 'expo-router';
 
-const isValidEmail = (email: string) => /\S+@\S+\.\S+/.test(email);
+const isValidEmail = (email: string) => {
+  const atIndex = email.indexOf('@');
+  const domain = email.slice(atIndex + 1);
+
+  return (
+    atIndex > 0 &&
+    atIndex === email.lastIndexOf('@') &&
+    !email.includes(' ') &&
+    domain.length > 0 &&
+    domain.includes('.') &&
+    !domain.startsWith('.') &&
+    !domain.endsWith('.')
+  );
+};
 const isValidPhone = (phone: string) => /^3\d{9}$/.test(phone);
+const isAdminRole = (role?: string) => role === 'administrador' || role === 'auxiliar';
+
+type RegistrationForm = {
+  nombre: string;
+  apellido: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  telefono: string;
+  direccion: string;
+};
+
+const getFormError = (form: RegistrationForm, isRegisterMode: boolean) => {
+  const { nombre, apellido, email, password, confirmPassword, telefono } = form;
+  const normalizedEmail = email.trim();
+
+  if (!normalizedEmail || !password) {
+    return 'Email y contraseña son obligatorios.';
+  }
+
+  if (!isValidEmail(normalizedEmail)) {
+    return 'Ingresa un email válido.';
+  }
+
+  if (password.length < 6) {
+    return 'La contraseña debe tener al menos 6 caracteres.';
+  }
+
+  if (isRegisterMode && (!nombre || !apellido || !confirmPassword)) {
+    return 'Completa todos los campos obligatorios para registrarte.';
+  }
+
+  if (isRegisterMode && password !== confirmPassword) {
+    return 'Las contraseñas no coinciden.';
+  }
+
+  if (isRegisterMode && telefono && !isValidPhone(telefono)) {
+    return 'Teléfono inválido. Debe tener 10 dígitos y comenzar con 3.';
+  }
+
+  return '';
+};
+
+type UserProfile = {
+  nombre?: string;
+  name?: string;
+  apellido?: string;
+  email?: string;
+  rol?: string;
+  role?: string;
+  telefono?: string;
+  direccion?: string;
+};
 
 export default function Explore() {
-  const { user, isAuthenticated, login, register, logout, isLoadingSession } = useAuth();
+  const { user, isAuthenticated, isLoadingSession } = useAuth();
+  const router = useRouter();
+
+  if (isLoadingSession) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color="#7d2181" />
+        <Text style={styles.subtitle}>Verificando sesión...</Text>
+      </View>
+    );
+  }
+
+  return isAuthenticated ? <ProfileScreen user={user} router={router} /> : <AuthScreen />;
+}
+
+function AuthScreen() {
+  const { login, register } = useAuth();
   const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
@@ -50,36 +132,13 @@ export default function Explore() {
     setError('');
     setMessage('');
 
-    if (!email.trim() || !password) {
-      setError('Email y contraseña son obligatorios.');
+    const formError = getFormError(
+      { nombre, apellido, email, password, confirmPassword, telefono, direccion },
+      isRegisterMode,
+    );
+    if (formError) {
+      setError(formError);
       return;
-    }
-
-    if (!isValidEmail(email.trim())) {
-      setError('Ingresa un email válido.');
-      return;
-    }
-
-    if (password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres.');
-      return;
-    }
-
-    if (isRegisterMode) {
-      if (!nombre || !apellido || !confirmPassword) {
-        setError('Completa todos los campos obligatorios para registrarte.');
-        return;
-      }
-
-      if (password !== confirmPassword) {
-        setError('Las contraseñas no coinciden.');
-        return;
-      }
-
-      if (telefono && !isValidPhone(telefono)) {
-        setError('Teléfono inválido. Debe tener 10 dígitos y comenzar con 3.');
-        return;
-      }
     }
 
     setLoading(true);
@@ -107,117 +166,100 @@ export default function Explore() {
       setLoading(false);
     }
   };
+  return (
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <Text style={styles.title}>{isRegisterMode ? 'Crear cuenta' : 'Iniciar sesión'}</Text>
+        <Text style={styles.subtitle}>
+          {isRegisterMode
+            ? 'Regístrate para comprar con tu cuenta YESA y sincronizar tu carrito.'
+            : 'Inicia sesión para acceder a tus pedidos, carrito y administración.'}
+        </Text>
+
+        {message ? <Text style={styles.noticeText}>{message}</Text> : null}
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+        {isRegisterMode && (
+          <>
+            <TextInput style={styles.input} placeholder="Nombre" value={nombre} onChangeText={setNombre} />
+            <TextInput style={styles.input} placeholder="Apellido" value={apellido} onChangeText={setApellido} />
+          </>
+        )}
+
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          keyboardType="email-address"
+          autoCapitalize="none"
+          value={email}
+          onChangeText={setEmail}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Contraseña"
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+        />
+        {isRegisterMode && (
+          <>
+            <TextInput
+              style={styles.input}
+              placeholder="Confirmar contraseña"
+              secureTextEntry
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Teléfono (opcional)"
+              keyboardType="phone-pad"
+              value={telefono}
+              onChangeText={setTelefono}
+              maxLength={10}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Dirección (opcional)"
+              value={direccion}
+              onChangeText={setDireccion}
+            />
+          </>
+        )}
+
+        <TouchableOpacity style={styles.button} onPress={handleSubmit} disabled={loading}>
+          {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>{isRegisterMode ? 'Registrarse' : 'Ingresar'}</Text>}
+        </TouchableOpacity>
+
+        <View style={styles.footerRow}>
+          <Text style={styles.footerText}>{isRegisterMode ? '¿Ya tienes cuenta?' : '¿Aún no estás registrado?'}</Text>
+          <TouchableOpacity onPress={() => setIsRegisterMode(!isRegisterMode)}>
+            <Text style={styles.footerLink}>{isRegisterMode ? 'Iniciar sesión' : 'Crear cuenta'}</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+}
+
+function ProfileScreen({ user, router }: Readonly<{ user: UserProfile; router: ReturnType<typeof useRouter> }>) {
+  const { logout } = useAuth();
+  const isAdmin = isAdminRole(user?.rol || user?.role);
 
   const handleLogout = async () => {
     await logout();
-    resetForm();
-    setIsRegisterMode(false);
-    setError('');
-    setMessage('Has cerrado sesión.');
   };
 
-  const router = useRouter();
-
   const handleOpenAdmin = () => {
-    const role = user?.rol || user?.role || 'cliente';
-    if (role === 'administrador' || role === 'auxiliar') {
+    if (isAdmin) {
       router.push('/admin/dashboard');
       return;
     }
     Alert.alert('Acceso denegado', 'No tienes permisos para acceder al panel de administración.');
   };
-
-  // Verificar si el usuario es admin o auxiliar
-  const isAdmin = user?.rol === 'administrador' || user?.rol === 'auxiliar';
-
-  if (isLoadingSession) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#7d2181" />
-        <Text style={styles.subtitle}>Verificando sesión...</Text>
-      </View>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <Text style={styles.title}>{isRegisterMode ? 'Crear cuenta' : 'Iniciar sesión'}</Text>
-          <Text style={styles.subtitle}>
-            {isRegisterMode
-              ? 'Regístrate para comprar con tu cuenta YESA y sincronizar tu carrito.'
-              : 'Inicia sesión para acceder a tus pedidos, carrito y administración.'}
-          </Text>
-
-          {message ? <Text style={styles.noticeText}>{message}</Text> : null}
-          {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
-          {isRegisterMode && (
-            <>
-              <TextInput style={styles.input} placeholder="Nombre" value={nombre} onChangeText={setNombre} />
-              <TextInput style={styles.input} placeholder="Apellido" value={apellido} onChangeText={setApellido} />
-            </>
-          )}
-
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            value={email}
-            onChangeText={setEmail}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Contraseña"
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-          />
-          {isRegisterMode && (
-            <>
-              <TextInput
-                style={styles.input}
-                placeholder="Confirmar contraseña"
-                secureTextEntry
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Teléfono (opcional)"
-                keyboardType="phone-pad"
-                value={telefono}
-                onChangeText={setTelefono}
-                maxLength={10}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Dirección (opcional)"
-                value={direccion}
-                onChangeText={setDireccion}
-              />
-            </>
-          )}
-
-          <TouchableOpacity style={styles.button} onPress={handleSubmit} disabled={loading}>
-            {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>{isRegisterMode ? 'Registrarse' : 'Ingresar'}</Text>}
-          </TouchableOpacity>
-
-          <View style={styles.footerRow}>
-            <Text style={styles.footerText}>{isRegisterMode ? '¿Ya tienes cuenta?' : '¿Aún no estás registrado?'}</Text>
-            <TouchableOpacity onPress={() => setIsRegisterMode(!isRegisterMode)}>
-              <Text style={styles.footerLink}>{isRegisterMode ? 'Iniciar sesión' : 'Crear cuenta'}</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    );
-  }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -243,9 +285,9 @@ export default function Explore() {
         ) : null}
       </View>
 
-      <TouchableOpacity onPress={() => {}} style={styles.sectionButton} disabled>
+      <View style={styles.sectionButton}>
         <Text style={styles.sectionButtonText}>Edición de perfil no disponible en móvil</Text>
-      </TouchableOpacity>
+      </View>
 
       <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
         <Text style={styles.logoutText}>Cerrar sesión</Text>
@@ -255,7 +297,6 @@ export default function Explore() {
         <Text style={styles.buttonText}>Mis pedidos</Text>
       </TouchableOpacity>
 
-      {/* Botón de panel admin solo para admins y auxiliares */}
       {isAdmin && (
         <TouchableOpacity style={styles.buttonSecondary} onPress={handleOpenAdmin}>
           <Text style={styles.buttonSecondaryText}>Abrir panel admin</Text>
