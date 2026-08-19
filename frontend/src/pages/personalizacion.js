@@ -598,7 +598,6 @@ const PersonalizacionPage = () => {
       });
       setCurrentDesignId(savedDesign.id);
       setCurrentDesignName(savedDesign.nombre);
-//xd
       try {
         const result = await guardarDiseno(disenoData);
         const saveMessage = result?.mensaje ? ' en servidor y localmente' : '';

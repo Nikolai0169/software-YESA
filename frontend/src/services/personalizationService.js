@@ -23,10 +23,14 @@ const sanitizeForStorage = (value, fieldName = '') => {
   return value;
 };
 
-const writeSanitizedStorageValue = (key, value) => {
+const serializeForStorage = (value) => {
   const sanitizedValue = sanitizeForStorage(value);
-  const encodedValue = encodeURIComponent(JSON.stringify(sanitizedValue));
-  localStorage.setItem(key, encodedValue);
+  return encodeURIComponent(JSON.stringify(sanitizedValue));
+};
+
+const writeSanitizedStorageValue = (key, value) => {
+  const serializedValue = serializeForStorage(value);
+  localStorage.setItem(key, serializedValue);
 };
 
 const decodeDesignFromStorage = (value) => normalizePersonalizacionDesign(
