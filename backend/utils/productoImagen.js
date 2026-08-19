@@ -1,7 +1,10 @@
-const fs = require('fs/promises');
-const path = require('path');
-const http = require('http');
-const https = require('https');
+const crypto = require('node:crypto');
+const fs = require('node:fs/promises');
+const path = require('node:path');
+const http = require('node:http');
+const https = require('node:https');
+
+const MAX_REDIRECTS = 5;
 
 const mapearExtensionPorTipo = (contentType) => {
   if (!contentType) return '.jpg';
@@ -12,17 +15,26 @@ const mapearExtensionPorTipo = (contentType) => {
   return '.jpg';
 };
 
-const descargarImagenRemota = async (imagenUrl, uploadDir = path.join(__dirname, '../uploads')) => {
+const descargarImagenRemota = async (
+  imagenUrl,
+  uploadDir = path.join(__dirname, '../uploads'),
+  redirectCount = 0
+) => {
   const url = new URL(imagenUrl);
 
   if (!['http:', 'https:'].includes(url.protocol)) {
     throw new Error('La URL de imagen debe ser http o https');
   }
 
+  if (redirectCount > MAX_REDIRECTS) {
+    throw new Error('Se excedió el límite de redirecciones de la imagen');
+  }
+
   await fs.mkdir(uploadDir, { recursive: true });
 
   const extension = path.extname(url.pathname) || mapearExtensionPorTipo(url.searchParams.get('type'));
-  const nombreArchivo = `${Date.now()}-${Math.random().toString(36).slice(2)}${extension || '.jpg'}`;
+  const identificador = crypto.randomBytes(16).toString('hex');
+  const nombreArchivo = `${Date.now()}-${identificador}${extension || '.jpg'}`;
   const rutaDestino = path.join(uploadDir, nombreArchivo);
 
   const cliente = url.protocol === 'https:' ? https : http;
@@ -33,7 +45,12 @@ const descargarImagenRemota = async (imagenUrl, uploadDir = path.join(__dirname,
 
       if (statusCode >= 300 && statusCode < 400 && response.headers.location) {
         response.resume();
-        resolve(descargarImagenRemota(response.headers.location, uploadDir));
+        const redirectUrl = new URL(response.headers.location, url);
+        if (!['http:', 'https:'].includes(redirectUrl.protocol)) {
+          reject(new Error('La redirección de imagen debe ser http o https'));
+          return;
+        }
+        resolve(descargarImagenRemota(redirectUrl.toString(), uploadDir, redirectCount + 1));
         return;
       }
 
@@ -63,14 +80,18 @@ const descargarImagenRemota = async (imagenUrl, uploadDir = path.join(__dirname,
 
 const resolverImagenProducto = async (body = {}, files = {}, options = {}) => {
   const uploadDir = options.uploadDir || path.join(__dirname, '../uploads');
-  const imagenes = (files && files.imagenes && files.imagenes.length)
-    ? files.imagenes.map(file => file.filename)
-    : (files && files.imagen && files.imagen.length)
-      ? [files.imagen[0].filename]
-      : null;
+  const imagenesSubidas = files?.imagenes;
+  const imagenSubida = files?.imagen;
+  let imagenes = null;
 
-  const imagenUrl = body?.imagenUrl?.trim();
-  const tieneArchivo = Boolean(imagenes && imagenes.length);
+  if (imagenesSubidas?.length) {
+    imagenes = imagenesSubidas.map((file) => file.filename);
+  } else if (imagenSubida?.length) {
+    imagenes = [imagenSubida[0].filename];
+  }
+
+  const imagenUrl = typeof body?.imagenUrl === 'string' ? body.imagenUrl.trim() : '';
+  const tieneArchivo = Boolean(imagenes?.length);
 
   if (tieneArchivo) {
     return {

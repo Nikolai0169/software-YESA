@@ -1802,13 +1802,13 @@ const Cotizacion = <span class="cstat-no" title="statement not covered" >require
  * Body JSON: { direccionEnvio, telefono, metodoPago, notasAdicionales }
  * 
  * Proceso:
- * 1. Valida datos de envío y método de pago
+ * 1. Valida datos de envío y méNOTE de pago
  * 2. Obtiene items del carrito del usuario
  * 3. Verifica stock y productos activos
  * 4. Crea el pedido y sus detalles
  * 5. Reduce el stock de cada producto
  * 6. Vacía el carrito
- * Todo dentro de una TRANSACCIÓN para garantizar consistencia.
+ * NOTE dentro de una TRANSACCIÓN para garantizar consistencia.
  */
 const crearPedido = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {</span>
   // Importa la instancia de sequelize desde config/database.js para usar transacciones.
@@ -1841,7 +1841,7 @@ const crearPedido = <span class="cstat-no" title="statement not covered" ><span 
       });
     }
     
-    // VALIDACIÓN 2: El método de pago debe ser uno de los válidos
+    // VALIDACIÓN 2: El méNOTE de pago debe ser uno de los válidos
     const metodosValidos = <span class="cstat-no" title="statement not covered" >['efectivo', 'tarjeta', 'transferencia'];</span>
     // .includes() verifica si el valor está en el array
 <span class="cstat-no" title="statement not covered" >    if (!metodosValidos.includes(metodoPago)) {</span>
@@ -1874,8 +1874,8 @@ const crearPedido = <span class="cstat-no" title="statement not covered" ><span 
         });
       }
 &nbsp;
-      const totalCotizacion = <span class="cstat-no" title="statement not covered" >parseFloat(cot.precio);</span>
-<span class="cstat-no" title="statement not covered" >      if (isNaN(totalCotizacion) || totalCotizacion &lt;= 0) {</span>
+      const totalCotizacion = <span class="cstat-no" title="statement not covered" >Number.parseFloat(cot.precio);</span>
+<span class="cstat-no" title="statement not covered" >      if (Number.isNaN(totalCotizacion) || totalCotizacion &lt;= 0) {</span>
 <span class="cstat-no" title="statement not covered" >        await t.rollback();</span>
 <span class="cstat-no" title="statement not covered" >        return res.status(400).json({</span>
           success: false,
@@ -2016,7 +2016,7 @@ const crearPedido = <span class="cstat-no" title="statement not covered" ><span 
       }
       
       // Suma al total del pedido: precioUnitario × cantidad
-<span class="cstat-no" title="statement not covered" >      totalPedido += parseFloat(item.precioUnitario) * item.cantidad;</span>
+<span class="cstat-no" title="statement not covered" >      totalPedido += Number.parseFloat(item.precioUnitario) * item.cantidad;</span>
     }
     
     // Si hubo errores de validación en algún producto, revierte y muestra todos los errores
@@ -2052,7 +2052,7 @@ const crearPedido = <span class="cstat-no" title="statement not covered" ><span 
         productoId: producto.id,                              // FK al producto
         cantidad: item.cantidad,                              // Cantidad solicitada
         precioUnitario: item.precioUnitario,                  // Precio al momento de la compra
-        subtotal: parseFloat(item.precioUnitario) * item.cantidad  // Subtotal de este item
+        subtotal: Number.parseFloat(item.precioUnitario) * item.cantidad  // Subtotal de este item
       }, { transaction: t });
       
 <span class="cstat-no" title="statement not covered" >      detallesPedido.push(detalle); </span>  // Agrega al array de detalles
@@ -2070,7 +2070,7 @@ const crearPedido = <span class="cstat-no" title="statement not covered" ><span 
     });
     
     // CONFIRMAR TRANSACCIÓN → ejecuta todos los cambios en la BD de forma permanente.
-    // Si algo hubiera fallado antes, t.rollback() habría revertido todo.
+    // Si algo hubiera fallado antes, t.rollback() habría revertido NOTE.
 <span class="cstat-no" title="statement not covered" >    await t.commit();</span>
     
     // Recarga el pedido con sus relaciones para enviar la respuesta completa.
@@ -2141,7 +2141,7 @@ const getMisPedidos = <span class="cstat-no" title="statement not covered" ><spa
 <span class="cstat-no" title="statement not covered" >    if (estado) <span class="cstat-no" title="statement not covered" >where.estado = estado;</span></span>
     
     // Calcula el offset para paginación
-    const offset = <span class="cstat-no" title="statement not covered" >(parseInt(pagina) - 1) * parseInt(limite);</span>
+    const offset = <span class="cstat-no" title="statement not covered" >(Number.parseInt(pagina) - 1) * Number.parseInt(limite);</span>
     
     // Consulta pedidos con paginación.
     // findAndCountAll retorna { count: total, rows: registros }
@@ -2167,7 +2167,7 @@ const getMisPedidos = <span class="cstat-no" title="statement not covered" ><spa
           }]
         }
       ],
-      limit: parseInt(limite),
+      limit: Number.parseInt(limite),
       offset,
       order: [['createdAt', 'DESC']]    // Más recientes primero
     });
@@ -2179,9 +2179,9 @@ const getMisPedidos = <span class="cstat-no" title="statement not covered" ><spa
         pedidos,
         paginacion: {
           total: count,
-          pagina: parseInt(pagina),
-          limite: parseInt(limite),
-          totalPaginas: Math.ceil(count / parseInt(limite))
+          pagina: Number.parseInt(pagina),
+          limite: Number.parseInt(limite),
+          totalPaginas: Math.ceil(count / Number.parseInt(limite))
         }
       }
     });
@@ -2362,7 +2362,7 @@ const cancelarPedido = <span class="cstat-no" title="statement not covered" ><sp
     });
     
   } catch (error) {
-<span class="cstat-no" title="statement not covered" >    await t.rollback(); </span>   // Revierte todo si hay error
+<span class="cstat-no" title="statement not covered" >    await t.rollback(); </span>   // Revierte NOTE si hay error
 <span class="cstat-no" title="statement not covered" >    console.error('Error en cancelarPedido:', error);</span>
 <span class="cstat-no" title="statement not covered" >    res.status(500).json({</span>
       success: false,
@@ -2389,7 +2389,7 @@ const getAllPedidos = <span class="cstat-no" title="statement not covered" ><spa
 <span class="cstat-no" title="statement not covered" >    if (estado) <span class="cstat-no" title="statement not covered" >where.estado = estado; </span></span>          // Filtro por estado
 <span class="cstat-no" title="statement not covered" >    if (usuarioId) <span class="cstat-no" title="statement not covered" >where.usuarioId = usuarioId; </span></span> // Filtro por usuario específico
     
-    const offset = <span class="cstat-no" title="statement not covered" >(parseInt(pagina) - 1) * parseInt(limite);</span>
+    const offset = <span class="cstat-no" title="statement not covered" >(Number.parseInt(pagina) - 1) * Number.parseInt(limite);</span>
     
     // Consulta todos los pedidos con datos del usuario y detalles
     const { count, rows: pedidos } = <span class="cstat-no" title="statement not covered" >await Pedido.findAndCountAll({</span>
@@ -2419,7 +2419,7 @@ const getAllPedidos = <span class="cstat-no" title="statement not covered" ><spa
           }]
         }
       ],
-      limit: parseInt(limite),
+      limit: Number.parseInt(limite),
       offset,
       order: [['createdAt', 'DESC']]     // Más recientes primero
     });
@@ -2431,9 +2431,9 @@ const getAllPedidos = <span class="cstat-no" title="statement not covered" ><spa
         pedidos,
         paginacion: {
           total: count,
-          pagina: parseInt(pagina),
-          limite: parseInt(limite),
-          totalPaginas: Math.ceil(count / parseInt(limite))
+          pagina: Number.parseInt(pagina),
+          limite: Number.parseInt(limite),
+          totalPaginas: Math.ceil(count / Number.parseInt(limite))
         }
       }
     });
@@ -2564,13 +2564,13 @@ const getEstadisticasPedidos = <span class="cstat-no" title="statement not cover
         totalPedidos,                    // Total de pedidos
         pedidosHoy,                      // Pedidos creados hoy
         // Si no hay ventas (null), usa 0. toFixed(2) formatea a 2 decimales.
-        ventasTotales: parseFloat(ventasTotales || 0).toFixed(2),
+        ventasTotales: Number.parseFloat(ventasTotales || 0).toFixed(2),
         // Transforma cada resultado de la agrupación a un formato limpio
         pedidosPorEstado: pedidosPorEstado.map(<span class="fstat-no" title="function not covered" >p </span>=&gt; (<span class="cstat-no" title="statement not covered" >{</span>
           estado: p.estado,
           // getDataValue() obtiene el valor de un campo virtual (alias del SQL)
-          cantidad: parseInt(p.getDataValue('cantidad')),
-          totalVentas: parseFloat(p.getDataValue('totalVentas') || 0).toFixed(2)
+          cantidad: Number.parseInt(p.getDataValue('cantidad')),
+          totalVentas: Number.parseFloat(p.getDataValue('totalVentas') || 0).toFixed(2)
         }))
       }
     });
@@ -2605,7 +2605,7 @@ const getEstadisticasPedidos = <span class="cstat-no" title="statement not cover
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-07-27T20:03:21.835Z
+                at 2026-08-19T02:55:03.217Z
             </div>
         <script src="../prettify.js"></script>
         <script>

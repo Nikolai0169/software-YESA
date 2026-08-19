@@ -1252,7 +1252,7 @@ const getProductos = <span class="cstat-no" title="statement not covered" ><span
       ];
     }
     
-    const offset = <span class="cstat-no" title="statement not covered" >(parseInt(pagina) - 1) * parseInt(limite);</span>
+    const offset = <span class="cstat-no" title="statement not covered" >(Number.parseInt(pagina) - 1) * Number.parseInt(limite);</span>
     
     const opciones = <span class="cstat-no" title="statement not covered" >{</span>
       where,
@@ -1260,7 +1260,7 @@ const getProductos = <span class="cstat-no" title="statement not covered" ><span
         { model: Categoria, as: 'categoria', attributes: ['id', 'nombre'] },
         { model: Subcategoria, as: 'subcategoria', attributes: ['id', 'nombre'] }
       ],
-      limit: parseInt(limite),
+      limit: Number.parseInt(limite),
       offset,
       order: [['nombre', 'ASC']]
     };
@@ -1276,9 +1276,9 @@ const getProductos = <span class="cstat-no" title="statement not covered" ><span
         productos: productosConURL,
         paginacion: {
           total: count,
-          pagina: parseInt(pagina),
-          limite: parseInt(limite),
-          totalPaginas: Math.ceil(count / parseInt(limite))
+          pagina: Number.parseInt(pagina),
+          limite: Number.parseInt(limite),
+          totalPaginas: Math.ceil(count / Number.parseInt(limite))
         }
       }
     });
@@ -1364,21 +1364,21 @@ const crearProducto = <span class="cstat-no" title="statement not covered" ><spa
       });
     }
     
-<span class="cstat-no" title="statement not covered" >    if (subcategoria.categoriaId !== parseInt(categoriaId)) {</span>
+<span class="cstat-no" title="statement not covered" >    if (subcategoria.categoriaId !== Number.parseInt(categoriaId)) {</span>
 <span class="cstat-no" title="statement not covered" >      return res.status(400).json({</span>
         success: false,
         message: `La subcategoría no pertenece a la categoría seleccionada`
       });
     }
     
-<span class="cstat-no" title="statement not covered" >    if (parseFloat(precio) &lt;= 0) {</span>
+<span class="cstat-no" title="statement not covered" >    if (Number.parseFloat(precio) &lt;= 0) {</span>
 <span class="cstat-no" title="statement not covered" >      return res.status(400).json({</span>
         success: false,
         message: 'El precio debe ser mayor a 0'
       });
     }
     
-<span class="cstat-no" title="statement not covered" >    if (parseInt(stock) &lt; 0) {</span>
+<span class="cstat-no" title="statement not covered" >    if (Number.parseInt(stock) &lt; 0) {</span>
 <span class="cstat-no" title="statement not covered" >      return res.status(400).json({</span>
         success: false,
         message: 'El stock no puede ser negativo'
@@ -1390,10 +1390,10 @@ const crearProducto = <span class="cstat-no" title="statement not covered" ><spa
     const nuevoProducto = <span class="cstat-no" title="statement not covered" >await Producto.create({</span>
       nombre,
       descripcion: descripcion || null,
-      precio: parseFloat(precio),
-      stock: parseInt(stock) || 0,
-      categoriaId: parseInt(categoriaId),
-      subcategoriaId: parseInt(subcategoriaId),
+      precio: Number.parseFloat(precio),
+      stock: Number.parseInt(stock) || 0,
+      categoriaId: Number.parseInt(categoriaId),
+      subcategoriaId: Number.parseInt(subcategoriaId),
       imagen,
       imagenes,
       activo: true
@@ -1475,10 +1475,10 @@ const actualizarProducto = <span class="cstat-no" title="statement not covered" 
     
 <span class="cstat-no" title="statement not covered" >    if (nombre) <span class="cstat-no" title="statement not covered" >producto.nombre = nombre;</span></span>
 <span class="cstat-no" title="statement not covered" >    if (descripcion !== undefined) <span class="cstat-no" title="statement not covered" >producto.descripcion = descripcion || null;</span></span>
-<span class="cstat-no" title="statement not covered" >    if (precio !== undefined) <span class="cstat-no" title="statement not covered" >producto.precio = parseFloat(precio);</span></span>
-<span class="cstat-no" title="statement not covered" >    if (stock !== undefined) <span class="cstat-no" title="statement not covered" >producto.stock = parseInt(stock);</span></span>
-<span class="cstat-no" title="statement not covered" >    if (categoriaId) <span class="cstat-no" title="statement not covered" >producto.categoriaId = parseInt(categoriaId);</span></span>
-<span class="cstat-no" title="statement not covered" >    if (subcategoriaId) <span class="cstat-no" title="statement not covered" >producto.subcategoriaId = parseInt(subcategoriaId);</span></span>
+<span class="cstat-no" title="statement not covered" >    if (precio !== undefined) <span class="cstat-no" title="statement not covered" >producto.precio = Number.parseFloat(precio);</span></span>
+<span class="cstat-no" title="statement not covered" >    if (stock !== undefined) <span class="cstat-no" title="statement not covered" >producto.stock = Number.parseInt(stock);</span></span>
+<span class="cstat-no" title="statement not covered" >    if (categoriaId) <span class="cstat-no" title="statement not covered" >producto.categoriaId = Number.parseInt(categoriaId);</span></span>
+<span class="cstat-no" title="statement not covered" >    if (subcategoriaId) <span class="cstat-no" title="statement not covered" >producto.subcategoriaId = Number.parseInt(subcategoriaId);</span></span>
 <span class="cstat-no" title="statement not covered" >    if (activo !== undefined) <span class="cstat-no" title="statement not covered" >producto.activo = activo;</span></span>
     
     const { imagen: imagenDesdeRequest, imagenes: nuevasImagenes } = <span class="cstat-no" title="statement not covered" >await resolverImagenProducto(req.body, req.files);</span>
@@ -1639,7 +1639,7 @@ const actualizarStock = <span class="cstat-no" title="statement not covered" ><s
       });
     }
     
-    const cantidadNum = <span class="cstat-no" title="statement not covered" >parseInt(cantidad);</span>
+    const cantidadNum = <span class="cstat-no" title="statement not covered" >Number.parseInt(cantidad);</span>
 <span class="cstat-no" title="statement not covered" >    if (cantidadNum &lt; 0) {</span>
 <span class="cstat-no" title="statement not covered" >      return res.status(400).json({</span>
         success: false,
@@ -1723,7 +1723,7 @@ const actualizarStock = <span class="cstat-no" title="statement not covered" ><s
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-07-27T20:03:21.835Z
+                at 2026-08-19T02:55:03.217Z
             </div>
         <script src="../prettify.js"></script>
         <script>

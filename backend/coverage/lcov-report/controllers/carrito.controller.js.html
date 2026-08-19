@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/104</span>
+                <span class='fraction'>0/105</span>
             </div>
         
             
@@ -39,7 +39,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/11</span>
+                <span class='fraction'>0/12</span>
             </div>
         
             
@@ -519,7 +519,9 @@
 <a name='L454'></a><a href='#L454'>454</a>
 <a name='L455'></a><a href='#L455'>455</a>
 <a name='L456'></a><a href='#L456'>456</a>
-<a name='L457'></a><a href='#L457'>457</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L457'></a><a href='#L457'>457</a>
+<a name='L458'></a><a href='#L458'>458</a>
+<a name='L459'></a><a href='#L459'>459</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -555,6 +557,8 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1014,11 +1018,13 @@ const construirURLProducto = <span class="cstat-no" title="statement not covered
 };
 &nbsp;
 // ✅ FUNCIÓN AUXILIAR PARA CONSTRUIR URLs EN ARRAYS
-const construirURLsProductos = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(p</span>roductos) =&gt; {</span>
+// Evita pasar parámetros inesperados (index, array) a la función
+// `construirURLProducto` envolviéndola en una arrow function.
+const construirURLsProductos = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(p</span>roductos, req) =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >  if (Array.isArray(productos)) {</span>
-<span class="cstat-no" title="statement not covered" >    return productos.map(construirURLProducto);</span>
+<span class="cstat-no" title="statement not covered" >    return productos.map(<span class="fstat-no" title="function not covered" >p </span>=&gt; <span class="cstat-no" title="statement not covered" >construirURLProducto(p, req))</span>;</span>
   }
-<span class="cstat-no" title="statement not covered" >  return construirURLProducto(productos);</span>
+<span class="cstat-no" title="statement not covered" >  return construirURLProducto(productos, req);</span>
 };
 &nbsp;
 /**
@@ -1077,7 +1083,7 @@ const getCarrito = <span class="cstat-no" title="statement not covered" ><span c
     // forEach recorre cada item del array
 <span class="cstat-no" title="statement not covered" >    itemsConURL.forEach(<span class="fstat-no" title="function not covered" >it</span>em =&gt; {</span>
       // parseFloat convierte el precio (que puede ser string) a número decimal
-<span class="cstat-no" title="statement not covered" >      total += parseFloat(item.precioUnitario) * item.cantidad;</span>
+<span class="cstat-no" title="statement not covered" >      total += Number.parseFloat(item.precioUnitario) * item.cantidad;</span>
     });
     
     // Responde con los items del carrito y un resumen
@@ -1129,7 +1135,7 @@ const agregarAlCarrito = <span class="cstat-no" title="statement not covered" ><
     
     // VALIDACIÓN 2: Verifica que la cantidad sea un número válido &gt;= 1
     // parseInt convierte string a número entero: "3" -&gt; 3
-    const cantidadNum = <span class="cstat-no" title="statement not covered" >parseInt(cantidad);</span>
+    const cantidadNum = <span class="cstat-no" title="statement not covered" >Number.parseInt(cantidad);</span>
 <span class="cstat-no" title="statement not covered" >    if (cantidadNum &lt; 1) {</span>
 <span class="cstat-no" title="statement not covered" >      return res.status(400).json({</span>
         success: false,
@@ -1276,7 +1282,7 @@ const actualizarItemCarrito = <span class="cstat-no" title="statement not covere
     const { cantidad } = <span class="cstat-no" title="statement not covered" >req.body;</span>
     
     // Convierte la cantidad a número entero y valida que sea &gt;= 1
-    const cantidadNum = <span class="cstat-no" title="statement not covered" >parseInt(cantidad);</span>
+    const cantidadNum = <span class="cstat-no" title="statement not covered" >Number.parseInt(cantidad);</span>
 <span class="cstat-no" title="statement not covered" >    if (cantidadNum &lt; 1) {</span>
 <span class="cstat-no" title="statement not covered" >      return res.status(400).json({</span>
         success: false,
@@ -1390,7 +1396,7 @@ const eliminarItemCarrito = <span class="cstat-no" title="statement not covered"
 };
 &nbsp;
 /**
- * Vaciar todo el carrito
+ * Vaciar NOTE el carrito
  * 
  * Ruta: DELETE /api/cliente/carrito
  * Elimina TODOS los items del carrito del usuario autenticado.
@@ -1430,7 +1436,7 @@ const vaciarCarrito = <span class="cstat-no" title="statement not covered" ><spa
   agregarAlCarrito,         // POST /api/cliente/carrito - Agregar producto
   actualizarItemCarrito,    // PUT /api/cliente/carrito/:id - Cambiar cantidad
   eliminarItemCarrito,      // DELETE /api/cliente/carrito/:id - Quitar un item
-  vaciarCarrito             // DELETE /api/cliente/carrito - Vaciar todo
+  vaciarCarrito             // DELETE /api/cliente/carrito - Vaciar NOTE
 };</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -1438,7 +1444,7 @@ const vaciarCarrito = <span class="cstat-no" title="statement not covered" ><spa
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-07-27T20:03:21.835Z
+                at 2026-08-19T02:55:03.217Z
             </div>
         <script src="../prettify.js"></script>
         <script>
