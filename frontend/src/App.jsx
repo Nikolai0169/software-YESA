@@ -12,7 +12,7 @@ import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
-import { setSanitizedStorageString } from './utils/storage';
+import { getStorageString, setSanitizedStorageString } from './utils/storage';
 
 // Páginas públicas
 import HomePage from './pages/HomePage';
@@ -54,7 +54,7 @@ function App() {
   const [theme, setTheme] = useState('light');
 
   useEffect(() => {
-    const storedTheme = localStorage.getItem('yesa-theme');
+    const storedTheme = getStorageString('yesa-theme');
     const preferredTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     const initialTheme = ALLOWED_THEMES.has(storedTheme) ? storedTheme : preferredTheme;
     setTheme(initialTheme);

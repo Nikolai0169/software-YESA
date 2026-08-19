@@ -8,6 +8,7 @@
 import api from './api';
 import {
   getStorageJson,
+  getStorageString,
   setSanitizedStorageItem,
   setSanitizedStorageString,
 } from '../utils/storage';
@@ -125,7 +126,7 @@ const authService = {
    * Verificar si hay token válido
    */
   isAuthenticated: () => {
-    return !!localStorage.getItem('token');
+    return !!getStorageString('token');
   },
 
   /**

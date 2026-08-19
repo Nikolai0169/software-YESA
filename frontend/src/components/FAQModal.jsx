@@ -9,6 +9,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Accordion, Button } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { getStorageString } from '../utils/storage';
 
 const FAQS = [
   {
@@ -133,7 +134,7 @@ const FAQModal = ({ show, onHide, openSection, setShowFAQ, openContact = false }
   const handleSendMessage = async (e) => {
   e.preventDefault();
 
-  const token = localStorage.getItem('token');
+  const token = getStorageString('token');
 
   const data = {
     nombre: nombreValue,
@@ -186,7 +187,7 @@ const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localho
       <Modal show={show && !showContactForm} onHide={onHide} size="lg" centered>
         <Modal.Header closeButton style={{ background: 'linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%)', color: '#fff' }}>
           <Modal.Title>
-            <i className="bi bi-question-circle-fill me-2"></i>
+            <i className="bi bi-question-circle-fill me-2"></i>{' '}
             Preguntas Frecuentes
           </Modal.Title>
         </Modal.Header>
@@ -220,7 +221,7 @@ const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localho
               size="sm"
               onClick={handleContactSupport}
             >
-              <i className="bi bi-envelope me-1"></i>
+              <i className="bi bi-envelope me-1"></i>{' '}
               Contactar Soporte
             </Button>
           </div>
@@ -242,7 +243,7 @@ const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localho
       >
         <Modal.Header closeButton style={{ background: 'linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%)', color: '#fff' }}>
           <Modal.Title>
-            <i className="bi bi-chat-dots me-2"></i>
+            <i className="bi bi-chat-dots me-2"></i>{' '}
             Contactar Soporte
           </Modal.Title>
         </Modal.Header>
@@ -326,7 +327,7 @@ const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localho
                   type="submit"
                   className="text-white fw-bold"
                 >
-                  <i className="bi bi-send me-2"></i>
+                  <i className="bi bi-send me-2"></i>{' '}
                   Enviar Mensaje
                 </Button>
                 <Button 

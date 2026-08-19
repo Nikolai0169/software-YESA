@@ -26,18 +26,50 @@ const sanitizeStorageValue = (value) => {
 
 export const setSanitizedStorageItem = (key, value) => {
   const sanitizedValue = sanitizeStorageValue(value);
-  localStorage.setItem(key, JSON.stringify(sanitizedValue));
+  const serializedValue = JSON.stringify(sanitizedValue);
+  const safeSerializedValue = DOMPurify.sanitize(serializedValue, {
+    ALLOWED_TAGS: [],
+    ALLOWED_ATTR: [],
+  });
+  const encodedValue = encodeURIComponent(safeSerializedValue);
+  localStorage.setItem(key, DOMPurify.sanitize(encodedValue, {
+    ALLOWED_TAGS: [],
+    ALLOWED_ATTR: [],
+  }));
 };
 
 export const setSanitizedStorageString = (key, value) => {
-  localStorage.setItem(key, sanitizeStorageValue(value));
+  const sanitizedValue = DOMPurify.sanitize(String(value), {
+    ALLOWED_TAGS: [],
+    ALLOWED_ATTR: [],
+  }).slice(0, 5000);
+  const encodedValue = encodeURIComponent(sanitizedValue);
+  localStorage.setItem(key, DOMPurify.sanitize(encodedValue, {
+    ALLOWED_TAGS: [],
+    ALLOWED_ATTR: [],
+  }));
+};
+
+export const getStorageString = (key, fallback = null) => {
+  const rawValue = localStorage.getItem(key);
+  if (rawValue === null) return fallback;
+
+  try {
+    return decodeURIComponent(rawValue);
+  } catch (error) {
+    console.error('Error decodificando un valor del almacenamiento:', error);
+    return fallback;
+  }
 };
 
 export const getStorageJson = (key, fallback = null) => {
   try {
     const rawValue = localStorage.getItem(key);
-    return rawValue ? sanitizeStorageValue(JSON.parse(rawValue)) : fallback;
+    return rawValue
+      ? sanitizeStorageValue(JSON.parse(decodeURIComponent(rawValue)))
+      : fallback;
   } catch (error) {
+    console.error('Error leyendo datos JSON del almacenamiento:', error);
     return fallback;
   }
 };

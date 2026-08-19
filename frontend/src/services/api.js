@@ -9,6 +9,7 @@
 // Importar axios
 import axios from 'axios';
 import { API_URL } from './config';
+import { getStorageString } from '../utils/storage';
 
 /**
  * URL base del backend API
@@ -39,7 +40,7 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
   (config) => {
     // Obtener el token del localStorage
-    const token = localStorage.getItem('token');
+    const token = getStorageString('token');
     
     // Si existe un token, agregarlo al header Authorization
     if (token) {

@@ -7,7 +7,7 @@
  */
 
 import api from './api';
-import { getStorageJson, setSanitizedStorageItem } from '../utils/storage';
+import { getStorageJson, getStorageString, setSanitizedStorageItem } from '../utils/storage';
 
 const CARRITO_LOCAL_KEY = 'carrito_local';
 
@@ -16,7 +16,7 @@ const carritoService = {
    * Obtener carrito (local o del servidor)
    */
   getCarrito: async () => {
-    const token = localStorage.getItem('token');
+    const token = getStorageString('token');
     
     if (token) {
       // Usuario autenticado: obtener del servidor
@@ -43,7 +43,7 @@ const carritoService = {
    * Agregar producto al carrito
    */
   agregarAlCarrito: async (productoId, cantidad = 1, productoInfo = null) => {
-    const token = localStorage.getItem('token');
+    const token = getStorageString('token');
     
     if (token) {
       // Usuario autenticado: agregar en servidor
@@ -94,7 +94,7 @@ const carritoService = {
    * Actualizar cantidad de un item
    */
   actualizarItem: async (itemId, cantidad) => {
-    const token = localStorage.getItem('token');
+    const token = getStorageString('token');
     
     if (token) {
       // Usuario autenticado: actualizar en servidor
@@ -125,7 +125,7 @@ const carritoService = {
    * Eliminar item del carrito
    */
   eliminarItem: async (itemId) => {
-    const token = localStorage.getItem('token');
+    const token = getStorageString('token');
     
     if (token) {
       // Usuario autenticado: eliminar del servidor
@@ -149,7 +149,7 @@ const carritoService = {
    * Vaciar NOTE el carrito
    */
   vaciarCarrito: async () => {
-    const token = localStorage.getItem('token');
+    const token = getStorageString('token');
     
     if (token) {
       // Usuario autenticado: vaciar en servidor

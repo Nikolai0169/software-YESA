@@ -11,6 +11,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { formatCurrency, getImageUrl } from '../utils/helpers';
+import { getStorageString } from '../utils/storage';
 
 // Página de favoritos donde el usuario puede ver, abrir o eliminar productos guardados.
 const FavoritesPage = () => {
@@ -29,7 +30,7 @@ const FavoritesPage = () => {
 
   const loadFavoritos = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = getStorageString('token');
       const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/cliente/favoritos`, {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -53,7 +54,7 @@ const FavoritesPage = () => {
 
   const eliminarFavorito = async (productoId) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = getStorageString('token');
       const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/cliente/favoritos/${productoId}`, {
         method: 'DELETE',
         headers: {
@@ -100,7 +101,7 @@ const FavoritesPage = () => {
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h1 className="mb-0">
           <i className="bi bi-heart-fill text-danger me-2"></i>
-          Mis Favoritos
+          {' '}Mis Favoritos
         </h1>
         <Badge bg="secondary" className="fs-6">
           {favoritos.length} productos

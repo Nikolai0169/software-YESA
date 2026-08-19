@@ -12,6 +12,7 @@ import catalogoService from '../services/catalogoService';
 import carritoService from '../services/carritoService';
 import reviewService from '../services/reviewService';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { getStorageString } from '../utils/storage';
 import { useAuth } from '../context/AuthContext';
 import { getImageUrl } from '../utils/helpers';
 
@@ -30,7 +31,7 @@ const ProductDetailPage = () => {
 
   const checkFavorite = useCallback(async (productoId) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = getStorageString('token');
       const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/cliente/favoritos`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -99,8 +100,10 @@ const ProductDetailPage = () => {
     }
 
     try {
-      const token = localStorage.getItem('token');
-      const url = `${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/cliente/favoritos${isFavorite ? `/${producto.id}` : ''}`;
+      const token = getStorageString('token');
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+      const favoritePath = isFavorite ? `/${producto.id}` : '';
+      const url = `${apiUrl}/cliente/favoritos${favoritePath}`;
       const method = isFavorite ? 'DELETE' : 'POST';
       const response = await fetch(url, {
         method,
@@ -182,7 +185,7 @@ const ProductDetailPage = () => {
             <div className="d-flex flex-wrap gap-2 mt-3">
               {productImages.map((imagen, index) => (
                 <Card
-                  key={index}
+                  key={imagen}
                   onClick={() => setSelectedImageIndex(index)}
                   className={`border rounded-3 overflow-hidden ${index === selectedImageIndex ? 'border-primary' : 'border-light'}`}
                   style={{ width: '80px', height: '80px', cursor: 'pointer' }}
@@ -262,9 +265,13 @@ const ProductDetailPage = () => {
             <div className="mb-4 p-3 border rounded-4 bg-light">
               <h5>Modelos 3D disponibles</h5>
               <div className="d-flex flex-wrap gap-2 mt-3">
-                {producto.modelos3D.map((modelo, index) => (
-                  <Badge key={index} bg="dark" className="text-uppercase small py-2 px-3">
-                    {modelo.nombre || modelo.label || `Opción ${index + 1}`}
+                {producto.modelos3D.map((modelo) => (
+                  <Badge
+                    key={modelo.id || modelo.nombre || modelo.label || modelo.modelo}
+                    bg="dark"
+                    className="text-uppercase small py-2 px-3"
+                  >
+                    {modelo.nombre || modelo.label || 'Opción disponible'}
                   </Badge>
                 ))}
               </div>
@@ -302,7 +309,7 @@ const ProductDetailPage = () => {
                     padding: '0.75rem'
                   }}
                 >
-                  <i className="bi bi-cart-plus me-2"></i>
+                  <i className="bi bi-cart-plus me-2"></i>{' '}
                   Agregar al Carrito
                 </Button>
 
@@ -329,7 +336,7 @@ const ProductDetailPage = () => {
                     onClick={() => navigate('/personalizacion')}
                     style={{ borderRadius: '0.75rem', fontWeight: '600', padding: '0.75rem', width: '100%' }}
                   >
-                    <i className="bi bi-brush me-2" />
+                    <i className="bi bi-brush me-2" />{' '}
                     Personalizar 3D
                   </Button>
                 </div>
@@ -368,10 +375,10 @@ const ProductDetailPage = () => {
                         <small className="text-muted">{new Date(resena.createdAt).toLocaleDateString('es-CO')}</small>
                       </div>
                       <div>
-                        {Array.from({ length: 5 }).map((_, index) => (
+                        {[1, 2, 3, 4, 5].map((star) => (
                           <i
-                            key={index}
-                            className={`bi ${index < Number(resena.calificacion || 0) ? 'bi-star-fill text-warning' : 'bi-star text-warning'}`}
+                            key={star}
+                            className={`bi ${star <= Number(resena.calificacion || 0) ? 'bi-star-fill text-warning' : 'bi-star text-warning'}`}
                           />
                         ))}
                       </div>

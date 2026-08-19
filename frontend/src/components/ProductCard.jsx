@@ -10,6 +10,7 @@ import { Card, Button, Badge } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { formatCurrency, getImageUrl } from '../utils/helpers';
+import { getStorageString } from '../utils/storage';
 
 const ProductCard = memo(({ producto, onAddToCart, showActions = true, onFavoriteFeedback }) => {
   const { isAuthenticated } = useAuth();
@@ -26,7 +27,7 @@ const ProductCard = memo(({ producto, onAddToCart, showActions = true, onFavorit
 
   const checkIfFavorite = useCallback(async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = getStorageString('token');
       const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/cliente/favoritos`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -58,8 +59,10 @@ const ProductCard = memo(({ producto, onAddToCart, showActions = true, onFavorit
 
     setLoadingFavorite(true);
     try {
-      const token = localStorage.getItem('token');
-      const url = `${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/cliente/favoritos${isFavorite ? `/${producto.id}` : ''}`;
+      const token = getStorageString('token');
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+      const favoritePath = isFavorite ? `/${producto.id}` : '';
+      const url = `${apiUrl}/cliente/favoritos${favoritePath}`;
       const method = isFavorite ? 'DELETE' : 'POST';
       const response = await fetch(url, {
         method,
@@ -100,8 +103,7 @@ const ProductCard = memo(({ producto, onAddToCart, showActions = true, onFavorit
   );
 
   return (
-    <>
-      <Card className="h-100 product-card shadow-sm">
+    <Card className="h-100 product-card shadow-sm">
         <Link to={`/producto/${producto.id}`} className="text-decoration-none position-relative">
           <div style={{ overflow: 'hidden', height: '200px', borderRadius: '0.75rem 0.75rem 0 0' }}>
             <Card.Img
@@ -207,7 +209,6 @@ const ProductCard = memo(({ producto, onAddToCart, showActions = true, onFavorit
           )}
         </Card.Body>
       </Card>
-    </>
   );
 });
 

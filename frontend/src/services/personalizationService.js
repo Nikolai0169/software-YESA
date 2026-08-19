@@ -1,6 +1,6 @@
 import DOMPurify from 'dompurify';
 import { normalizePersonalizacionDesign } from '../utils/helpers';
-import { setSanitizedStorageString } from '../utils/storage';
+import { getStorageString, setSanitizedStorageString } from '../utils/storage';
 
 const STORAGE_KEY = 'saved_personalization_designs';
 const STORAGE_KEYS = new Set([
@@ -79,18 +79,17 @@ const writeSanitizedStorageValue = (key, value) => {
     ALLOWED_TAGS: [],
     ALLOWED_ATTR: [],
   });
-  const encodedValue = encodeURIComponent(safeSerializedValue);
-  setSanitizedStorageString(key, encodedValue);
+  setSanitizedStorageString(key, safeSerializedValue);
 };
 
 const decodeDesignFromStorage = (value) => normalizePersonalizacionDesign(
-  sanitizeForStorage(JSON.parse(decodeURIComponent(value)))
+  sanitizeForStorage(JSON.parse(value))
 );
 
 export const getSavedDesigns = () => {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    const savedDesigns = raw ? sanitizeForStorage(JSON.parse(decodeURIComponent(raw))) : [];
+    const raw = getStorageString(STORAGE_KEY);
+    const savedDesigns = raw ? sanitizeForStorage(JSON.parse(raw)) : [];
     return Array.isArray(savedDesigns)
       ? savedDesigns.map((design) => normalizePersonalizacionDesign(design))
       : [];
@@ -155,7 +154,7 @@ export const setDesignToEdit = (design) => {
 
 export const getDesignToEdit = () => {
   try {
-    const raw = localStorage.getItem(CURRENT_DESIGN_KEY);
+    const raw = getStorageString(CURRENT_DESIGN_KEY);
     return raw ? decodeDesignFromStorage(raw) : null;
   } catch (error) {
     console.error('Error al leer diseño para edición:', error);
@@ -181,7 +180,7 @@ export const setPendingDesignToEdit = (design) => {
 
 export const getPendingDesignToEdit = () => {
   try {
-    const raw = localStorage.getItem(PENDING_DESIGN_KEY);
+    const raw = getStorageString(PENDING_DESIGN_KEY);
     return raw ? decodeDesignFromStorage(raw) : null;
   } catch (error) {
     console.error('Error al leer diseño pendiente para edición:', error);

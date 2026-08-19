@@ -57,7 +57,7 @@ frontend/
 │   ├── utils/           # Funciones utilitarias
 │   ├── App.js           # Componente principal
 │   ├── App.css          # Estilos del componente principal
-│   └── index.js         # Punto de entrada de React
+│   └── index.jsx        # Punto de entrada de React
 │
 ├── .env                 # Variables de entorno
 ├── package.json         # Dependencias y scripts
