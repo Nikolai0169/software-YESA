@@ -61,7 +61,7 @@ const sanitizeForStorage = (value, fieldName = '') => {
       : ALLOWED_DESIGN_FIELDS;
     return Object.fromEntries(
       Object.entries(value)
-        .filter(([key]) => !fieldName || allowedFields.has(key))
+        .filter(([key]) => allowedFields.has(key))
         .map(([key, entry]) => [key, sanitizeForStorage(entry, key)])
     );
   }
@@ -74,7 +74,11 @@ const writeSanitizedStorageValue = (key, value) => {
   }
   const sanitizedValue = sanitizeForStorage(value);
   const serializedValue = JSON.stringify(sanitizedValue);
-  const encodedValue = encodeURIComponent(serializedValue);
+  const safeSerializedValue = DOMPurify.sanitize(serializedValue, {
+    ALLOWED_TAGS: [],
+    ALLOWED_ATTR: [],
+  });
+  const encodedValue = encodeURIComponent(safeSerializedValue);
   localStorage.setItem(
     key,
     encodedValue
