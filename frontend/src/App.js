@@ -47,12 +47,15 @@ import ProfilePage from './pages/ProfilePage';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
+const ALLOWED_THEMES = new Set(['light', 'dark']);
+
 function App() {
   const [theme, setTheme] = useState('light');
 
   useEffect(() => {
     const storedTheme = localStorage.getItem('yesa-theme');
-    const initialTheme = storedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    const preferredTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    const initialTheme = ALLOWED_THEMES.has(storedTheme) ? storedTheme : preferredTheme;
     setTheme(initialTheme);
     document.body.classList.toggle('theme-dark', initialTheme === 'dark');
   }, []);
@@ -60,7 +63,9 @@ function App() {
   const toggleTheme = () => {
     setTheme((currentTheme) => {
       const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
-      localStorage.setItem('yesa-theme', nextTheme);
+      if (ALLOWED_THEMES.has(nextTheme)) {
+        localStorage.setItem('yesa-theme', nextTheme);
+      }
       document.body.classList.toggle('theme-dark', nextTheme === 'dark');
       return nextTheme;
     });

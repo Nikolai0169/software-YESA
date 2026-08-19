@@ -1,6 +1,11 @@
 import { normalizePersonalizacionDesign } from '../utils/helpers';
 
 const STORAGE_KEY = 'saved_personalization_designs';
+const STORAGE_KEYS = new Set([
+  STORAGE_KEY,
+  'current_personalization_design',
+  'pending_personalization_design',
+]);
 const ALLOWED_UPLOAD_PATH = /^\/uploads\/[A-Za-z0-9._/-]+$/;
 const URL_FIELDS = new Set(['textureUrl', 'texture', 'imagen', 'composedTextureUrl']);
 
@@ -23,14 +28,14 @@ const sanitizeForStorage = (value, fieldName = '') => {
   return value;
 };
 
-const serializeForStorage = (value) => {
-  const sanitizedValue = sanitizeForStorage(value);
-  return encodeURIComponent(JSON.stringify(sanitizedValue));
-};
-
 const writeSanitizedStorageValue = (key, value) => {
-  const serializedValue = serializeForStorage(value);
-  localStorage.setItem(key, serializedValue);
+  if (!STORAGE_KEYS.has(key)) {
+    throw new Error('Clave de almacenamiento no permitida');
+  }
+  localStorage.setItem(
+    key,
+    encodeURIComponent(JSON.stringify(sanitizeForStorage(value)))
+  );
 };
 
 const decodeDesignFromStorage = (value) => normalizePersonalizacionDesign(
