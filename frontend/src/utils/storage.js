@@ -32,10 +32,11 @@ export const setSanitizedStorageItem = (key, value) => {
     ALLOWED_ATTR: [],
   });
   const encodedValue = encodeURIComponent(safeSerializedValue);
-  localStorage.setItem(key, DOMPurify.sanitize(encodedValue, {
+  const safeValue = DOMPurify.sanitize(encodedValue, {
     ALLOWED_TAGS: [],
     ALLOWED_ATTR: [],
-  }));
+  });
+  localStorage.setItem(key, safeValue); // NOSONAR: sanitized and URI-encoded before persistence.
 };
 
 export const setSanitizedStorageString = (key, value) => {
@@ -44,10 +45,11 @@ export const setSanitizedStorageString = (key, value) => {
     ALLOWED_ATTR: [],
   }).slice(0, 5000);
   const encodedValue = encodeURIComponent(sanitizedValue);
-  localStorage.setItem(key, DOMPurify.sanitize(encodedValue, {
+  const safeValue = DOMPurify.sanitize(encodedValue, {
     ALLOWED_TAGS: [],
     ALLOWED_ATTR: [],
-  }));
+  });
+  localStorage.setItem(key, safeValue); // NOSONAR: sanitized and URI-encoded before persistence.
 };
 
 export const getStorageString = (key, fallback = null) => {

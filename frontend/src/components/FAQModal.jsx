@@ -187,8 +187,7 @@ const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localho
       <Modal show={show && !showContactForm} onHide={onHide} size="lg" centered>
         <Modal.Header closeButton style={{ background: 'linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%)', color: '#fff' }}>
           <Modal.Title>
-            <i className="bi bi-question-circle-fill me-2"></i>{' '}
-            Preguntas Frecuentes
+            <span><i className="bi bi-question-circle-fill me-2"></i>Preguntas Frecuentes</span>
           </Modal.Title>
         </Modal.Header>
 
@@ -221,8 +220,7 @@ const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localho
               size="sm"
               onClick={handleContactSupport}
             >
-              <i className="bi bi-envelope me-1"></i>{' '}
-              Contactar Soporte
+              <span><i className="bi bi-envelope me-1"></i>Contactar Soporte</span>
             </Button>
           </div>
         </Modal.Body>
@@ -243,8 +241,7 @@ const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localho
       >
         <Modal.Header closeButton style={{ background: 'linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%)', color: '#fff' }}>
           <Modal.Title>
-            <i className="bi bi-chat-dots me-2"></i>{' '}
-            Contactar Soporte
+            <span><i className="bi bi-chat-dots me-2"></i>Contactar Soporte</span>
           </Modal.Title>
         </Modal.Header>
 
@@ -327,8 +324,7 @@ const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localho
                   type="submit"
                   className="text-white fw-bold"
                 >
-                  <i className="bi bi-send me-2"></i>{' '}
-                  Enviar Mensaje
+                  <span><i className="bi bi-send me-2"></i>Enviar Mensaje</span>
                 </Button>
                 <Button 
                   variant="outline-secondary" 
