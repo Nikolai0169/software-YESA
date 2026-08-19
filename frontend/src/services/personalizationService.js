@@ -1,5 +1,6 @@
 import DOMPurify from 'dompurify';
 import { normalizePersonalizacionDesign } from '../utils/helpers';
+import { setSanitizedStorageString } from '../utils/storage';
 
 const STORAGE_KEY = 'saved_personalization_designs';
 const STORAGE_KEYS = new Set([
@@ -79,10 +80,7 @@ const writeSanitizedStorageValue = (key, value) => {
     ALLOWED_ATTR: [],
   });
   const encodedValue = encodeURIComponent(safeSerializedValue);
-  localStorage.setItem(
-    key,
-    encodedValue
-  );
+  setSanitizedStorageString(key, encodedValue);
 };
 
 const decodeDesignFromStorage = (value) => normalizePersonalizacionDesign(

@@ -6,6 +6,11 @@
  */
 
 import api from './api';
+import {
+  getStorageJson,
+  setSanitizedStorageItem,
+  setSanitizedStorageString,
+} from '../utils/storage';
 
 const authService = {
   /**
@@ -19,10 +24,10 @@ const authService = {
       // Guardar token y usuario en localStorage
       if (response.data.success && authData) {
         if (authData.token) {
-          localStorage.setItem('token', authData.token);
+          setSanitizedStorageString('token', authData.token);
         }
         if (authData.usuario) {
-          localStorage.setItem('user', JSON.stringify(authData.usuario));
+          setSanitizedStorageItem('user', authData.usuario);
         }
       }
       
@@ -43,10 +48,10 @@ const authService = {
       // Guardar token y usuario en localStorage
       if (response.data.success && authData) {
         if (authData.token) {
-          localStorage.setItem('token', authData.token);
+          setSanitizedStorageString('token', authData.token);
         }
         if (authData.usuario) {
-          localStorage.setItem('user', JSON.stringify(authData.usuario));
+          setSanitizedStorageItem('user', authData.usuario);
         }
       }
       
@@ -85,7 +90,7 @@ const authService = {
       
       // Actualizar usuario en localStorage
       if (response.data.success) {
-        localStorage.setItem('user', JSON.stringify(response.data.data.usuario));
+        setSanitizedStorageItem('user', response.data.data.usuario);
       }
       
       return response.data.data;
@@ -113,8 +118,7 @@ const authService = {
    * Obtener usuario actual del localStorage
    */
   getCurrentUser: () => {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
+    return getStorageJson('user');
   },
 
   /**

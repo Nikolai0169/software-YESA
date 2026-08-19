@@ -7,6 +7,7 @@
  */
 
 import api from './api';
+import { getStorageJson, setSanitizedStorageItem } from '../utils/storage';
 
 const CARRITO_LOCAL_KEY = 'carrito_local';
 
@@ -27,7 +28,7 @@ const carritoService = {
       }
     } else {
       // Usuario no autenticado: obtener del localStorage
-      const carritoLocal = JSON.parse(localStorage.getItem(CARRITO_LOCAL_KEY) || '[]');
+      const carritoLocal = getStorageJson(CARRITO_LOCAL_KEY, []);
       return {
         success: true,
         carrito: {
@@ -61,7 +62,7 @@ const carritoService = {
         throw new Error('Se requiere información del producto');
       }
 
-      const carritoLocal = JSON.parse(localStorage.getItem(CARRITO_LOCAL_KEY) || '[]');
+      const carritoLocal = getStorageJson(CARRITO_LOCAL_KEY, []);
       
       // Buscar si el producto ya existe
       const existente = carritoLocal.find(item => item.productoId === productoId);
@@ -80,7 +81,7 @@ const carritoService = {
         });
       }
       
-      localStorage.setItem(CARRITO_LOCAL_KEY, JSON.stringify(carritoLocal));
+      setSanitizedStorageItem(CARRITO_LOCAL_KEY, carritoLocal);
       
       return {
         success: true,
@@ -107,12 +108,12 @@ const carritoService = {
       }
     } else {
       // Usuario no autenticado: actualizar en localStorage
-      const carritoLocal = JSON.parse(localStorage.getItem(CARRITO_LOCAL_KEY) || '[]');
+      const carritoLocal = getStorageJson(CARRITO_LOCAL_KEY, []);
       const item = carritoLocal.find(i => i.id === itemId);
       
       if (item) {
         item.cantidad = cantidad;
-        localStorage.setItem(CARRITO_LOCAL_KEY, JSON.stringify(carritoLocal));
+        setSanitizedStorageItem(CARRITO_LOCAL_KEY, carritoLocal);
         return { success: true, message: 'Cantidad actualizada' };
       }
       
@@ -136,9 +137,9 @@ const carritoService = {
       }
     } else {
       // Usuario no autenticado: eliminar del localStorage
-      let carritoLocal = JSON.parse(localStorage.getItem(CARRITO_LOCAL_KEY) || '[]');
+      let carritoLocal = getStorageJson(CARRITO_LOCAL_KEY, []);
       carritoLocal = carritoLocal.filter(item => item.id !== itemId);
-      localStorage.setItem(CARRITO_LOCAL_KEY, JSON.stringify(carritoLocal));
+      setSanitizedStorageItem(CARRITO_LOCAL_KEY, carritoLocal);
       
       return { success: true, message: 'Producto eliminado' };
     }
@@ -169,7 +170,7 @@ const carritoService = {
    * Sincronizar carrito local con el servidor al iniciar sesión
    */
   sincronizarCarritoLocal: async () => {
-    const carritoLocal = JSON.parse(localStorage.getItem(CARRITO_LOCAL_KEY) || '[]');
+    const carritoLocal = getStorageJson(CARRITO_LOCAL_KEY, []);
     
     if (carritoLocal.length === 0) {
       return { success: true, sincronizados: 0 };
@@ -213,7 +214,7 @@ const carritoService = {
    * Obtener cantidad total de items en el carrito
    */
   getCantidadItems: () => {
-    const carritoLocal = JSON.parse(localStorage.getItem(CARRITO_LOCAL_KEY) || '[]');
+    const carritoLocal = getStorageJson(CARRITO_LOCAL_KEY, []);
     return carritoLocal.reduce((sum, item) => sum + item.cantidad, 0);
   }
 };

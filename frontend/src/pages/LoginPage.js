@@ -9,6 +9,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Form, Button, Alert } from 'react-bootstrap';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getStorageJson } from '../utils/storage';
 
 const LoginPage = () => {
   const location = useLocation();
@@ -39,7 +40,7 @@ const LoginPage = () => {
 
   useEffect(() => {
     // Verificar si hay items en el carrito local
-    const carritoLocal = JSON.parse(localStorage.getItem('carrito_local') || '[]');
+    const carritoLocal = getStorageJson('carrito_local', []);
     setTieneCarrito(carritoLocal.length > 0);
   }, []);
 
@@ -75,17 +76,17 @@ const LoginPage = () => {
             <Card.Body className="p-5">
               <div className="text-center mb-4">
                 <h2>
-                  <i className="bi bi-box-arrow-in-right me-2"></i>
-                  Iniciar Sesión
+                  <i className="bi bi-box-arrow-in-right me-2" />
+                  {' '}Iniciar Sesión
                 </h2>
-<p className="text-muted">Accede a tu cuenta YESA</p>
+                <p className="text-muted">Accede a tu cuenta YESA</p>
               </div>
 
               {error && <Alert variant="danger">{error}</Alert>}
 
               {tieneCarrito && (
                 <Alert variant="success" className="mb-3">
-                  <i className="bi bi-cart-check me-2"></i>
+                  <i className="bi bi-cart-check me-2" />{' '}
                   Tu carrito se sincronizará automáticamente al iniciar sesión
                 </Alert>
               )}
@@ -93,7 +94,7 @@ const LoginPage = () => {
               <Form onSubmit={handleSubmit}>
                 <Form.Group className="mb-3">
                   <Form.Label>
-                    <i className="bi bi-envelope me-2"></i>
+                    <i className="bi bi-envelope me-2" />{' '}
                     Email
                   </Form.Label>
                   <Form.Control
@@ -107,7 +108,7 @@ const LoginPage = () => {
 
                 <Form.Group className="mb-3">
                   <Form.Label>
-                    <i className="bi bi-lock me-2"></i>
+                    <i className="bi bi-lock me-2" />{' '}
                     Contraseña
                   </Form.Label>
                   <Form.Control
@@ -127,12 +128,12 @@ const LoginPage = () => {
                 >
                   {loading ? (
                     <>
-                      <span className="spinner-border spinner-border-sm me-2" />
+                      <span className="spinner-border spinner-border-sm me-2" />{' '}
                       Iniciando sesión...
                     </>
                   ) : (
                     <>
-                      <i className="bi bi-box-arrow-in-right me-2"></i>
+                      <i className="bi bi-box-arrow-in-right me-2" />{' '}
                       Iniciar Sesión
                     </>
                   )}
@@ -144,7 +145,7 @@ const LoginPage = () => {
               <div className="text-center">
                 <p className="mb-2">¿No tienes cuenta?</p>
                 <Link to="/register" state={from ? { from } : undefined} className="btn btn-outline-primary w-100">
-                  <i className="bi bi-person-plus me-2"></i>
+                  <i className="bi bi-person-plus me-2" />{' '}
                   Crear cuenta nueva
                 </Link>
               </div>

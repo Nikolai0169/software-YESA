@@ -12,6 +12,7 @@ import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
+import { setSanitizedStorageString } from './utils/storage';
 
 // Páginas públicas
 import HomePage from './pages/HomePage';
@@ -64,7 +65,7 @@ function App() {
     setTheme((currentTheme) => {
       const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
       if (ALLOWED_THEMES.has(nextTheme)) {
-        localStorage.setItem('yesa-theme', nextTheme);
+        setSanitizedStorageString('yesa-theme', nextTheme);
       }
       document.body.classList.toggle('theme-dark', nextTheme === 'dark');
       return nextTheme;

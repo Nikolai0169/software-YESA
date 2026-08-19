@@ -10,6 +10,7 @@ import { Container, Row, Col, Card, Form, Button, Alert } from 'react-bootstrap'
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { isValidEmail, isValidPhone } from '../utils/helpers';
+import { getStorageJson } from '../utils/storage';
 
 const RegisterPage = () => {
   const location = useLocation();
@@ -32,7 +33,7 @@ const RegisterPage = () => {
 
   useEffect(() => {
     // Verificar si hay items en el carrito local
-    const carritoLocal = JSON.parse(localStorage.getItem('carrito_local') || '[]');
+    const carritoLocal = getStorageJson('carrito_local', []);
     setTieneCarrito(carritoLocal.length > 0);
   }, []);
 
@@ -89,7 +90,7 @@ const RegisterPage = () => {
             <Card.Body className="p-5">
               <div className="text-center mb-4">
                 <h2>
-                  <i className="bi bi-person-plus me-2"></i>
+                  <i className="bi bi-person-plus me-2" />{' '}
                   Crear Cuenta
                 </h2>
                 <p className="text-muted">Regístrate para empezar a comprar</p>
@@ -99,7 +100,7 @@ const RegisterPage = () => {
 
               {tieneCarrito && (
                 <Alert variant="success" className="mb-3">
-                  <i className="bi bi-cart-check me-2"></i>
+                  <i className="bi bi-cart-check me-2" />{' '}
                   Tu carrito se sincronizará automáticamente al crear tu cuenta
                 </Alert>
               )}
@@ -207,12 +208,12 @@ const RegisterPage = () => {
                 >
                   {loading ? (
                     <>
-                      <span className="spinner-border spinner-border-sm me-2" />
+                      <span className="spinner-border spinner-border-sm me-2" />{' '}
                       Registrando...
                     </>
                   ) : (
                     <>
-                      <i className="bi bi-person-plus me-2"></i>
+                      <i className="bi bi-person-plus me-2" />{' '}
                       Crear Cuenta
                     </>
                   )}
@@ -224,7 +225,7 @@ const RegisterPage = () => {
               <div className="text-center">
                 <p className="mb-2">¿Ya tienes cuenta?</p>
                 <Link to="/login" state={from ? { from } : undefined} className="btn btn-outline-primary w-100">
-                  <i className="bi bi-box-arrow-in-right me-2"></i>
+                  <i className="bi bi-box-arrow-in-right me-2" />{' '}
                   Iniciar Sesión
                 </Link>
               </div>
