@@ -11,8 +11,8 @@
 const Producto = require('../models/Producto');
 const Categoria = require('../models/Categoria');
 const Subcategoria = require('../models/Subcategoria');
-const path = require('path');
-const fs = require('fs').promises;
+const path = require('node:path');
+const fs = require('node:fs').promises;
 const { normalizarRutaImagen } = require('../utils/imagenUrl');
 const { resolverImagenProducto } = require('../utils/productoImagen');
 
@@ -148,7 +148,7 @@ const getProductoById = async (req, res) => {
     }
     
     // ✅ CONSTRUIR URL
-    const productoConURL = construirURLProducto(producto.toJSON ? producto.toJSON() : producto);
+    const productoConURL = construirURLProducto(producto.toJSON?.() ?? producto);
     
     res.json({
       success: true,
@@ -182,7 +182,7 @@ const crearProducto = async (req, res) => {
     }
     
     const categoria = await Categoria.findByPk(categoriaId);
-    if (!categoria || !categoria.activo) {
+    if (!categoria?.activo) {
       return res.status(400).json({
         success: false,
         message: `La categoría está inactiva o no existe`
@@ -190,7 +190,7 @@ const crearProducto = async (req, res) => {
     }
     
     const subcategoria = await Subcategoria.findByPk(subcategoriaId);
-    if (!subcategoria || !subcategoria.activo) {
+    if (!subcategoria?.activo) {
       return res.status(400).json({
         success: false,
         message: `La subcategoría está inactiva o no existe`
@@ -240,7 +240,7 @@ const crearProducto = async (req, res) => {
     });
     
     // ✅ CONSTRUIR URL
-    const productoConURL = construirURLProducto(nuevoProducto.toJSON ? nuevoProducto.toJSON() : nuevoProducto, req);
+    const productoConURL = construirURLProducto(nuevoProducto.toJSON?.() ?? nuevoProducto, req);
     
     res.status(201).json({
       success: true,
@@ -293,11 +293,38 @@ const crearProducto = async (req, res) => {
 /**
  * Actualizar producto
  */
+const actualizarCamposProducto = (producto, campos) => {
+  const { nombre, descripcion, precio, stock, categoriaId, subcategoriaId, activo } = campos;
+  if (nombre) producto.nombre = nombre;
+  if (descripcion !== undefined) producto.descripcion = descripcion || null;
+  if (precio !== undefined) producto.precio = Number.parseFloat(precio);
+  if (stock !== undefined) producto.stock = Number.parseInt(stock);
+  if (categoriaId) producto.categoriaId = Number.parseInt(categoriaId);
+  if (subcategoriaId) producto.subcategoriaId = Number.parseInt(subcategoriaId);
+  if (activo !== undefined) producto.activo = activo;
+};
+
+const eliminarImagenesProducto = async (producto) => {
+  let imagenes = [];
+  if (producto.imagenes && Array.isArray(producto.imagenes)) {
+    imagenes = producto.imagenes;
+  } else if (producto.imagen) {
+    imagenes = [producto.imagen];
+  }
+
+  await Promise.all(imagenes.filter(Boolean).map(async (imagen) => {
+    const ruta = path.join(__dirname, '../uploads', imagen);
+    try {
+      await fs.unlink(ruta);
+    } catch (err) {
+      console.error('Error al eliminar imagen antigua:', err);
+    }
+  }));
+};
+
 const actualizarProducto = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre, descripcion, precio, stock, categoriaId, subcategoriaId, activo } = req.body;
-    
     const producto = await Producto.findByPk(id);
     if (!producto) {
       return res.status(404).json({
@@ -306,36 +333,12 @@ const actualizarProducto = async (req, res) => {
       });
     }
     
-    if (nombre) producto.nombre = nombre;
-    if (descripcion !== undefined) producto.descripcion = descripcion || null;
-    if (precio !== undefined) producto.precio = Number.parseFloat(precio);
-    if (stock !== undefined) producto.stock = Number.parseInt(stock);
-    if (categoriaId) producto.categoriaId = Number.parseInt(categoriaId);
-    if (subcategoriaId) producto.subcategoriaId = Number.parseInt(subcategoriaId);
-    if (activo !== undefined) producto.activo = activo;
+    actualizarCamposProducto(producto, req.body);
     
     const { imagen: imagenDesdeRequest, imagenes: nuevasImagenes } = await resolverImagenProducto(req.body, req.files);
 
     if (nuevasImagenes) {
-      if (producto.imagenes && Array.isArray(producto.imagenes)) {
-        await Promise.all(producto.imagenes.map(async (imagenVieja) => {
-          if (!imagenVieja) return;
-          const rutaVieja = path.join(__dirname, '../uploads', imagenVieja);
-          try {
-            await fs.unlink(rutaVieja);
-          } catch (err) {
-            console.error('Error al eliminar imagen antigua:', err);
-          }
-        }));
-      } else if (producto.imagen) {
-        const rutaVieja = path.join(__dirname, '../uploads', producto.imagen);
-        try {
-          await fs.unlink(rutaVieja);
-        } catch (err) {
-          console.error('Error al eliminar imagen antigua:', err);
-        }
-      }
-
+      await eliminarImagenesProducto(producto);
       producto.imagenes = nuevasImagenes;
       producto.imagen = imagenDesdeRequest;
     }
@@ -350,7 +353,7 @@ const actualizarProducto = async (req, res) => {
     });
     
     // ✅ CONSTRUIR URL
-    const productoConURL = construirURLProducto(producto.toJSON ? producto.toJSON() : producto, req);
+    const productoConURL = construirURLProducto(producto.toJSON?.() ?? producto, req);
     
     res.json({
       success: true,
@@ -401,7 +404,7 @@ const toggleProducto = async (req, res) => {
     await producto.save();
     
     // ✅ CONSTRUIR URL
-    const productoConURL = construirURLProducto(producto.toJSON ? producto.toJSON() : producto, req);
+    const productoConURL = construirURLProducto(producto.toJSON?.() ?? producto, req);
     
     res.json({
       success: true,
@@ -460,6 +463,36 @@ const eliminarProducto = async (req, res) => {
  * Ruta: PATCH /api/admin/productos/:id/stock
  * Body: { cantidad, operacion: 'aumentar' | 'reducir' | 'establecer' }
  */
+const calcularStockActualizado = (stockActual, cantidad, operacion) => {
+  const operaciones = {
+    aumentar: () => stockActual + cantidad,
+    reducir: () => stockActual - cantidad,
+    establecer: () => cantidad,
+  };
+  const calcular = operaciones[operacion];
+
+  if (!calcular) return { error: 'Operación inválida. Usa: aumentar, reducir o establecer' };
+  if (operacion === 'reducir' && cantidad > stockActual) {
+    return { error: `No hay suficiente stock. Stock actual: ${stockActual}` };
+  }
+
+  return { nuevoStock: calcular() };
+};
+
+const obtenerDetalleStock = (operacion, stockAnterior, stockNuevo) => {
+  const etiquetas = {
+    aumentar: 'aumentado',
+    reducir: 'reducido',
+    establecer: 'establecido',
+  };
+
+  return {
+    mensaje: `Stock ${etiquetas[operacion]} exitosamente`,
+    stockAnterior: operacion === 'establecer' ? null : stockAnterior,
+    stockNuevo,
+  };
+};
+
 const actualizarStock = async (req, res) => {
   try {
     const { id } = req.params;
@@ -489,44 +522,26 @@ const actualizarStock = async (req, res) => {
       });
     }
     
-    let nuevoStock;
-    
-    switch (operacion) {
-      case 'aumentar':
-        nuevoStock = producto.stock + cantidadNum;
-        break;
-      case 'reducir':
-        if (cantidadNum > producto.stock) {
-          return res.status(400).json({
-            success: false,
-            message: `No hay suficiente stock. Stock actual: ${producto.stock}`
-          });
-        }
-        nuevoStock = producto.stock - cantidadNum;
-        break;
-      case 'establecer':
-        nuevoStock = cantidadNum;
-        break;
-      default:
-        return res.status(400).json({
-          success: false,
-          message: 'Operación inválida. Usa: aumentar, reducir o establecer'
-        });
+    const stockAnterior = producto.stock;
+    const resultadoStock = calcularStockActualizado(stockAnterior, cantidadNum, operacion);
+    if (resultadoStock.error) {
+      return res.status(400).json({ success: false, message: resultadoStock.error });
     }
-    
-    producto.stock = nuevoStock;
+
+    producto.stock = resultadoStock.nuevoStock;
     await producto.save();
     
     // ✅ CONSTRUIR URL
-    const productoConURL = construirURLProducto(producto.toJSON ? producto.toJSON() : producto, req);
+    const productoConURL = construirURLProducto(producto.toJSON?.() ?? producto, req);
+    const detalleStock = obtenerDetalleStock(operacion, stockAnterior, producto.stock);
     
     res.json({
       success: true,
-      message: `Stock ${operacion === 'aumentar' ? 'aumentado' : operacion === 'reducir' ? 'reducido' : 'establecido'} exitosamente`,
+      message: detalleStock.mensaje,
       data: {
         producto: productoConURL,
-        stockAnterior: operacion === 'establecer' ? null : (operacion === 'aumentar' ? producto.stock - cantidadNum : producto.stock + cantidadNum),
-        stockNuevo: producto.stock
+        stockAnterior: detalleStock.stockAnterior,
+        stockNuevo: detalleStock.stockNuevo
       }
     });
     

@@ -1,8 +1,14 @@
-const fs = require('fs/promises');
-const path = require('path');
+const fs = require('node:fs/promises');
+const path = require('node:path');
 const { construirBaseUrl } = require('../utils/imagenUrl');
 
 const extensionesImagen = new Set(['.jpg', '.jpeg', '.png', '.gif', '.webp']);
+
+const quitarBarrasFinales = (url) => {
+  let resultado = url;
+  while (resultado.endsWith('/')) resultado = resultado.slice(0, -1);
+  return resultado;
+};
 
 exports.uploadTexture = async (req, res) => {
   try {
@@ -11,7 +17,7 @@ exports.uploadTexture = async (req, res) => {
     }
 
     const backendOrigin = construirBaseUrl(req);
-    const fileUrl = `${backendOrigin.replace(/\/+$/, '')}/uploads/${req.file.filename}`;
+    const fileUrl = `${quitarBarrasFinales(backendOrigin)}/uploads/${req.file.filename}`;
     return res.json({ success: true, url: fileUrl });
   } catch (error) {
     console.error('Error al subir textura:', error);
@@ -34,7 +40,7 @@ exports.listarImagenesSubidas = async (req, res) => {
 
           return {
             name: entrada.name,
-            url: `${backendOrigin.replace(/\/+$/, '')}/uploads/${encodeURIComponent(entrada.name)}`,
+            url: `${quitarBarrasFinales(backendOrigin)}/uploads/${encodeURIComponent(entrada.name)}`,
             size: estadisticas.size,
             modifiedAt: estadisticas.mtime.toISOString(),
           };

@@ -244,7 +244,7 @@ const getProductoById = async (req, res) => {
     }
     
     // ✅ CONSTRUIR URL
-    const productoConURL = construirURLProducto(producto.toJSON ? producto.toJSON() : producto, req);
+    const productoConURL = construirURLProducto(producto.toJSON?.() ?? producto, req);
     
     // Responde con el producto encontrado
     res.json({

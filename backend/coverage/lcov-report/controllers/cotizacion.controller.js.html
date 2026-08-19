@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">11.76% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/68</span>
+                <span class='fraction'>8/68</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">11.94% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/67</span>
+                <span class='fraction'>8/67</span>
             </div>
         
             
@@ -286,13 +286,13 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -315,7 +315,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -347,11 +347,11 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -396,7 +396,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -432,9 +432,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -488,7 +488,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -502,11 +502,11 @@
  * Maneja las acciones que solo el administrador puede ver o modificar.
  */
 &nbsp;
-const Cotizacion = <span class="cstat-no" title="statement not covered" >require('../models/Cotizacion');</span>
-const Usuario = <span class="cstat-no" title="statement not covered" >require('../models/Usuario');</span>
+const Cotizacion = require('../models/Cotizacion');
+const Usuario = require('../models/Usuario');
 &nbsp;
 // Obtiene todas las cotizaciones registradas para mostrarlas en el panel administrativo.
-const getCotizaciones = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {</span>
+const getCotizaciones = <span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {
 <span class="cstat-no" title="statement not covered" >  try {</span>
     const cotizaciones = <span class="cstat-no" title="statement not covered" >await Cotizacion.findAll({</span>
       order: [['createdAt', 'DESC']],
@@ -531,7 +531,7 @@ const getCotizaciones = <span class="cstat-no" title="statement not covered" ><s
 };
 &nbsp;
 // Busca una cotización específica por su identificador para mostrar su detalle completo.
-const getCotizacionById = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {</span>
+const getCotizacionById = <span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {
 <span class="cstat-no" title="statement not covered" >  try {</span>
     const { id } = <span class="cstat-no" title="statement not covered" >req.params;</span>
     const cotizacion = <span class="cstat-no" title="statement not covered" >await Cotizacion.findByPk(id, {</span>
@@ -563,7 +563,7 @@ const getCotizacionById = <span class="cstat-no" title="statement not covered" >
 };
 &nbsp;
 // Actualiza el precio, estado y notas de una cotización ya existente.
-const actualizarCotizacion = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {</span>
+const actualizarCotizacion = <span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {
 <span class="cstat-no" title="statement not covered" >  try {</span>
     const { id } = <span class="cstat-no" title="statement not covered" >req.params;</span>
     const body = <span class="cstat-no" title="statement not covered" >req.body || {};</span>
@@ -612,7 +612,7 @@ const actualizarCotizacion = <span class="cstat-no" title="statement not covered
   }
 };
 &nbsp;
-const eliminarCotizacion = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {</span>
+const eliminarCotizacion = <span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {
 <span class="cstat-no" title="statement not covered" >  try {</span>
     const { id } = <span class="cstat-no" title="statement not covered" >req.params;</span>
     const cotizacion = <span class="cstat-no" title="statement not covered" >await Cotizacion.findByPk(id);</span>
@@ -648,7 +648,7 @@ const eliminarCotizacion = <span class="cstat-no" title="statement not covered" 
   }
 };
 &nbsp;
-const eliminarCotizaciones = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {</span>
+const eliminarCotizaciones = <span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {
 <span class="cstat-no" title="statement not covered" >  try {</span>
     const { ids } = <span class="cstat-no" title="statement not covered" >req.body || {};</span>
 &nbsp;
@@ -704,7 +704,7 @@ const eliminarCotizaciones = <span class="cstat-no" title="statement not covered
   }
 };
 &nbsp;
-<span class="cstat-no" title="statement not covered" >module.exports = {</span>
+module.exports = {
   getCotizaciones,
   getCotizacionById,
   actualizarCotizacion,
@@ -718,7 +718,7 @@ const eliminarCotizaciones = <span class="cstat-no" title="statement not covered
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-08-19T02:55:03.217Z
+                at 2026-08-19T17:49:27.084Z
             </div>
         <script src="../prettify.js"></script>
         <script>

@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/12</span>
+                <span class='fraction'>12/12</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/12</span>
+                <span class='fraction'>12/12</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -116,8 +116,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -126,25 +126,25 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/**
  * ============================================
  * RUTAS SOPORTE
@@ -157,8 +157,8 @@
  * - DELETE /api/support/contactos/:id → Eliminar un mensaje (admin)
  */
 &nbsp;
-const express = <span class="cstat-no" title="statement not covered" >require('express');</span>
-const router = <span class="cstat-no" title="statement not covered" >express.Router();</span>
+const express = require('express');
+const router = express.Router();
 &nbsp;
 const {
   enviarContacto,
@@ -167,25 +167,25 @@ const {
   responderContacto,
   eliminarContacto,
   misConsultas, // ← agregado
-} = <span class="cstat-no" title="statement not covered" >require('../controllers/soporte.controller');</span>
+} = require('../controllers/soporte.controller');
 &nbsp;
-const { verificarAuth, verificarAuthOpcional } = <span class="cstat-no" title="statement not covered" >require('../middleware/auth');</span>
-const { esAdministrador, esAdminOAuxiliar, soloAdministrador } = <span class="cstat-no" title="statement not covered" >require('../middleware/checkRole');</span>
+const { verificarAuth, verificarAuthOpcional } = require('../middleware/auth');
+const { esAdministrador, esAdminOAuxiliar, soloAdministrador } = require('../middleware/checkRole');
 &nbsp;
 // El formulario de soporte puede enviarse con o sin autenticación.
 // Si hay usuario logueado, se usa su id; si no, el mensaje queda anónimo.
-<span class="cstat-no" title="statement not covered" >router.post('/contact', verificarAuthOpcional, enviarContacto);</span>
+router.post('/contact', verificarAuthOpcional, enviarContacto);
 &nbsp;
-<span class="cstat-no" title="statement not covered" >router.get('/mis-consultas', verificarAuth, misConsultas); </span>// ← agregado
+router.get('/mis-consultas', verificarAuth, misConsultas); // ← agregado
 &nbsp;
 // Permitir que administradores y auxiliares vean y respondan consultas
-<span class="cstat-no" title="statement not covered" >router.get('/contactos', verificarAuth, esAdminOAuxiliar, obtenerContactos);</span>
-<span class="cstat-no" title="statement not covered" >router.get('/contactos/:id', verificarAuth, esAdminOAuxiliar, obtenerContactoPorId);</span>
-<span class="cstat-no" title="statement not covered" >router.put('/contactos/:id/responder', verificarAuth, esAdminOAuxiliar, responderContacto);</span>
+router.get('/contactos', verificarAuth, esAdminOAuxiliar, obtenerContactos);
+router.get('/contactos/:id', verificarAuth, esAdminOAuxiliar, obtenerContactoPorId);
+router.put('/contactos/:id/responder', verificarAuth, esAdminOAuxiliar, responderContacto);
 // Solo el administrador puede eliminar
-<span class="cstat-no" title="statement not covered" >router.delete('/contactos/:id', verificarAuth, soloAdministrador, eliminarContacto);</span>
+router.delete('/contactos/:id', verificarAuth, soloAdministrador, eliminarContacto);
 &nbsp;
-<span class="cstat-no" title="statement not covered" >module.exports = router;</span>
+module.exports = router;
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -193,7 +193,7 @@ const { esAdministrador, esAdminOAuxiliar, soloAdministrador } = <span class="cs
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-08-19T02:55:03.217Z
+                at 2026-08-19T17:49:27.084Z
             </div>
         <script src="../prettify.js"></script>
         <script>

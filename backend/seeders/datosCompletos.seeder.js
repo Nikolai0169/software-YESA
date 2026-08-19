@@ -18,8 +18,6 @@ const Categoria = require('../models/Categoria');
 const Subcategoria = require('../models/Subcategoria');
 const Producto = require('../models/Producto');
 const Resena = require('../models/Resena');
-const fs = require('fs').promises;
-const path = require('path');
 
 const isTestEnv = process.env.NODE_ENV === 'test';
 const log = (...args) => {
@@ -38,391 +36,380 @@ const errorLog = (...args) => {
   console.error(...args);
 };
 
-/**
- * Función principal del seeder
- */
+const categoriasData = [
+  { nombre: 'Alcancias', descripcion: 'Hermosas alcancías artesanales' },
+  { nombre: 'Pocillos', descripcion: 'Pocillos unicos hechos a mano' },
+  { nombre: 'Floreros', descripcion: 'Floreros decorativos únicos' },
+  { nombre: 'Platos Llanos', descripcion: 'Platos llanos elegantes' },
+  { nombre: 'Platos Hondos', descripcion: 'Platos hondos para sopas' },
+  { nombre: 'Vasijas', descripcion: 'Vasijas tradicionales artesanales' },
+];
+
+const subcategoriasData = {
+  Alcancias: [
+    { nombre: 'Cerámica', descripcion: 'Alcancias de larga duración hechas con cerámica' },
+    { nombre: 'Yeso', descripcion: 'Alcancias de yeso' },
+    { nombre: 'Metal', descripcion: 'Alcancias de metal mas resistentes' },
+  ],
+  Pocillos: [
+    { nombre: 'Cerámica', descripcion: 'Pocillos de larga duración hechos con cerámica' },
+    { nombre: 'Porcelana', descripcion: 'Una variante mas fina, ligera y elegante' },
+    { nombre: 'Vidrio', descripcion: 'Pocillos de vidrio, permite ver el contenido y jugar con estilos unicos' },
+  ],
+  Floreros: [
+    { nombre: 'Vidrio', descripcion: 'Floreros de vidrio, versatil y funcional para ver la calidad del agua' },
+    { nombre: 'Cerámica', descripcion: 'Floreros de cerámica, resistentes con estetica calida' },
+    { nombre: 'Cristal', descripcion: 'Floreros de cristal para aportar un toque de lujo y elegancia' },
+  ],
+  Vasijas: [
+    { nombre: 'Cerámica', descripcion: 'Vasijas de larga duración hechas con cerámica' },
+    { nombre: 'Arcilla', descripcion: 'Vasijas de arcilla' },
+    { nombre: 'Metal', descripcion: 'Vasijas de metal mas resistentes' },
+  ],
+  'Platos Llanos': [
+    { nombre: 'Cerámica', descripcion: 'Platos llanos de cerámica' },
+    { nombre: 'Porcelana', descripcion: 'Platos llanos de porcelana' },
+    { nombre: 'Vidrio', descripcion: 'Platos llanos de vidrio' },
+  ],
+  'Platos Hondos': [
+    { nombre: 'Cerámica', descripcion: 'Platos hondos de cerámica' },
+    { nombre: 'Porcelana', descripcion: 'Platos hondos de porcelana' },
+    { nombre: 'Vidrio', descripcion: 'Platos hondos de vidrio' },
+  ],
+};
+
+const productosData = {
+  Alcancias: {
+    Cerámica: [
+      { nombre: 'Alcancía de Cerámica básica', descripcion: 'Recipiente tradicional y sencillo para ahorrar, con acabado cerámico liso.', precio: 28000, stock: 14 },
+      { nombre: 'Alcancía de Ceramica en forma de Cerdito', descripcion: 'El clásico diseño de cerdito elaborado en cerámica resistente.', precio: 30000, stock: 10 },
+    ],
+    Yeso: [
+      { nombre: 'Alcancía de Yeso básica', descripcion: 'Opción económica y ligera de forma estándar, fabricada en yeso.', precio: 38000, stock: 5 },
+      { nombre: 'Alcancía de Yeso con forma de animal', descripcion: 'Figura animal decorativa de yeso, ideal para personalizar o pintar.', precio: 42000, stock: 2 },
+    ],
+    Metal: [
+      { nombre: 'Alcancía de Metal básica', descripcion: 'Caja metálica duradera y segura con un diseño funcional', precio: 17000, stock: 8 },
+      { nombre: 'Alcancía de Metal con diseño de superhéroe', descripcion: 'Contenedor metálico decorado con motivos de superhéroes, ideal para niños.', precio: 22000, stock: 4 },
+    ],
+  },
+  Pocillos: {
+    Cerámica: [
+      { nombre: 'Pocillo Artesanal Violeta', descripcion: 'Único e irrepetible. Hecho a mano con un esmalte vibrante', precio: 17000, stock: 8 },
+      { nombre: 'Pocillo Café Especial', descripcion: 'Pocillo de tonalidad Café perfecto para bebidas frias o calientes', precio: 19000, stock: 10 },
+    ],
+    Porcelana: [
+      { nombre: 'Set de Pocillos', descripcion: 'Elegancia y ligereza en tu mesa. Piezas de alta resistencia con acabado minimalista.', precio: 48000, stock: 4 },
+      { nombre: 'Pocillo Tintero', descripcion: 'El tamaño perfecto para tu espresso. Conserva el calor con un diseño clásico y fino.', precio: 19000, stock: 15 },
+    ],
+    Vidrio: [
+      { nombre: 'Pocillo de Calavera', descripcion: 'Diseño de calavera para darle un aire distintivo a tu mesa', precio: 23000, stock: 7 },
+      { nombre: 'Pocillo Tintero de Vidrio', descripcion: 'Perfecto para los amantes del café, con un vidrio resistente', precio: 19000, stock: 10 },
+    ],
+  },
+  Floreros: {
+    Vidrio: [
+      { nombre: 'Florero de Vidrio Moderno', descripcion: 'Estilo minimalista y versátil. Su transparencia pura resalta la belleza natural de cualquier ramo.', precio: 40000, stock: 5 },
+      { nombre: 'Florero de Vidrio Acanalado', descripcion: 'Textura clásica con un toque contemporáneo. Crea juegos de luz elegantes que realzan tus espacios.', precio: 45000, stock: 10 },
+    ],
+    Cerámica: [
+      { nombre: 'Florero Vintage con orejas', descripcion: 'Encanto artesanal con historia. Un diseño tradicional que aporta calidez y carácter a tu hogar.', precio: 36000, stock: 11 },
+      { nombre: 'Florero en cerámica con lineas blancas', descripcion: 'Modernidad y contraste. El equilibrio perfecto entre la textura del barro y un diseño geométrico limpio.', precio: 40000, stock: 8 },
+    ],
+    Cristal: [
+      { nombre: 'Florero alto de cristal', descripcion: 'Máximo brillo y sofisticación. Su altura y claridad lo hacen la pieza central ideal para eventos y cenas.', precio: 42000, stock: 8 },
+      { nombre: 'Florero Venecia', descripcion: 'Fusión de materiales naturales. La calidez de la madera unida a la elegancia del cristal para un estilo orgánico.', precio: 48000, stock: 12 },
+    ],
+  },
+  Vasijas: {
+    Cerámica: [
+      { nombre: 'Jarra artesanal esmaltada', descripcion: 'Estilo y color para tu mesa. Ideal para servir o decorar con un toque brillante.', precio: 65000, stock: 10 },
+      { nombre: 'Bowl decorativo mate', descripcion: 'Textura suave y diseño moderno. La pieza perfecta para centros de mesa con carácter.', precio: 55000, stock: 8 },
+    ],
+    Arcilla: [
+      { nombre: 'Olla de barro curado', descripcion: 'Tradición en tu cocina. Conserva el calor y el sabor auténtico de tus preparaciones.', precio: 50000, stock: 5 },
+      { nombre: 'Cazuela pequeña', descripcion: 'El encanto de lo rústico. Ideal para porciones individuales o salsas artesanales.', precio: 30000, stock: 15 },
+    ],
+    Metal: [
+      { nombre: 'Copetín de metal martillado', descripcion: 'Elegancia artesanal. Su textura única resalta en cualquier celebración.', precio: 47000, stock: 10 },
+      { nombre: 'Mini-balde de latón soldado', descripcion: 'Versátil y duradero. Un toque industrial-chic para organizar tus espacios.', precio: 40000, stock: 7 },
+    ],
+  },
+  'Platos Llanos': {
+    Cerámica: [
+      { nombre: 'Plato de gres con esmalte reactivo', descripcion: 'Arte puro en cada comida. Acabados únicos con colores que cobran vida.', precio: 45000, stock: 16 },
+      { nombre: 'Plato irregular', descripcion: 'Belleza artesanal sin moldes. Diseño orgánico que celebra la imperfección hecha a mano.', precio: 40000, stock: 7 },
+    ],
+    Porcelana: [
+      { nombre: 'Plato de porcelana con borde organico', descripcion: 'Delicadeza y estilo natural. La resistencia de la porcelana con un diseño único.', precio: 47000, stock: 8 },
+      { nombre: 'Plato de porcelana con calcomania azul', descripcion: 'Clásico renovado. Un detalle de color artesanal para una mesa sofisticada.', precio: 30000, stock: 10 },
+    ],
+    Vidrio: [
+      { nombre: 'Plato de vidrio templado', descripcion: 'Transparencia y máxima resistencia. Un básico duradero y elegante para el diario.', precio: 17000, stock: 6 },
+      { nombre: 'Plato de Vidrio Craquelado', descripcion: 'Captura la luz en tu mesa. Efectos visuales increíbles para presentaciones especiales.', precio: 28000, stock: 13 },
+    ],
+  },
+  'Platos Hondos': {
+    Cerámica: [
+      { nombre: 'Bowl con acabado crudo', descripcion: 'Conexión con la tierra. Interior brillante para higiene y exterior rústico al tacto.', precio: 45000, stock: 5 },
+      { nombre: 'Cuenco con base de pedestal', descripcion: 'Elevación y estilo. Una pieza escultural que resalta tus mejores recetas.', precio: 52000, stock: 12 },
+    ],
+    Porcelana: [
+      { nombre: 'Cuenco de Tipo Pasta', descripcion: 'Diseño funcional y amplio. El aliado perfecto para pastas, cremas y ensaladas.', precio: 37000, stock: 10 },
+      { nombre: 'Cuenco para Té', descripcion: 'Inspiración zen para tu mesa. Compacto y acogedor, ideal para sopas o desayunos.', precio: 30000, stock: 11 },
+    ],
+    Vidrio: [
+      { nombre: 'Bol de vidrio soplado', descripcion: 'Esencia artesanal. Variaciones naturales que hacen de cada pieza algo irrepetible.', precio: 35000, stock: 9 },
+      { nombre: 'Plato hondo de vidrio opaco', descripcion: 'Sofisticación minimalista. Su acabado suave aporta un toque de lujo moderno.', precio: 26000, stock: 4 },
+    ],
+  },
+};
+
+const sampleReviews = [
+  {
+    nombre: 'María González',
+    comentario: 'Hermosa alcancía, la calidad es excelente y llegó muy bien empacada. Perfecta para mi hija.',
+    calificacion: 5.0,
+  },
+  {
+    nombre: 'Carlos Rodríguez',
+    comentario: 'Muy bonita y bien hecha. El color es exactamente como en las fotos. Recomendada.',
+    calificacion: 4.5,
+  },
+  {
+    nombre: 'Ana Martínez',
+    comentario: 'Artesanía de primera calidad. Se nota el trabajo manual y el cuidado en los detalles.',
+    calificacion: 5.0,
+  },
+];
+
+const crearUsuarioSiNoExiste = async (usuario) => {
+  const existente = await Usuario.findOne({ where: { email: usuario.email } });
+  if (existente) {
+    return false;
+  }
+
+  await Usuario.create(usuario);
+  return true;
+};
+
+const crearUsuarios = async () => {
+  log('👥 1. CREANDO USUARIOS...\n');
+
+  const usuarios = [
+    {
+      nombre: 'Administrador',
+      apellido: 'Sistema',
+      email: 'admin@yesa.com',
+      password: 'admin1234',
+      rol: 'administrador',
+      telefono: '3001234567',
+      direccion: 'YESA - Oficina Principal',
+      activo: true,
+    },
+    {
+      nombre: 'Auxiliar',
+      apellido: 'Soporte',
+      email: 'auxiliar@yesa.com',
+      password: 'aux123',
+      rol: 'auxiliar',
+      telefono: '3009876543',
+      direccion: 'YESA - Oficina Auxiliar',
+      activo: true,
+    },
+  ];
+
+  for (const usuario of usuarios) {
+    const creado = await crearUsuarioSiNoExiste(usuario);
+    if (creado) {
+      log(`✅ ${usuario.nombre} creado`);
+      log(`   📧 Usuario: ${usuario.email}`);
+      log(`   🔑 Password: ${usuario.password}\n`);
+    } else {
+      log(`✅ ${usuario.nombre} ya existe\n`);
+    }
+  }
+
+  log('👤 Creando 5 clientes...');
+  for (let i = 1; i <= 5; i += 1) {
+    const cliente = {
+      nombre: `Cliente ${i}`,
+      apellido: `Apellido ${i}`,
+      email: `cliente${i}@yesa.com`,
+      password: `cliente${i}`,
+      rol: 'cliente',
+      telefono: `300${1000000 + i}`,
+      direccion: `Dirección del Cliente ${i}, Bogotá`,
+      activo: true,
+    };
+
+    const creado = await crearUsuarioSiNoExiste(cliente);
+    if (creado) {
+      log(`   ✅ Cliente ${i} - Email: cliente${i}@yesa.com - Pass: cliente${i}`);
+    }
+  }
+
+  const usuariosCreados = await Usuario.count();
+  log(`\n✅ Total: ${usuariosCreados} usuarios en la base de datos\n`);
+};
+
+const crearCategorias = async () => {
+  log('📁 2. CREANDO CATEGORÍAS...\n');
+
+  const categoriasExistentes = await Categoria.count();
+  if (categoriasExistentes > 0) {
+    log('⚠️  Ya existen categorías en la base de datos.\n');
+    return await Categoria.findAll({ order: [['id', 'ASC']] });
+  }
+
+  const categorias = [];
+  for (const catData of categoriasData) {
+    const categoria = await Categoria.create(catData);
+    categorias.push(categoria);
+    log(`   ✅ ${categoria.nombre}`);
+  }
+
+  log('\n✅ Total: 6 categorías creadas\n');
+  return categorias;
+};
+
+const crearSubcategorias = async (categorias) => {
+  log('📂 3. CREANDO SUBCATEGORÍAS...\n');
+  const subcategorias = [];
+
+  for (const categoria of categorias) {
+    log(`📁 ${categoria.nombre}:`);
+    const subsData = subcategoriasData[categoria.nombre];
+    if (!Array.isArray(subsData)) {
+      throw new TypeError(`No hay subcategorías definidas para la categoría '${categoria.nombre}'. Revisa subcategoriasData.`);
+    }
+
+    for (const subData of subsData) {
+      const subcategoria = await Subcategoria.create({
+        nombre: subData.nombre,
+        descripcion: subData.descripcion,
+        categoriaId: categoria.id,
+        activo: true,
+      });
+      subcategorias.push(subcategoria);
+      log(`   ✅ ${subcategoria.nombre}`);
+    }
+    log('');
+  }
+
+  log('✅ Total: 15 subcategorías creadas\n');
+  return subcategorias;
+};
+
+const crearProductos = async (categorias, subcategorias) => {
+  log('📦 4. CREANDO PRODUCTOS...\n');
+  let totalProductos = 0;
+
+  for (const subcategoria of subcategorias) {
+    const categoria = categorias.find((cat) => cat.id === subcategoria.categoriaId);
+    const productos = categoria ? productosData[categoria.nombre]?.[subcategoria.nombre] : undefined;
+
+    if (!productos) {
+      warn(`⚠️ No se encontraron productos para ${categoria?.nombre || 'Categoría desconocida'} / ${subcategoria.nombre}`);
+      continue;
+    }
+
+    log(`📦 ${subcategoria.nombre} (${categoria.nombre}):`);
+
+    for (const prodData of productos) {
+      await Producto.create({
+        nombre: prodData.nombre,
+        descripcion: prodData.descripcion,
+        precio: prodData.precio,
+        stock: prodData.stock,
+        categoriaId: subcategoria.categoriaId,
+        subcategoriaId: subcategoria.id,
+        imagen: 'producto-default.jpg',
+        activo: true,
+      });
+      log(`   ✅ ${prodData.nombre} - $${prodData.precio.toLocaleString()}`);
+      totalProductos += 1;
+    }
+    log('');
+  }
+
+  log(`✅ Total: ${totalProductos} productos creados\n`);
+  return totalProductos;
+};
+
+const crearResenasEjemplo = async () => {
+  log('📝 5. CREANDO RESEÑAS DE EJEMPLO APROBADAS...\n');
+
+  const productosParaResenas = await Producto.findAll({ order: [['id', 'ASC']] });
+  const reseñasARellenar = productosParaResenas.slice(0, 10);
+
+  for (const producto of reseñasARellenar) {
+    const existingReviews = await Resena.count({ where: { productoId: producto.id } });
+    if (existingReviews > 0) continue;
+
+    for (const reviewData of sampleReviews) {
+      await Resena.create({
+        productoId: producto.id,
+        usuarioId: null,
+        nombre: reviewData.nombre,
+        email: null,
+        calificacion: reviewData.calificacion,
+        comentario: reviewData.comentario,
+        aprobado: true,
+      });
+    }
+    log(`   ✅ ${sampleReviews.length} reseñas creadas para producto: ${producto.nombre}`);
+  }
+
+  log('\n');
+};
+
+const imprimirResumenFinal = async () => {
+  log('\n🎉 ========================================');
+  log('   SEEDER COMPLETADO EXITOSAMENTE');
+  log('========================================\n');
+
+  const totalUsuarios = await Usuario.count();
+  const totalCategorias = await Categoria.count();
+  const totalSubcategorias = await Subcategoria.count();
+  const totalProductos = await Producto.count();
+
+  log('📊 RESUMEN:');
+  log(`   👥 Usuarios: ${totalUsuarios}`);
+  log(`   📁 Categorías: ${totalCategorias}`);
+  log(`   📂 Subcategorías: ${totalSubcategorias}`);
+  log(`   📦 Productos: ${totalProductos}\n`);
+
+  log('🔑 CREDENCIALES DE ACCESO:\n');
+  log('   👨‍💼 ADMINISTRADOR');
+  log('      Email: admin@yesa.com');
+  log('      Password: admin1234\n');
+  log('   👤 AUXILIARES');
+  log('      Email: auxiliar@yesa.com');
+  log('      Password: aux123\n');
+  log('   🛍️  CLIENTES (5)');
+  log('      Email: cliente1@yesa.com - Password: cliente1');
+  log('      Email: cliente2@yesa.com - Password: cliente2');
+  log('      Email: cliente3@yesa.com - Password: cliente3');
+  log('      Email: cliente4@yesa.com - Password: cliente4');
+  log('      Email: cliente5@yesa.com - Password: cliente5\n');
+
+  log('========================================\n');
+};
+
 const seedDatosCompletos = async () => {
   try {
     log('\n🌱 ========================================');
     log('   INICIANDO SEEDER DE DATOS COMPLETOS');
     log('========================================\n');
 
-    // ==========================================
-    // 1. CREAR USUARIOS
-    // ==========================================
-    log('👥 1. CREANDO USUARIOS...\n');
+    await crearUsuarios();
 
-    // ADMINISTRADOR
-    const adminExistente = await Usuario.findOne({ where: { email: 'admin@yesa.com' } });
-    if (!adminExistente) {
-      await Usuario.create({
-        nombre: 'Administrador',
-        apellido: 'Sistema',
-        email: 'admin@yesa.com',
-        password: 'admin1234',
-        rol: 'administrador',
-        telefono: '3001234567',
-        direccion: 'YESA - Oficina Principal',
-        activo: true
-      });
-      log('✅ Administrador creado');
-      log('   📧 Usuario: admin@yesa.com');
-      log('   🔑 Password: admin1234\n');
-    } else {
-      log('✅ Administrador ya existe\n');
-    }
-
-    // AUXILIAR
-    const auxiliarExistente = await Usuario.findOne({ where: { email: 'auxiliar@yesa.com' } });
-    if (!auxiliarExistente) {
-      await Usuario.create({
-        nombre: 'Auxiliar',
-        apellido: 'Soporte',
-        email: 'auxiliar@yesa.com',
-        password: 'aux123',
-        rol: 'auxiliar',
-        telefono: '3009876543',
-        direccion: 'YESA - Oficina Auxiliar',
-        activo: true
-      });
-      log('✅ Auxiliar creado');
-      log('   📧 Usuario: auxiliar@yesa.com');
-      log('   🔑 Password: aux123\n');
-    } else {
-      log('✅ Auxiliar ya existe\n');
-    }
-
-    // CLIENTES (5)
-    log('👤 Creando 5 clientes...');
-    for (let i = 1; i <= 5; i++) {
-      const clienteExistente = await Usuario.findOne({ where: { email: `cliente${i}@yesa.com` } });
-      if (!clienteExistente) {
-        await Usuario.create({
-          nombre: `Cliente ${i}`,
-          apellido: `Apellido ${i}`,
-          email: `cliente${i}@yesa.com`,
-          password: `cliente${i}`,
-          rol: 'cliente',
-          telefono: `300${1000000 + i}`,
-          direccion: `Dirección del Cliente ${i}, Bogotá`,
-          activo: true
-        });
-        log(`   ✅ Cliente ${i} - Email: cliente${i}@yesa.com - Pass: cliente${i}`);
-      }
-    }
-    
-    const usuariosCreados = await Usuario.count();
-    log(`\n✅ Total: ${usuariosCreados} usuarios en la base de datos\n`);
-
-    // ==========================================
-    // 2. CREAR CATEGORÍAS
-    // ==========================================
-    log('📁 2. CREANDO CATEGORÍAS...\n');
-
-    const categoriasExistentes = await Categoria.count();
-    
-    if (categoriasExistentes > 0) {
-      log('⚠️  Ya existen categorías en la base de datos.\n');
-    } else {
-      const categoriasData = [
-        {
-          nombre: 'Alcancias',
-          descripcion: 'Hermosas alcancías artesanales'
-        },
-        {
-          nombre: 'Pocillos',
-          descripcion: 'Pocillos unicos hechos a mano'
-        },
-        {
-          nombre: 'Floreros',
-          descripcion: 'Floreros decorativos únicos'
-        },
-        {
-          nombre: 'Platos Llanos',
-          descripcion: 'Platos llanos elegantes'
-        },
-        {
-          nombre: 'Platos Hondos',
-          descripcion: 'Platos hondos para sopas'
-        },
-        {
-          nombre: 'Vasijas',
-          descripcion: 'Vasijas tradicionales artesanales'
-        },
-      ];
-
-      const categorias = [];
-      for (const catData of categoriasData) {
-        const categoria = await Categoria.create(catData);
-        categorias.push(categoria);
-      log(`   ✅ ${categoria.nombre}`);
-    }
-    log('\n✅ Total: 6 categorías creadas\n');
-      // ==========================================
-      // 3. CREAR SUBCATEGORÍAS (3 por categoría)
-      // ==========================================
-      log('📂 3. CREANDO SUBCATEGORÍAS...\n');
-
-      const subcategoriasData = {
-        'Alcancias': [
-          { nombre: 'Cerámica', descripcion: 'Alcancias de larga duración hechas con cerámica' },
-          { nombre: 'Yeso', descripcion: 'Alcancias de yeso' },
-          { nombre: 'Metal', descripcion: 'Alcancias de metal mas resistentes' }
-        ],
-        'Pocillos': [
-          { nombre: 'Cerámica', descripcion: 'Pocillos de larga duración hechos con cerámica' },
-          { nombre: 'Porcelana', descripcion: 'Una variante mas fina, ligera y elegante' },
-          { nombre: 'Vidrio', descripcion: 'Pocillos de vidrio, permite ver el contenido y jugar con estilos unicos' }
-        ],
-        'Floreros': [
-          { nombre: 'Vidrio', descripcion: 'Floreros de vidrio, versatil y funcional para ver la calidad del agua' },
-          { nombre: 'Cerámica', descripcion: 'Floreros de cerámica, resistentes con estetica calida' },
-          { nombre: 'Cristal', descripcion: 'Floreros de cristal para aportar un toque de lujo y elegancia' }
-        ],
-        'Vasijas': [
-          { nombre: 'Cerámica', descripcion: 'Vasijas de larga duración hechas con cerámica' },
-          { nombre: 'Arcilla', descripcion: 'Vasijas de arcilla' },
-          { nombre: 'Metal', descripcion: 'Vasijas de metal mas resistentes' }
-        ],
-        'Platos Llanos': [
-          { nombre: 'Cerámica', descripcion: 'Platos llanos de cerámica' },
-          { nombre: 'Porcelana', descripcion: 'Platos llanos de porcelana' },
-          { nombre: 'Vidrio', descripcion: 'Platos llanos de vidrio' }
-        ],
-        'Platos Hondos': [
-          { nombre: 'Cerámica', descripcion: 'Platos hondos de cerámica' },
-          { nombre: 'Porcelana', descripcion: 'Platos hondos de porcelana' },
-          { nombre: 'Vidrio', descripcion: 'Platos hondos de vidrio' }
-        ],
-      };
-
-      const subcategorias = [];
-      for (const categoria of categorias) {
-        log(`📁 ${categoria.nombre}:`);
-        const subsData = subcategoriasData[categoria.nombre];
-        if (!Array.isArray(subsData)) {
-          throw new Error(`No hay subcategorías definidas para la categoría '${categoria.nombre}'. Revisa subcategoriasData.`);
-        }
-        
-        for (const subData of subsData) {
-          const subcategoria = await Subcategoria.create({
-            nombre: subData.nombre,
-            descripcion: subData.descripcion,
-            categoriaId: categoria.id,
-            activo: true
-          });
-          subcategorias.push(subcategoria);
-          log(`   ✅ ${subcategoria.nombre}`);
-        }
-        log('');
-      }
-      log('✅ Total: 15 subcategorías creadas\n');
-
-      // ==========================================
-      // 4. CREAR PRODUCTOS (2 por subcategoría)
-      // ==========================================
-      log('📦 4. CREANDO PRODUCTOS...\n');
-
-      const productosData = {
-        Alcancias: {
-          'Cerámica': [
-            { nombre: 'Alcancía de Cerámica básica', descripcion: 'Recipiente tradicional y sencillo para ahorrar, con acabado cerámico liso.', precio: 28000, stock: 14 },
-            { nombre: 'Alcancía de Ceramica en forma de Cerdito', descripcion: 'El clásico diseño de cerdito elaborado en cerámica resistente.', precio: 30000, stock: 10 },
-          ],
-          Yeso: [
-            { nombre: 'Alcancía de Yeso básica', descripcion: 'Opción económica y ligera de forma estándar, fabricada en yeso.', precio: 38000, stock: 5 },
-            { nombre: 'Alcancía de Yeso con forma de animal', descripcion: 'Figura animal decorativa de yeso, ideal para personalizar o pintar.', precio: 42000, stock: 2 },
-          ],
-          Metal: [
-            { nombre: 'Alcancía de Metal básica', descripcion: 'Caja metálica duradera y segura con un diseño funcional', precio: 17000, stock: 8 },
-            { nombre: 'Alcancía de Metal con diseño de superhéroe', descripcion: 'Contenedor metálico decorado con motivos de superhéroes, ideal para niños.', precio: 22000, stock: 4 },
-          ]
-        },
-        Pocillos: {
-          'Cerámica': [
-            { nombre: 'Pocillo Artesanal Violeta', descripcion: 'Único e irrepetible. Hecho a mano con un esmalte vibrante', precio: 17000, stock: 8 },
-            { nombre: 'Pocillo Café Especial', descripcion: 'Pocillo de tonalidad Café perfecto para bebidas frias o calientes', precio: 19000, stock: 10 },
-          ],
-          Porcelana: [
-            { nombre: 'Set de Pocillos', descripcion: 'Elegancia y ligereza en tu mesa. Piezas de alta resistencia con acabado minimalista.', precio: 48000, stock: 4 },
-            { nombre: 'Pocillo Tintero', descripcion: 'El tamaño perfecto para tu espresso. Conserva el calor con un diseño clásico y fino.', precio: 19000, stock: 15 },
-          ],
-          Vidrio: [
-            { nombre: 'Pocillo de Calavera', descripcion: 'Diseño de calavera para darle un aire distintivo a tu mesa', precio: 23000, stock: 7 },
-            { nombre: 'Pocillo Tintero de Vidrio', descripcion: 'Perfecto para los amantes del café, con un vidrio resistente', precio: 19000, stock: 10 },
-          ]
-        },
-        Floreros: {
-          Vidrio: [
-            { nombre: 'Florero de Vidrio Moderno', descripcion: 'Estilo minimalista y versátil. Su transparencia pura resalta la belleza natural de cualquier ramo.', precio: 40000, stock: 5 },
-            { nombre: 'Florero de Vidrio Acanalado', descripcion: 'Textura clásica con un toque contemporáneo. Crea juegos de luz elegantes que realzan tus espacios.', precio: 45000, stock: 10 },
-          ],
-          'Cerámica': [
-            { nombre: 'Florero Vintage con orejas', descripcion: 'Encanto artesanal con historia. Un diseño tradicional que aporta calidez y carácter a tu hogar.', precio: 36000, stock: 11 },
-            { nombre: 'Florero en cerámica con lineas blancas', descripcion: 'Modernidad y contraste. El equilibrio perfecto entre la textura del barro y un diseño geométrico limpio.', precio: 40000, stock: 8 },
-          ],
-          Cristal: [
-            { nombre: 'Florero alto de cristal', descripcion: 'Máximo brillo y sofisticación. Su altura y claridad lo hacen la pieza central ideal para eventos y cenas.', precio: 42000, stock: 8 },
-            { nombre: 'Florero Venecia', descripcion: 'Fusión de materiales naturales. La calidez de la madera unida a la elegancia del cristal para un estilo orgánico.', precio: 48000, stock: 12 },
-          ]
-        },
-        Vasijas: {
-          'Cerámica': [
-            { nombre: 'Jarra artesanal esmaltada', descripcion: 'Estilo y color para tu mesa. Ideal para servir o decorar con un toque brillante.', precio: 65000, stock: 10 },
-            { nombre: 'Bowl decorativo mate', descripcion: 'Textura suave y diseño moderno. La pieza perfecta para centros de mesa con carácter.', precio: 55000, stock: 8 },
-          ],
-          Arcilla: [
-            { nombre: 'Olla de barro curado', descripcion: 'Tradición en tu cocina. Conserva el calor y el sabor auténtico de tus preparaciones.', precio: 50000, stock: 5 },
-            { nombre: 'Cazuela pequeña', descripcion: 'El encanto de lo rústico. Ideal para porciones individuales o salsas artesanales.', precio: 30000, stock: 15 },
-          ],
-          Metal: [
-            { nombre: 'Copetín de metal martillado', descripcion: 'Elegancia artesanal. Su textura única resalta en cualquier celebración.', precio: 47000, stock: 10 },
-            { nombre: 'Mini-balde de latón soldado', descripcion: 'Versátil y duradero. Un toque industrial-chic para organizar tus espacios.', precio: 40000, stock: 7 },
-          ]
-        },
-        'Platos Llanos': {
-          'Cerámica': [
-            { nombre: 'Plato de gres con esmalte reactivo', descripcion: 'Arte puro en cada comida. Acabados únicos con colores que cobran vida.', precio: 45000, stock: 16 },
-            { nombre: 'Plato irregular', descripcion: 'Belleza artesanal sin moldes. Diseño orgánico que celebra la imperfección hecha a mano.', precio: 40000, stock: 7 },
-          ],
-          Porcelana: [
-            { nombre: 'Plato de porcelana con borde organico', descripcion: 'Delicadeza y estilo natural. La resistencia de la porcelana con un diseño único.', precio: 47000, stock: 8 },
-            { nombre: 'Plato de porcelana con calcomania azul', descripcion: 'Clásico renovado. Un detalle de color artesanal para una mesa sofisticada.', precio: 30000, stock: 10 },
-          ],
-          Vidrio: [
-            { nombre: 'Plato de vidrio templado', descripcion: 'Transparencia y máxima resistencia. Un básico duradero y elegante para el diario.', precio: 17000, stock: 6 },
-            { nombre: 'Plato de Vidrio Craquelado', descripcion: 'Captura la luz en tu mesa. Efectos visuales increíbles para presentaciones especiales.', precio: 28000, stock: 13 },
-          ]
-        },
-        'Platos Hondos': {
-          'Cerámica': [
-            { nombre: 'Bowl con acabado crudo', descripcion: 'Conexión con la tierra. Interior brillante para higiene y exterior rústico al tacto.', precio: 45000, stock: 5 },
-            { nombre: 'Cuenco con base de pedestal', descripcion: 'Elevación y estilo. Una pieza escultural que resalta tus mejores recetas.', precio: 52000, stock: 12 },
-          ],
-          Porcelana: [
-            { nombre: 'Cuenco de Tipo Pasta', descripcion: 'Diseño funcional y amplio. El aliado perfecto para pastas, cremas y ensaladas.', precio: 37000, stock: 10 },
-            { nombre: 'Cuenco para Té', descripcion: 'Inspiración zen para tu mesa. Compacto y acogedor, ideal para sopas o desayunos.', precio: 30000, stock: 11 },
-          ],
-          Vidrio: [
-            { nombre: 'Bol de vidrio soplado', descripcion: 'Esencia artesanal. Variaciones naturales que hacen de cada pieza algo irrepetible.', precio: 35000, stock: 9 },
-            { nombre: 'Plato hondo de vidrio opaco', descripcion: 'Sofisticación minimalista. Su acabado suave aporta un toque de lujo moderno.', precio: 26000, stock: 4 },
-          ]
-        }
-      };
-
-      let totalProductos = 0;
-      
-      for (const subcategoria of subcategorias) {
-        const categoria = categorias.find((cat) => cat.id === subcategoria.categoriaId);
-        const productos = categoria ? productosData[categoria.nombre]?.[subcategoria.nombre] : undefined;
-
-        if (!productos) {
-          warn(`⚠️ No se encontraron productos para ${categoria?.nombre || 'Categoría desconocida'} / ${subcategoria.nombre}`);
-          continue;
-        }
-
-        log(`📦 ${subcategoria.nombre} (${categoria.nombre}):`);
-        
-        for (const prodData of productos) {
-          await Producto.create({
-            nombre: prodData.nombre,
-            descripcion: prodData.descripcion,
-            precio: prodData.precio,
-            stock: prodData.stock,
-            categoriaId: subcategoria.categoriaId,
-            subcategoriaId: subcategoria.id,
-            imagen: 'producto-default.jpg', // Imagen por defecto
-            activo: true
-          });
-          log(`   ✅ ${prodData.nombre} - $${prodData.precio.toLocaleString()}`);
-          totalProductos++;
-        }
-        log('');
-      }
-      
-      log(`✅ Total: ${totalProductos} productos creados\n`);
-    }
-
-    // ==========================================
-    // 5. CREAR RESEÑAS DE EJEMPLO APROBADAS
-    // ==========================================
-    log('📝 5. CREANDO RESEÑAS DE EJEMPLO APROBADAS...\n');
-
-    const sampleReviews = [
-      {
-        nombre: 'María González',
-        comentario: 'Hermosa alcancía, la calidad es excelente y llegó muy bien empacada. Perfecta para mi hija.',
-        calificacion: 5.0,
-      },
-      {
-        nombre: 'Carlos Rodríguez',
-        comentario: 'Muy bonita y bien hecha. El color es exactamente como en las fotos. Recomendada.',
-        calificacion: 4.5,
-      },
-      {
-        nombre: 'Ana Martínez',
-        comentario: 'Artesanía de primera calidad. Se nota el trabajo manual y el cuidado en los detalles.',
-        calificacion: 5.0,
-      },
-    ];
-
-    const productosParaResenas = await Producto.findAll({ order: [['id', 'ASC']] });
-    const reseñasARellenar = productosParaResenas.slice(0, 10);
-
-    for (const producto of reseñasARellenar) {
-      const existingReviews = await Resena.count({ where: { productoId: producto.id } });
-      if (existingReviews > 0) continue;
-
-      for (const reviewData of sampleReviews) {
-        await Resena.create({
-          productoId: producto.id,
-          usuarioId: null,
-          nombre: reviewData.nombre,
-          email: null,
-          calificacion: reviewData.calificacion,
-          comentario: reviewData.comentario,
-          aprobado: true,
-        });
-      }
-      log(`   ✅ ${sampleReviews.length} reseñas creadas para producto: ${producto.nombre}`);
-    }
-
-    log('\n');
-
-    // ==========================================
-    // RESUMEN FINAL
-    // ==========================================
-    log('\n🎉 ========================================');
-    log('   SEEDER COMPLETADO EXITOSAMENTE');
-    log('========================================\n');
-
-    const totalUsuarios = await Usuario.count();
-    const totalCategorias = await Categoria.count();
-    const totalSubcategorias = await Subcategoria.count();
-    const totalProductos = await Producto.count();
-
-    log('📊 RESUMEN:');
-    log(`   👥 Usuarios: ${totalUsuarios}`);
-    log(`   📁 Categorías: ${totalCategorias}`);
-    log(`   📂 Subcategorías: ${totalSubcategorias}`);
-    log(`   📦 Productos: ${totalProductos}\n`);
-
-    log('🔑 CREDENCIALES DE ACCESO:\n');
-    log('   👨‍💼 ADMINISTRADOR');
-    log('      Email: admin@yesa.com');
-    log('      Password: admin1234\n');
-    log('   👤 AUXILIARES');
-    log('      Email: auxiliar@yesa.com');
-    log('      Password: aux123\n');
-    log('   🛍️  CLIENTES (5)');
-    log('      Email: cliente1@yesa.com - Password: cliente1');
-    log('      Email: cliente2@yesa.com - Password: cliente2');
-    log('      Email: cliente3@yesa.com - Password: cliente3');
-    log('      Email: cliente4@yesa.com - Password: cliente4');
-    log('      Email: cliente5@yesa.com - Password: cliente5\n');
-
-    log('========================================\n');
-
+    const categorias = await crearCategorias();
+    const subcategorias = await crearSubcategorias(categorias);
+    await crearProductos(categorias, subcategorias);
+    await crearResenasEjemplo();
+    await imprimirResumenFinal();
   } catch (error) {
     errorLog('❌ Error en el seeder:', error.message);
     errorLog(error);

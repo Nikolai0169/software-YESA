@@ -90,7 +90,7 @@ const getCarrito = async (req, res) => {
     
     // ✅ CONSTRUIR URLs EN ITEMS DEL CARRITO
     const itemsConURL = itemsCarrito.map(item => {
-      const itemJSON = item.toJSON ? item.toJSON() : item;
+      const itemJSON = item.toJSON?.() ?? item;
       if (itemJSON.producto) {
         itemJSON.producto = construirURLProducto(itemJSON.producto);
       }
@@ -219,7 +219,7 @@ const agregarAlCarrito = async (req, res) => {
       });
       
       // ✅ CONSTRUIR URL
-      const itemJSON = itemExistente.toJSON ? itemExistente.toJSON() : itemExistente;
+      const itemJSON = itemExistente.toJSON?.() ?? itemExistente;
       if (itemJSON.producto) {
         itemJSON.producto = construirURLProducto(itemJSON.producto);
       }
@@ -261,7 +261,7 @@ const agregarAlCarrito = async (req, res) => {
     });
     
     // ✅ CONSTRUIR URL
-    const itemJSON = nuevoItem.toJSON ? nuevoItem.toJSON() : nuevoItem;
+    const itemJSON = nuevoItem.toJSON?.() ?? nuevoItem;
     if (itemJSON.producto) {
       itemJSON.producto = construirURLProducto(itemJSON.producto);
     }
@@ -345,7 +345,7 @@ const actualizarItemCarrito = async (req, res) => {
     await item.save();
     
     // ✅ CONSTRUIR URL
-    const itemJSON = item.toJSON ? item.toJSON() : item;
+    const itemJSON = item.toJSON?.() ?? item;
     if (itemJSON.producto) {
       itemJSON.producto = construirURLProducto(itemJSON.producto);
     }

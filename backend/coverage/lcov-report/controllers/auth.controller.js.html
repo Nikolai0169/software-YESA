@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">8.51% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/94</span>
+                <span class='fraction'>8/94</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">8.88% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/90</span>
+                <span class='fraction'>8/90</span>
             </div>
         
             
@@ -508,11 +508,11 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -523,8 +523,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -635,7 +635,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -730,8 +730,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -778,7 +778,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -854,8 +854,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -922,7 +922,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -941,11 +941,11 @@
 &nbsp;
 // Importa el modelo Usuario desde la carpeta models.
 // Este modelo representa la tabla 'Usuario' en la BD y permite hacer operaciones CRUD.
-const Usuario = <span class="cstat-no" title="statement not covered" >require('../models/Usuario');</span>
+const Usuario = require('../models/Usuario');
 &nbsp;
 // Importa la función generateToken desde config/jwt.js.
 // Se usa para crear un token JWT después de un registro o login exitoso.
-const { generateToken } = <span class="cstat-no" title="statement not covered" >require('../config/jwt');</span>
+const { generateToken } = require('../config/jwt');
 &nbsp;
 /**
  * Registrar nuevo usuario
@@ -956,7 +956,7 @@ const { generateToken } = <span class="cstat-no" title="statement not covered" >
  * Ruta: POST /api/auth/register
  * Body esperado: { nombre, apellido, email, password, telefono, direccion }
  */
-const register = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {</span>
+const register = <span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {
 <span class="cstat-no" title="statement not covered" >  try {</span>
     // Desestructura los datos enviados en el body de la petición HTTP.
     // req.body contiene los datos que el cliente envía en formato JSON.
@@ -1068,7 +1068,7 @@ const register = <span class="cstat-no" title="statement not covered" ><span cla
  * Ruta: POST /api/auth/login
  * Body esperado: { email, password }
  */
-const login = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {</span>
+const login = <span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {
 <span class="cstat-no" title="statement not covered" >  try {</span>
     // Extrae email y password del body de la petición
     const { email, password } = <span class="cstat-no" title="statement not covered" >req.body;</span>
@@ -1163,7 +1163,7 @@ const login = <span class="cstat-no" title="statement not covered" ><span class=
  * Ruta: GET /api/auth/me
  * Headers requeridos: { Authorization: 'Bearer TOKEN' }
  */
-const getMe = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {</span>
+const getMe = <span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {
 <span class="cstat-no" title="statement not covered" >  try {</span>
     // req.usuario fue agregado por el middleware verificarAuth (middleware/auth.js)
     // Contiene los datos decodificados del token (id, email, rol).
@@ -1211,7 +1211,7 @@ const getMe = <span class="cstat-no" title="statement not covered" ><span class=
  * Headers: { Authorization: 'Bearer TOKEN' }
  * Body: { nombre, apellido, telefono, direccion }
  */
-const updateMe = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {</span>
+const updateMe = <span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {
 <span class="cstat-no" title="statement not covered" >  try {</span>
     // Extrae los campos que el usuario tiene PERMITIDO cambiar.
     // No extrae 'rol' ni 'activo' por seguridad.
@@ -1287,7 +1287,7 @@ const updateMe = <span class="cstat-no" title="statement not covered" ><span cla
  * Headers: { Authorization: 'Bearer TOKEN' }
  * Body: { passwordActual, passwordNueva }
  */
-const changePassword = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {</span>
+const changePassword = <span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {
 <span class="cstat-no" title="statement not covered" >  try {</span>
     // Extrae las dos contraseñas del body
     const { passwordActual, passwordNueva } = <span class="cstat-no" title="statement not covered" >req.body;</span>
@@ -1355,7 +1355,7 @@ const changePassword = <span class="cstat-no" title="statement not covered" ><sp
 // Exporta todas las funciones del controlador como un objeto.
 // Estas funciones se importan en routes/auth.routes.js para asociarlas a las rutas.
 // Ejemplo en rutas: router.post('/register', authController.register);
-<span class="cstat-no" title="statement not covered" >module.exports = {</span>
+module.exports = {
   register,         // POST /api/auth/register - Registro de nuevos usuarios
   login,            // POST /api/auth/login - Inicio de sesión
   getMe,            // GET /api/auth/me - Obtener perfil propio
@@ -1369,7 +1369,7 @@ const changePassword = <span class="cstat-no" title="statement not covered" ><sp
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-08-19T02:55:03.217Z
+                at 2026-08-19T17:49:27.084Z
             </div>
         <script src="../prettify.js"></script>
         <script>

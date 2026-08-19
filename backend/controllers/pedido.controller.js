@@ -55,317 +55,196 @@ const Cotizacion = require('../models/Cotizacion');
  * 6. Vacía el carrito
  * NOTE dentro de una TRANSACCIÓN para garantizar consistencia.
  */
+const validarDatosPedido = ({ direccionEnvio, telefono, metodoPago }) => {
+  if (!direccionEnvio?.trim()) return 'La dirección de envío es requerida';
+  if (!telefono?.trim()) return 'El teléfono es requerido';
+
+  const metodosValidos = ['efectivo', 'tarjeta', 'transferencia'];
+  if (!metodosValidos.includes(metodoPago)) {
+    return `Método de pago inválido. Opciones: ${metodosValidos.join(', ')}`;
+  }
+
+  return null;
+};
+
+const crearPedidoDesdeCotizacion = async ({ cotizacionId, datosPedido, usuarioId, transaction }) => {
+  const cotizacion = await Cotizacion.findByPk(cotizacionId, {
+    include: [{ model: Usuario, as: 'usuario', attributes: ['id', 'nombre', 'email'] }]
+  });
+
+  if (!cotizacion) return { error: 'Cotización no encontrada', status: 404 };
+  if (cotizacion.estado !== 'cotizado') {
+    return { error: 'Solo se puede crear pedido desde cotización cotizada', status: 400 };
+  }
+
+  const totalCotizacion = Number.parseFloat(cotizacion.precio);
+  if (Number.isNaN(totalCotizacion) || totalCotizacion <= 0) {
+    return { error: 'La cotización no tiene un precio válido para crear el pedido', status: 400 };
+  }
+
+  const pedido = await Pedido.create({
+    usuarioId,
+    cotizacionId,
+    total: totalCotizacion,
+    estado: 'pendiente',
+    ...datosPedido,
+  }, { transaction });
+
+  const cotItems = Array.isArray(cotizacion.items) ? cotizacion.items : [];
+  const precioUnitario = cotItems.length ? totalCotizacion / cotItems.length : 0;
+  for (const item of cotItems) {
+    const cantidad = item.cantidad || 1;
+    await DetallePedidoPersonalizado.create({
+      pedidoId: pedido.id,
+      cotizacionId,
+      cantidad,
+      precioUnitario,
+      subtotal: precioUnitario * cantidad
+    }, { transaction });
+  }
+
+  cotizacion.estado = 'convertida';
+  await cotizacion.save({ transaction });
+  return { pedido };
+};
+
+const obtenerItemsPedido = async ({ body, usuarioId, transaction }) => {
+  const itemsEnPedido = Array.isArray(body.items) && body.items.length > 0
+    ? body.items.map((item) => ({
+        productoId: Number(item.productoId),
+        cantidad: Number(item.cantidad),
+        precioUnitario: Number(item.precioUnitario || 0),
+      }))
+    : null;
+
+  if (!itemsEnPedido) {
+    return Carrito.findAll({
+      where: { usuarioId },
+      include: [{
+        model: Producto,
+        as: 'producto',
+        attributes: ['id', 'nombre', 'precio', 'stock', 'activo']
+      }],
+      transaction
+    });
+  }
+
+  const productos = await Producto.findAll({
+    where: { id: itemsEnPedido.map((item) => item.productoId) },
+    transaction
+  });
+  const productosMap = new Map(productos.map((producto) => [producto.id, producto]));
+
+  return itemsEnPedido.map((item) => ({
+    cantidad: item.cantidad,
+    precioUnitario: item.precioUnitario || productosMap.get(item.productoId)?.precio || 0,
+    producto: productosMap.get(item.productoId) || null,
+  }));
+};
+
+const validarItemsPedido = (itemsCarrito) => {
+  const errores = [];
+  let total = 0;
+
+  for (const item of itemsCarrito) {
+    const producto = item.producto;
+    if (!producto) {
+      errores.push(`Producto no encontrado para el item con ID ${item.productoId || 'desconocido'}`);
+      continue;
+    }
+    if (!producto.activo) {
+      errores.push(`${producto.nombre} ya no está disponible`);
+      continue;
+    }
+    if (item.cantidad > producto.stock) {
+      errores.push(`${producto.nombre}: stock insuficiente (disponible: ${producto.stock}, solicitado: ${item.cantidad})`);
+      continue;
+    }
+    total += Number.parseFloat(item.precioUnitario) * item.cantidad;
+  }
+
+  return { errores, total };
+};
+
+const guardarDetallesPedido = async ({ pedido, itemsCarrito, transaction }) => {
+  for (const item of itemsCarrito) {
+    const { producto } = item;
+    await DetallePedido.create({
+      pedidoId: pedido.id,
+      productoId: producto.id,
+      cantidad: item.cantidad,
+      precioUnitario: item.precioUnitario,
+      subtotal: Number.parseFloat(item.precioUnitario) * item.cantidad
+    }, { transaction });
+
+    producto.stock -= item.cantidad;
+    await producto.save({ transaction });
+  }
+};
+
+const recargarPedido = (pedido, incluirCotizacion = true) => pedido.reload({
+  include: [
+    { model: Usuario, as: 'usuario', attributes: ['id', 'nombre', 'email'] },
+    {
+      model: DetallePedido,
+      as: 'detalles',
+      ...(!incluirCotizacion ? {} : { include: [{ model: Producto, as: 'producto', attributes: ['id', 'nombre', 'precio', 'imagen'] }] })
+    },
+    {
+      model: DetallePedidoPersonalizado,
+      as: 'detallesPersonalizados',
+      ...(!incluirCotizacion ? {} : { include: [{ model: Cotizacion, as: 'cotizacion', attributes: ['id', 'nombre', 'modelo', 'precio'] }] })
+    }
+  ]
+});
+
 const crearPedido = async (req, res) => {
-  // Importa la instancia de sequelize desde config/database.js para usar transacciones.
-  // Una transacción agrupa varias operaciones SQL: si una falla, TODAS se revierten.
   const { sequelize } = require('../config/database');
-  // Inicia la transacción. t es el objeto transacción que se pasa a cada operación.
-  const t = await sequelize.transaction();
-  
+  const transaction = await sequelize.transaction();
+  const { direccionEnvio, telefono, metodoPago = 'efectivo', notasAdicionales, notas, cotizacionId } = req.body;
+  const datosPedido = { direccionEnvio, telefono, metodoPago, notas: notasAdicionales ?? notas ?? null };
+
   try {
-    // Extrae datos del body JSON enviado por el frontend.
-    // metodoPago tiene valor por defecto 'efectivo' si no se envía.
-    const { direccionEnvio, telefono, metodoPago = 'efectivo', notasAdicionales, notas, cotizacionId } = req.body;
-    const notasPedido = notasAdicionales ?? notas ?? null;
-    
-    // VALIDACIÓN 1: La dirección de envío es obligatoria
-    if (!direccionEnvio || direccionEnvio.trim() === '') {
-      await t.rollback();   // Revierte la transacción antes de responder
-      return res.status(400).json({
-        success: false,
-        message: 'La dirección de envío es requerida'
-      });
-    }
-    
-    // VALIDACIÓN 1b: El teléfono es obligatorio
-    if (!telefono || telefono.trim() === '') {
-      await t.rollback();
-      return res.status(400).json({
-        success: false,
-        message: 'El teléfono es requerido'
-      });
-    }
-    
-    // VALIDACIÓN 2: El méNOTE de pago debe ser uno de los válidos
-    const metodosValidos = ['efectivo', 'tarjeta', 'transferencia'];
-    // .includes() verifica si el valor está en el array
-    if (!metodosValidos.includes(metodoPago)) {
-      await t.rollback();
-      return res.status(400).json({
-        success: false,
-        message: `Método de pago inválido. Opciones: ${metodosValidos.join(', ')}`
-      });
+    const errorValidacion = validarDatosPedido(datosPedido);
+    if (errorValidacion) {
+      await transaction.rollback();
+      return res.status(400).json({ success: false, message: errorValidacion });
     }
 
-    // Si se envía una cotizaciónId, crearemos el pedido tomando el total de la cotización
-    // Este flujo es separado del carrito y no requiere items en carrito.
-    // Solo se permite cuando la cotización está en estado 'cotizado'.
     if (cotizacionId) {
-      const Cotizacion = require('../models/Cotizacion');
-      const cot = await Cotizacion.findByPk(cotizacionId, {
-        include: [{ model: Usuario, as: 'usuario', attributes: ['id', 'nombre', 'email'] }]
-      });
-      
-      if (!cot) {
-        await t.rollback();
-        return res.status(404).json({ success: false, message: 'Cotización no encontrada' });
+      const resultado = await crearPedidoDesdeCotizacion({ cotizacionId, datosPedido, usuarioId: req.usuario.id, transaction });
+      if (resultado.error) {
+        await transaction.rollback();
+        return res.status(resultado.status).json({ success: false, message: resultado.error });
       }
-
-      if (cot.estado !== 'cotizado') {
-        await t.rollback();
-        return res.status(400).json({
-          success: false,
-          message: 'Solo se puede crear pedido desde cotización cotizada'
-        });
-      }
-
-      const totalCotizacion = Number.parseFloat(cot.precio);
-      if (Number.isNaN(totalCotizacion) || totalCotizacion <= 0) {
-        await t.rollback();
-        return res.status(400).json({
-          success: false,
-          message: 'La cotización no tiene un precio válido para crear el pedido'
-        });
-      }
-
-      // Crear el pedido con el total de la cotización
-      const pedido = await Pedido.create({
-        usuarioId: req.usuario.id,
-        cotizacionId: cotizacionId,    // Asocia el pedido con la cotización
-        total: totalCotizacion,
-        estado: 'pendiente',
-        direccionEnvio,
-        telefono,
-        metodoPago,
-        notas: notasPedido,
-      }, { transaction: t });
-
-      // Crear detalles del pedido basado en los items de la cotización
-      const cotItems = Array.isArray(cot.items) ? cot.items : [];
-      if (cotItems.length > 0) {
-        // Distribuir el total entre los items de la cotización
-        const precioUnitario = totalCotizacion / cotItems.length;
-        
-        for (let i = 0; i < cotItems.length; i++) {
-          const item = cotItems[i];
-          await DetallePedidoPersonalizado.create({
-            pedidoId: pedido.id,
-            cotizacionId: cotizacionId, // Referencia a la cotización (diseño personalizado)
-            cantidad: item.cantidad || 1,
-            precioUnitario: precioUnitario,
-            subtotal: precioUnitario * (item.cantidad || 1)
-          }, { transaction: t });
-        }
-      }
-
-      // Actualizar el estado de la cotización a 'convertida' para indicar que ya se hizo un pedido
-      cot.estado = 'convertida';
-      await cot.save({ transaction: t });
-
-      await t.commit();
-
-      // Recarga el pedido con datos de usuario y detalles (tanto normales como personalizados)
-      await pedido.reload({
-        include: [
-          { model: Usuario, as: 'usuario', attributes: ['id', 'nombre', 'email'] },
-          {
-            model: DetallePedido,
-            as: 'detalles'
-          },
-          {
-            model: DetallePedidoPersonalizado,
-            as: 'detallesPersonalizados'
-          }
-        ]
-      });
-
-      return res.status(201).json({ 
-        success: true, 
-        message: 'Pedido creado desde cotización', 
-        data: { pedido, cotizacionId } 
-      });
-    }
-    
-    // VALIDACIÓN 3: Obtiene los items del pedido.
-    // Si el frontend envía items en el body, los usa.
-    // Si no, usa el carrito almacenado en el backend.
-    const itemsEnPedido = Array.isArray(req.body.items) && req.body.items.length > 0
-      ? req.body.items.map((item) => ({
-          productoId: Number(item.productoId),
-          cantidad: Number(item.cantidad),
-          precioUnitario: Number(item.precioUnitario || 0),
-        }))
-      : null;
-
-    let itemsCarrito;
-    if (itemsEnPedido) {
-      const productos = await Producto.findAll({
-        where: { id: itemsEnPedido.map((item) => item.productoId) },
-        transaction: t
-      });
-
-      const productosMap = new Map(productos.map((producto) => [producto.id, producto]));
-
-      itemsCarrito = itemsEnPedido.map((item) => ({
-        cantidad: item.cantidad,
-        precioUnitario: item.precioUnitario || productosMap.get(item.productoId)?.precio || 0,
-        producto: productosMap.get(item.productoId) || null,
-      }));
-    } else {
-      itemsCarrito = await Carrito.findAll({
-        where: { usuarioId: req.usuario.id },
-        include: [{
-          model: Producto,
-          as: 'producto',
-          attributes: ['id', 'nombre', 'precio', 'stock', 'activo']
-        }],
-        transaction: t
-      });
+      await transaction.commit();
+      await recargarPedido(resultado.pedido, false);
+      return res.status(201).json({ success: true, message: 'Pedido creado desde cotización', data: { pedido: resultado.pedido, cotizacionId } });
     }
 
-    // Si no hay items en el pedido, no se puede crear un pedido
-    if (!itemsCarrito || itemsCarrito.length === 0) {
-      await t.rollback();
-      return res.status(400).json({
-        success: false,
-        message: 'El carrito está vacío'
-      });
+    const itemsCarrito = await obtenerItemsPedido({ body: req.body, usuarioId: req.usuario.id, transaction });
+    if (!itemsCarrito?.length) {
+      await transaction.rollback();
+      return res.status(400).json({ success: false, message: 'El carrito está vacío' });
     }
-    
-    // VALIDACIÓN 4: Recorre cada item para verificar stock y estado del producto.
-    // erroresValidacion acumula los errores encontrados para mostrarlos todos juntos.
-    const erroresValidacion = [];
-    let totalPedido = 0;        // Acumulador del total del pedido
-    
-    // Recorre cada item del carrito con un for...of (permite await dentro)
-    for (const item of itemsCarrito) {
-      const producto = item.producto;     // Producto asociado al item (por el include)
 
-      if (!producto) {
-        erroresValidacion.push(`Producto no encontrado para el item con ID ${item.productoId || 'desconocido'}`);
-        continue;
-      }
-      
-      // Verifica que el producto siga activo (pudo desactivarse después de agregarlo al carrito)
-      if (!producto.activo) {
-        erroresValidacion.push(`${producto.nombre} ya no está disponible`);
-        continue;    // Salta al siguiente item
-      }
-      
-      // Verifica que haya stock suficiente para la cantidad solicitada
-      if (item.cantidad > producto.stock) {
-        erroresValidacion.push(
-          `${producto.nombre}: stock insuficiente (disponible: ${producto.stock}, solicitado: ${item.cantidad})`
-        );
-        continue;
-      }
-      
-      // Suma al total del pedido: precioUnitario × cantidad
-      totalPedido += Number.parseFloat(item.precioUnitario) * item.cantidad;
+    const { errores, total } = validarItemsPedido(itemsCarrito);
+    if (errores.length) {
+      await transaction.rollback();
+      return res.status(400).json({ success: false, message: 'Error en validación del carrito', errores });
     }
-    
-    // Si hubo errores de validación en algún producto, revierte y muestra todos los errores
-    if (erroresValidacion.length > 0) {
-      await t.rollback();
-      return res.status(400).json({
-        success: false,
-        message: 'Error en validación del carrito',
-        errores: erroresValidacion
-      });
-    }
-    
-    // CREAR EL PEDIDO → INSERT INTO Pedido (...)
-    const pedido = await Pedido.create({
-      usuarioId: req.usuario.id,     // ID del usuario autenticado
-      total: totalPedido,            // Total calculado arriba
-      estado: 'pendiente',           // Estado inicial del pedido
-      direccionEnvio,                // Dirección enviada por el usuario
-      telefono,                      // Teléfono de contacto
-      metodoPago,                    // 'efectivo', 'tarjeta' o 'transferencia'
-      notas: notasPedido             // Notas opcionales
-    }, { transaction: t });          // Parte de la transacción
-    
-    // CREAR DETALLES DEL PEDIDO Y ACTUALIZAR STOCK
-    const detallesPedido = [];    // Array para guardar los detalles creados
-    
-    for (const item of itemsCarrito) {
-      const producto = item.producto;
-      
-      // Crea un registro en DetallePedido por cada producto del carrito
-      const detalle = await DetallePedido.create({
-        pedidoId: pedido.id,                                  // FK al pedido recién creado
-        productoId: producto.id,                              // FK al producto
-        cantidad: item.cantidad,                              // Cantidad solicitada
-        precioUnitario: item.precioUnitario,                  // Precio al momento de la compra
-        subtotal: Number.parseFloat(item.precioUnitario) * item.cantidad  // Subtotal de este item
-      }, { transaction: t });
-      
-      detallesPedido.push(detalle);   // Agrega al array de detalles
-      
-      // Reduce el stock del producto según la cantidad comprada
-      producto.stock -= item.cantidad;
-      await producto.save({ transaction: t });   // Guarda el nuevo stock
-    }
-    
-    // VACIAR EL CARRITO del usuario después de crear el pedido.
-    // destroy() con where elimina todos los registros que coincidan.
-    await Carrito.destroy({
-      where: { usuarioId: req.usuario.id },
-      transaction: t
-    });
-    
-    // CONFIRMAR TRANSACCIÓN → ejecuta todos los cambios en la BD de forma permanente.
-    // Si algo hubiera fallado antes, t.rollback() habría revertido NOTE.
-    await t.commit();
-    
-    // Recarga el pedido con sus relaciones para enviar la respuesta completa.
-    // reload() vuelve a consultar la BD con los includes especificados.
-    await pedido.reload({
-      include: [
-        {
-          model: Usuario,
-          as: 'usuario',
-          attributes: ['id', 'nombre', 'email']   // Datos del usuario
-        },
-        {
-          model: DetallePedido,
-          as: 'detalles',
-          include: [{
-            model: Producto,
-            as: 'producto',
-            attributes: ['id', 'nombre', 'precio', 'imagen']   // Datos del producto
-          }]
-        },
-        {
-          model: DetallePedidoPersonalizado,
-          as: 'detallesPersonalizados',
-          include: [{
-            model: Cotizacion,
-            as: 'cotizacion',
-            attributes: ['id', 'nombre', 'modelo', 'precio']   // Datos de la cotización
-          }]
-        }
-      ]
-    });
-    
-    // 201 = Created. Pedido creado exitosamente.
-    res.status(201).json({
-      success: true,
-      message: 'Pedido creado exitosamente',
-      data: {
-        pedido
-      }
-    });
-    
+
+    const pedido = await Pedido.create({ usuarioId: req.usuario.id, total, estado: 'pendiente', ...datosPedido }, { transaction });
+    await guardarDetallesPedido({ pedido, itemsCarrito, transaction });
+    await Carrito.destroy({ where: { usuarioId: req.usuario.id }, transaction });
+    await transaction.commit();
+    await recargarPedido(pedido);
+
+    return res.status(201).json({ success: true, message: 'Pedido creado exitosamente', data: { pedido } });
   } catch (error) {
-    // Si ocurre cualquier error inesperado, revierte TODA la transacción
-    await t.rollback();
+    await transaction.rollback();
     console.error('Error en crearPedido:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al crear pedido',
-      error: error.message
-    });
+    return res.status(500).json({ success: false, message: 'Error al crear pedido', error: error.message });
   }
 };
 
