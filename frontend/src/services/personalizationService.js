@@ -1,3 +1,4 @@
+import DOMPurify from 'dompurify';
 import { normalizePersonalizacionDesign } from '../utils/helpers';
 
 const STORAGE_KEY = 'saved_personalization_designs';
@@ -8,10 +9,44 @@ const STORAGE_KEYS = new Set([
 ]);
 const ALLOWED_UPLOAD_PATH = /^\/uploads\/[A-Za-z0-9._/-]+$/;
 const URL_FIELDS = new Set(['textureUrl', 'texture', 'imagen', 'composedTextureUrl']);
+const ALLOWED_DESIGN_FIELDS = new Set([
+  'id',
+  'savedAt',
+  'nombre',
+  'modelo',
+  'productoId',
+  'colorInterior',
+  'colorBase',
+  'colorExterior',
+  'colorAsa',
+  'textInterior',
+  'textExterior',
+  'textureUrl',
+  'texture',
+  'imagen',
+  'composedTextureUrl',
+  'overlayText',
+  'overlayTextFontFamily',
+  'overlayTextFontSize',
+  'overlayTextColor',
+  'zoom',
+  'textureOffset',
+  'textureOffsetX',
+  'textureOffsetY',
+  'textureScale',
+  'textEditorOpen',
+  'textEditorContent',
+  'textEditorFontFamily',
+  'textEditorFontSize',
+  'textEditorColor',
+]);
 
 const sanitizeForStorage = (value, fieldName = '') => {
   if (typeof value === 'string') {
-    const sanitized = value.replace(/[\u0000-\u001f\u007f]/g, '').slice(0, 5000);
+    const sanitized = DOMPurify.sanitize(value, {
+      ALLOWED_TAGS: [],
+      ALLOWED_ATTR: [],
+    }).slice(0, 5000);
     if (URL_FIELDS.has(fieldName)) {
       return ALLOWED_UPLOAD_PATH.test(sanitized) ? sanitized : null;
     }
@@ -21,8 +56,13 @@ const sanitizeForStorage = (value, fieldName = '') => {
     return value.map((entry) => sanitizeForStorage(entry, fieldName));
   }
   if (value && typeof value === 'object') {
+    const allowedFields = fieldName === 'textureOffset'
+      ? new Set(['x', 'y'])
+      : ALLOWED_DESIGN_FIELDS;
     return Object.fromEntries(
-      Object.entries(value).map(([key, entry]) => [key, sanitizeForStorage(entry, key)])
+      Object.entries(value)
+        .filter(([key]) => !fieldName || allowedFields.has(key))
+        .map(([key, entry]) => [key, sanitizeForStorage(entry, key)])
     );
   }
   return value;
@@ -32,9 +72,12 @@ const writeSanitizedStorageValue = (key, value) => {
   if (!STORAGE_KEYS.has(key)) {
     throw new Error('Clave de almacenamiento no permitida');
   }
+  const sanitizedValue = sanitizeForStorage(value);
+  const serializedValue = JSON.stringify(sanitizedValue);
+  const encodedValue = encodeURIComponent(serializedValue);
   localStorage.setItem(
     key,
-    encodeURIComponent(JSON.stringify(sanitizeForStorage(value)))
+    encodedValue
   );
 };
 

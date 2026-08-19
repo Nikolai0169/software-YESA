@@ -71,7 +71,7 @@ function AdminPedidosPage() {
     } else {
       alert('Error: pedido no encontrado o datos inválidos');
     }
-  } catch {
+  } catch (error) {
     alert(error?.message || 'Error al cargar detalle del pedido');
   }
 };

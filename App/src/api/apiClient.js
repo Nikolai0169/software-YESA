@@ -66,7 +66,7 @@ apiClient.interceptors.response.use(
         const err = new Error(message);
         // Adjunta los datos crudos del backend para que los catch puedan analizarlos (errores por campo, array de errores, etc.)
         err.responseData = backendData;
-        return Promise.reject(err);
+        throw err;
     }
 );
 
