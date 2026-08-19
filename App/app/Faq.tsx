@@ -6,6 +6,7 @@ import { useColorScheme } from '../hooks/use-color-scheme';
 import { Colors } from '../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { sendContactMessage } from '../src/services/supportService';
+import { isValidEmail } from '../src/utils/validators';
 import { useAuth } from '../src/context/authContext';
 import { useRouter } from 'expo-router';
 
@@ -75,7 +76,7 @@ export default function FAQScreen() {
       return;
     }
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    if (!isValidEmail(formData.email)) {
       Alert.alert('Error', 'Por favor ingresa un email válido');
       return;
     }
