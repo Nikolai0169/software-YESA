@@ -8,6 +8,7 @@
 
 // Importar el seeder de datos completos
 const { seedDatosCompletos } = require('./datosCompletos.seeder');
+const Subcategoria = require('../models/Subcategoria');
 
 const isTestEnv = process.env.NODE_ENV === 'test';
 const log = isTestEnv ? () => {} : console.log.bind(console);
@@ -31,6 +32,12 @@ const seedAdmin = async () => {
 const runSeeders = async () => {
   try {
     log('\n🌱 Ejecutando seeders...\n');
+
+    const existingSubcategories = await Subcategoria.count();
+    if (existingSubcategories > 0) {
+      log('ℹ️  Los datos iniciales ya existen; se omite el seeder completo.\n');
+      return;
+    }
     
     // Ejecutar seeder de datos completos
     await seedDatosCompletos();
