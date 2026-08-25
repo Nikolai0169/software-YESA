@@ -420,7 +420,7 @@ const SavedDesignsPage = () => {
                           <p className="mb-1"><strong>Texto aplicado:</strong></p>
                           <div className="d-flex flex-wrap gap-2 mb-2 align-items-center">
                             <span
-                              className="badge bg-light text-dark text-wrap text-start"
+                              className="badge bg-light text-dark text-wrap text-start saved-design-text-badge"
                               style={{
                                 maxWidth: '100%',
                                 fontFamily: design.overlayTextFontFamily || 'sans-serif',

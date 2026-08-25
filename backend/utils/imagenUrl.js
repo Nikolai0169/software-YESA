@@ -38,7 +38,16 @@ const construirBaseUrl = (req) => {
 
 const normalizarRutaImagen = (imagen, req) => {
   if (!imagen) return imagen;
-  if (imagen.startsWith('http')) return imagen;
+
+  if (imagen.startsWith('http')) {
+    try {
+      const url = new URL(imagen);
+      if (!esHostLocal(url.host)) return imagen;
+      imagen = url.pathname;
+    } catch {
+      return imagen;
+    }
+  }
 
   const limpia = imagen.replace(/^\/+/, '');
   const baseUrl = construirBaseUrl(req);

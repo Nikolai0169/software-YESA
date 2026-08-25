@@ -6,7 +6,7 @@
  */
 import React, { memo, useCallback, useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Navbar, Nav, Container, NavDropdown, Form, FormControl, Button } from 'react-bootstrap';
+import { Navbar, Nav, Container, NavDropdown, Form, FormControl, Button, Offcanvas } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
 import catalogoService from '../services/catalogoService';
 import FAQModal from './FAQModal';
@@ -23,6 +23,7 @@ const NavigationBar = memo(({ onOpenFAQ, theme = 'light', toggleTheme }) => {
   const [subcategoriaSeleccionadaId, setSubcategoriaSeleccionadaId] = useState('');
   const [cargandoSubcategorias, setCargandoSubcategorias] = useState(false);
   const [showFAQ, setShowFAQ] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   const isCatalogo = location.pathname === '/catalogo';
 
@@ -46,6 +47,10 @@ const NavigationBar = memo(({ onOpenFAQ, theme = 'light', toggleTheme }) => {
     setCategoriaSeleccionadaId(params.get('categoriaId') || '');
     setSubcategoriaSeleccionadaId(params.get('subcategoriaId') || '');
   }, [location.search]);
+
+  useEffect(() => {
+    setShowMobileMenu(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     const cargarSubcategorias = async () => {
@@ -132,8 +137,21 @@ const NavigationBar = memo(({ onOpenFAQ, theme = 'light', toggleTheme }) => {
           }}>YESA</span>
         </Navbar.Brand>
 
-        <Navbar.Toggle aria-controls="basic-navbar-nav" />
-        <Navbar.Collapse id="basic-navbar-nav">
+        <Nav className="mobile-quick-links d-lg-none" aria-label="Navegación principal">
+          <Nav.Link as={Link} to="/" className="mobile-quick-link">
+            <i className="bi bi-house me-1"></i>Inicio
+          </Nav.Link>
+          <Nav.Link as={Link} to="/catalogo" className="mobile-quick-link">
+            <i className="bi bi-grid me-1"></i>Catálogo
+          </Nav.Link>
+        </Nav>
+
+        <Navbar.Toggle
+          aria-controls="mobile-navigation"
+          className="d-lg-none"
+          onClick={() => setShowMobileMenu(true)}
+        />
+        <Navbar.Collapse id="basic-navbar-nav" className="desktop-navbar-collapse">
           <Nav className="me-auto align-items-center">
             <Nav.Link as={Link} to="/" style={{ color: '#ffffff' }}>Inicio</Nav.Link>
             {!isCatalogo && (
@@ -346,6 +364,168 @@ const NavigationBar = memo(({ onOpenFAQ, theme = 'light', toggleTheme }) => {
             )}
           </Nav>
         </Navbar.Collapse>
+
+        <Offcanvas
+          show={showMobileMenu}
+          onHide={() => setShowMobileMenu(false)}
+          placement="end"
+          className="mobile-navigation"
+          aria-labelledby="mobile-navigation-title"
+        >
+          <Offcanvas.Header closeButton>
+            <Offcanvas.Title id="mobile-navigation-title">
+              <i className="bi bi-shop me-2"></i>Menú YESA
+            </Offcanvas.Title>
+          </Offcanvas.Header>
+          <Offcanvas.Body>
+            <Nav className="mobile-navigation-list flex-column">
+              <Nav.Link as={Link} to="/" onClick={() => setShowMobileMenu(false)}>
+                <i className="bi bi-house me-2"></i>Inicio
+              </Nav.Link>
+              <Nav.Link as={Link} to="/catalogo" onClick={() => setShowMobileMenu(false)}>
+                <i className="bi bi-grid me-2"></i>Catálogo
+              </Nav.Link>
+
+              {isCatalogo && (
+                <Form className="mobile-search-form mt-2 mb-2" onSubmit={(e) => e.preventDefault()}>
+                  <Form.Label htmlFor="mobile-product-search" className="small text-muted">
+                    Buscar productos
+                  </Form.Label>
+                  <div className="position-relative">
+                    <FormControl
+                      id="mobile-product-search"
+                      type="search"
+                      placeholder="Buscar productos..."
+                      value={buscarLocal}
+                      onChange={handleBuscarChange}
+                      autoComplete="off"
+                    />
+                    <i className="bi bi-search mobile-search-icon"></i>
+                  </div>
+                </Form>
+              )}
+
+              {isCatalogo && categorias.length > 0 && (
+                <div className="mobile-filter-section">
+                  <div className="mobile-section-label">
+                    <i className="bi bi-filter me-2"></i>Filtrar catálogo
+                  </div>
+                  <Button
+                    variant="link"
+                    className="mobile-menu-action"
+                    onClick={() => handleFiltrarPorCategoria('')}
+                  >
+                    <i className="bi bi-grid-3x3-gap-fill me-2"></i>Todas las categorías
+                  </Button>
+                  {!categoriaSeleccionadaId ? categorias.map((cat) => (
+                    <Button
+                      key={cat.id}
+                      variant="link"
+                      className="mobile-menu-action ps-4"
+                      onClick={() => handleFiltrarPorCategoria(cat.id)}
+                    >
+                      <i className="bi bi-tag me-2"></i>{cat.nombre}
+                    </Button>
+                  )) : (
+                    <>
+                      <Button
+                        variant="link"
+                        className="mobile-menu-action"
+                        onClick={() => handleFiltrarPorCategoria('')}
+                      >
+                        <i className="bi bi-arrow-left me-2"></i>Volver a categorías
+                      </Button>
+                      <div className="mobile-subcategory-label">
+                        {categorias.find((cat) => String(cat.id) === String(categoriaSeleccionadaId))?.nombre || 'Subcategorías'}
+                      </div>
+                      {cargandoSubcategorias ? (
+                        <div className="small text-muted px-3 py-2">Cargando subcategorías...</div>
+                      ) : subcategorias.map((subcategoria) => (
+                        <Button
+                          key={subcategoria.id}
+                          variant="link"
+                          className="mobile-menu-action ps-4"
+                          onClick={() => handleFiltrarPorSubcategoria(subcategoria.id)}
+                        >
+                          <i className="bi bi-subtract me-2"></i>{subcategoria.nombre}
+                        </Button>
+                      ))}
+                    </>
+                  )}
+                </div>
+              )}
+
+              <div className="mobile-menu-divider"></div>
+              <div className="mobile-section-label">Más opciones</div>
+              <Nav.Link as={Link} to="/personalizacion" onClick={() => setShowMobileMenu(false)}>
+                <i className="bi bi-pencil-square me-2"></i>Personalizar
+              </Nav.Link>
+              <Nav.Link as={Link} to="/disenos-guardados" onClick={() => setShowMobileMenu(false)}>
+                <i className="bi bi-save2-fill me-2"></i>Diseños guardados
+              </Nav.Link>
+              <Nav.Link as={Link} to="/mis-cotizaciones" onClick={() => setShowMobileMenu(false)}>
+                <i className="bi bi-receipt me-2"></i>Mis cotizaciones
+              </Nav.Link>
+              {isAuthenticated && (
+                <>
+                  <Nav.Link as={Link} to="/favoritos" onClick={() => setShowMobileMenu(false)}>
+                    <i className="bi bi-heart-fill me-2"></i>Favoritos
+                  </Nav.Link>
+                  <Nav.Link as={Link} to="/mis-consultas" onClick={() => setShowMobileMenu(false)}>
+                    <i className="bi bi-chat-dots-fill me-2"></i>Mis consultas
+                  </Nav.Link>
+                </>
+              )}
+
+              {(isAdmin || isAuxiliar) && (
+                <div className="mobile-admin-section">
+                  <div className="mobile-section-label">Administración</div>
+                  <Nav.Link as={Link} to="/admin/dashboard" onClick={() => setShowMobileMenu(false)}>
+                    <i className="bi bi-speedometer2 me-2"></i>Dashboard
+                  </Nav.Link>
+                  <Nav.Link as={Link} to="/admin/categorias" onClick={() => setShowMobileMenu(false)}>Categorías</Nav.Link>
+                  <Nav.Link as={Link} to="/admin/subcategorias" onClick={() => setShowMobileMenu(false)}>Subcategorías</Nav.Link>
+                  <Nav.Link as={Link} to="/admin/productos" onClick={() => setShowMobileMenu(false)}>Productos</Nav.Link>
+                  {isAdmin && <Nav.Link as={Link} to="/admin/usuarios" onClick={() => setShowMobileMenu(false)}>Usuarios</Nav.Link>}
+                  <Nav.Link as={Link} to="/admin/pedidos" onClick={() => setShowMobileMenu(false)}>Pedidos</Nav.Link>
+                  {isAdmin && <Nav.Link as={Link} to="/admin/cotizaciones" onClick={() => setShowMobileMenu(false)}>Cotizaciones</Nav.Link>}
+                </div>
+              )}
+
+              <div className="mobile-menu-divider"></div>
+              <Nav.Link as={Link} to="/carrito" onClick={() => setShowMobileMenu(false)}>
+                <i className="bi bi-cart3 me-2"></i>Carrito
+              </Nav.Link>
+              <Button variant="link" className="mobile-menu-action" onClick={() => { setShowMobileMenu(false); setShowFAQ(true); }}>
+                <i className="bi bi-question-circle-fill me-2"></i>Preguntas frecuentes
+              </Button>
+              {isAuthenticated ? (
+                <>
+                  {(isCliente || isAdmin) && (
+                    <Nav.Link as={Link} to="/mis-pedidos" onClick={() => setShowMobileMenu(false)}>
+                      <i className="bi bi-box-seam me-2"></i>Mis pedidos
+                    </Nav.Link>
+                  )}
+                  <Nav.Link as={Link} to="/perfil" onClick={() => setShowMobileMenu(false)}>
+                    <i className="bi bi-person-circle me-2"></i>Mi perfil
+                  </Nav.Link>
+                  <Button variant="link" className="mobile-menu-action mobile-logout" onClick={handleLogout}>
+                    <i className="bi bi-box-arrow-right me-2"></i>Cerrar sesión
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Nav.Link as={Link} to="/login" onClick={() => setShowMobileMenu(false)}>
+                    <i className="bi bi-box-arrow-in-right me-2"></i>Iniciar sesión
+                  </Nav.Link>
+                  <Nav.Link as={Link} to="/register" onClick={() => setShowMobileMenu(false)}>
+                    <i className="bi bi-person-plus me-2"></i>Registro
+                  </Nav.Link>
+                </>
+              )}
+            </Nav>
+          </Offcanvas.Body>
+        </Offcanvas>
       </Container>
     </Navbar>
     </>

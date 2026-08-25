@@ -88,12 +88,18 @@ const PORT = process.env.PORT || 5000;
 // Sin este middleware, el navegador bloquea las peticiones del frontend en diferentes puertos
 app.use(cors({
   origin: function (origin, callback) {
+    const configuredOrigins = (process.env.CORS_ORIGINS || '')
+      .split(',')
+      .map((value) => value.trim())
+      .filter(Boolean);
     const allowedOrigins = [
       process.env.FRONTEND_URL || 'http://localhost:3000',
+      'http://54.205.90.36',
       'http://localhost:8081',
       'http://127.0.0.1:8081',
       'http://localhost:19006',
       'http://127.0.0.1:19006',
+      ...configuredOrigins,
     ];
 
     // Permite peticiones sin origen (cURL, Postman, servidores)
@@ -141,6 +147,7 @@ app.use(express.urlencoded({ extended: true, limit: process.env.EXPRESS_URLENCOD
 // __dirname → variable de Node.js que contiene la ruta del directorio actual (donde está server.js)
 // Ejemplo: Un archivo en uploads/producto-123.jpg es accesible en http://localhost:5000/uploads/producto-123.jpg
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 // Middleware global para esperar al inicio del servidor y la sincronización de la base de datos.
 // En pruebas con supertest, esto evita que las peticiones se procesen antes de que los modelos
@@ -328,7 +335,9 @@ const initializeApp = async () => {
       process.exit(1);
     }
 
-    await runSeeders();
+    if (process.env.NODE_ENV !== 'production') {
+      await runSeeders();
+    }
   } catch (error) {
     if (isTestEnv) {
       throw error;

@@ -22,11 +22,11 @@ const YESA_COLORS = {
   success: '#10b981',
   warning: '#f59e0b',
   danger: '#ef4444',
-  background: '#f8f2ff',
-  surface: '#ffffff',
-  text: '#1f2937',
-  textMuted: '#6b7280',
-  border: '#e5e7eb',
+  background: 'var(--dashboard-background)',
+  surface: 'var(--dashboard-surface)',
+  text: 'var(--dashboard-text)',
+  textMuted: 'var(--dashboard-text-muted)',
+  border: 'var(--dashboard-border)',
 };
 
 const AdminDashboardPage = () => {
@@ -274,7 +274,7 @@ const AdminDashboardPage = () => {
 
   return (
     <div style={styles.pageBackground}>
-      <Container className="py-4">
+      <Container className="py-4 dashboard-page">
         {/* Estilos CSS personalizados */}
         <style>{`
           .kpi-card-yesa:hover {
@@ -313,7 +313,7 @@ const AdminDashboardPage = () => {
         `}</style>
 
         {/* Encabezado principal */}
-        <Card style={styles.headerCard} className="mb-4">
+        <Card style={styles.headerCard} className="mb-4 dashboard-header-card">
           <Card.Body className="p-4">
             <Row className="align-items-center">
               <Col md={8}>

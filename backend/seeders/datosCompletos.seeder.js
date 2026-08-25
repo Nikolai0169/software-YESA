@@ -285,14 +285,18 @@ const crearSubcategorias = async (categorias) => {
     }
 
     for (const subData of subsData) {
-      const subcategoria = await Subcategoria.create({
-        nombre: subData.nombre,
-        descripcion: subData.descripcion,
-        categoriaId: categoria.id,
-        activo: true,
+      const [subcategoria, creada] = await Subcategoria.findOrCreate({
+        where: {
+          nombre: subData.nombre,
+          categoriaId: categoria.id,
+        },
+        defaults: {
+          descripcion: subData.descripcion,
+          activo: true,
+        },
       });
       subcategorias.push(subcategoria);
-      log(`   ✅ ${subcategoria.nombre}`);
+      log(`   ${creada ? '✅ Creada' : '↪️ Ya existía'} ${subcategoria.nombre}`);
     }
     log('');
   }
@@ -317,18 +321,22 @@ const crearProductos = async (categorias, subcategorias) => {
     log(`📦 ${subcategoria.nombre} (${categoria.nombre}):`);
 
     for (const prodData of productos) {
-      await Producto.create({
-        nombre: prodData.nombre,
-        descripcion: prodData.descripcion,
-        precio: prodData.precio,
-        stock: prodData.stock,
-        categoriaId: subcategoria.categoriaId,
-        subcategoriaId: subcategoria.id,
-        imagen: 'producto-default.jpg',
-        activo: true,
+      const [producto, creado] = await Producto.findOrCreate({
+        where: {
+          nombre: prodData.nombre,
+          subcategoriaId: subcategoria.id,
+        },
+        defaults: {
+          descripcion: prodData.descripcion,
+          precio: prodData.precio,
+          stock: prodData.stock,
+          categoriaId: subcategoria.categoriaId,
+          imagen: 'producto-default.jpg',
+          activo: true,
+        },
       });
-      log(`   ✅ ${prodData.nombre} - $${prodData.precio.toLocaleString()}`);
-      totalProductos += 1;
+      log(`   ${creado ? '✅ Creado' : '↪️ Ya existía'} ${producto.nombre} - $${prodData.precio.toLocaleString()}`);
+      if (creado) totalProductos += 1;
     }
     log('');
   }

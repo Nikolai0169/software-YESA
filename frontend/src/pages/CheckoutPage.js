@@ -185,7 +185,7 @@ const CheckoutPage = () => {
   const total = Number.parseFloat(carrito?.resumen?.total || 0);
 
   return (
-    <Container className="py-4">
+    <Container className="py-4 checkout-page">
       <h1 className="mb-4">
         <i className="bi bi-credit-card me-2"></i>
         Finalizar Compra

@@ -425,7 +425,7 @@ const PersonalizacionPage = () => {
   };
 
   const handleZoomIn = () => setZoomLevel((current) => Math.min(current + 0.1, 2.0));
-  const handleZoomOut = () => setZoomLevel((current) => Math.max(current - 0.1, 1.0));
+  const handleZoomOut = () => setZoomLevel((current) => Math.max(current - 0.1, 0.6));
 
   const clearZoomTimers = () => {
     if (zoomTimeoutRef.current) {

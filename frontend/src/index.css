@@ -52,6 +52,22 @@ body.theme-dark {
   color: #f8fafc;
 }
 
+:root {
+  --dashboard-background: #f8f2ff;
+  --dashboard-surface: #ffffff;
+  --dashboard-text: #1f2937;
+  --dashboard-text-muted: #6b7280;
+  --dashboard-border: #e5e7eb;
+}
+
+body.theme-dark {
+  --dashboard-background: #0b1120;
+  --dashboard-surface: #111827;
+  --dashboard-text: #f8fafc;
+  --dashboard-text-muted: #cbd5e1;
+  --dashboard-border: rgba(255, 255, 255, 0.14);
+}
+
 body.theme-dark .navbar {
   background: rgba(15, 23, 42, 0.95) !important;
 }
@@ -119,6 +135,58 @@ body.theme-dark .card.bg-danger {
   background-color: #111827 !important;
   color: #f8fafc !important;
   border-color: rgba(255,255,255,0.12) !important;
+}
+
+body.theme-dark .dashboard-page {
+  color: var(--dashboard-text);
+}
+
+body.theme-dark .dashboard-page .card:not(.dashboard-header-card) {
+  background: var(--dashboard-surface) !important;
+}
+
+body.theme-dark .dashboard-page .dashboard-header-card {
+  background: linear-gradient(135deg, #5d1468 0%, #b70078 100%) !important;
+  color: #ffffff !important;
+}
+
+body.theme-dark .dashboard-page .card {
+  border-color: var(--dashboard-border) !important;
+}
+
+body.theme-dark .dashboard-page .card[style*="background: rgb(255, 255, 255)"],
+body.theme-dark .dashboard-page .card[style*="background: #fff"] {
+  background: var(--dashboard-surface) !important;
+}
+
+body.theme-dark .dashboard-page .card-header {
+  color: var(--dashboard-text);
+}
+
+body.theme-dark .checkout-page {
+  color: #f8fafc;
+}
+
+body.theme-dark .checkout-page .card-header,
+body.theme-dark .checkout-page .list-group-item {
+  background: #111827 !important;
+  color: #f8fafc !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+
+body.theme-dark .checkout-page .list-group-item .text-muted,
+body.theme-dark .checkout-page .text-muted {
+  color: #cbd5e1 !important;
+}
+
+body.theme-dark .checkout-page hr {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  opacity: 1;
+}
+
+body.theme-dark .checkout-page option {
+  background: #111827;
+  color: #f8fafc;
 }
 
 body.theme-dark .text-dark,

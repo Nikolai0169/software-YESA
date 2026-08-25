@@ -127,6 +127,25 @@ npm start
 
 La aplicación se abrirá automáticamente en `http://localhost:3000`
 
+### 7. Publicar en Windows Server
+
+El script `publish.ps1` compila React, inicia el backend en `5000` y publica la aplicación completa por el puerto `80`:
+
+```powershell
+# Abrir PowerShell como Administrador y ejecutar desde la raíz del proyecto
+.\publish.ps1
+```
+
+URL pública: `http://54.205.90.36/`
+
+El gateway sirve `frontend/build` y reenvía `/api` y `/uploads` al backend local. Si el backend utiliza otro puerto:
+
+```powershell
+.\publish.ps1 -BackendPort 3000
+```
+
+Además, debe permitirse TCP `80` en el Firewall de Windows y en las reglas de entrada del proveedor cloud (Security Group/NACL). El puerto `5000` no necesita exponerse públicamente.
+
 ## 🎯 Uso del Sistema
 
 ### Credenciales de Administrador
