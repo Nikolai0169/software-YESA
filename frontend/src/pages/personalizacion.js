@@ -28,8 +28,21 @@ const dataUrlToBlob = (dataUrl) => {
 };
 
 const getAllowedUploadPath = (value) => {
-  if (typeof value !== 'string' || !/^\/uploads\/[A-Za-z0-9._/-]+$/.test(value)) return null;
-  return value;
+  if (typeof value !== 'string' || !value.trim()) return null;
+
+  const normalizedValue = value.trim();
+  if (/^\/uploads\/[A-Za-z0-9._/%-]+$/.test(normalizedValue)) {
+    return normalizedValue;
+  }
+
+  try {
+    const parsedUrl = new URL(normalizedValue);
+    if (!['http:', 'https:'].includes(parsedUrl.protocol)) return null;
+    if (!/^\/uploads\/[A-Za-z0-9._/%-]+$/.test(parsedUrl.pathname)) return null;
+    return parsedUrl.toString();
+  } catch {
+    return null;
+  }
 };
 
 const buildQuotePayload = (design) => {

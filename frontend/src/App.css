@@ -330,6 +330,50 @@ img {
   border-top: 1px solid rgba(255, 255, 255, 0.14);
 }
 
+.mobile-admin-toggle {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 46px;
+  padding: 0.7rem 0.75rem !important;
+  border: 0;
+  border-radius: 0.5rem;
+  color: #ffffff !important;
+  text-align: left;
+  text-decoration: none;
+}
+
+.mobile-admin-toggle:hover,
+.mobile-admin-toggle:focus {
+  background: rgba(233, 30, 99, 0.18);
+  color: #ff6b9d !important;
+}
+
+.mobile-admin-toggle > span {
+  display: inline-flex;
+  align-items: center;
+}
+
+.mobile-admin-toggle > span i {
+  width: 1.35rem;
+  color: #ff6b9d;
+  text-align: center;
+}
+
+.mobile-admin-options {
+  margin: 0.2rem 0 0.35rem 0.75rem;
+  padding-left: 0.5rem;
+  border-left: 1px solid rgba(255, 107, 157, 0.45);
+}
+
+.mobile-admin-options .nav-link {
+  min-height: 40px;
+  padding-top: 0.5rem !important;
+  padding-bottom: 0.5rem !important;
+  font-size: 0.92rem;
+}
+
 .mobile-logout {
   color: #ff8da8 !important;
 }

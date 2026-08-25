@@ -8,7 +8,7 @@ const STORAGE_KEYS = new Set([
   'current_personalization_design',
   'pending_personalization_design',
 ]);
-const ALLOWED_UPLOAD_PATH = /^\/uploads\/[A-Za-z0-9._/-]+$/;
+const ALLOWED_UPLOAD_PATH = /^\/uploads\/[A-Za-z0-9._/%-]+$/;
 const URL_FIELDS = new Set(['textureUrl', 'texture', 'imagen', 'composedTextureUrl']);
 const ALLOWED_DESIGN_FIELDS = new Set([
   'id',
@@ -42,6 +42,18 @@ const ALLOWED_DESIGN_FIELDS = new Set([
   'textEditorColor',
 ]);
 
+const isAllowedUploadUrl = (value) => {
+  if (ALLOWED_UPLOAD_PATH.test(value)) return true;
+
+  try {
+    const parsedUrl = new URL(value);
+    return ['http:', 'https:'].includes(parsedUrl.protocol)
+      && ALLOWED_UPLOAD_PATH.test(parsedUrl.pathname);
+  } catch {
+    return false;
+  }
+};
+
 const sanitizeForStorage = (value, fieldName = '') => {
   if (typeof value === 'string') {
     const sanitized = DOMPurify.sanitize(value, {
@@ -49,7 +61,7 @@ const sanitizeForStorage = (value, fieldName = '') => {
       ALLOWED_ATTR: [],
     }).slice(0, 5000);
     if (URL_FIELDS.has(fieldName)) {
-      return ALLOWED_UPLOAD_PATH.test(sanitized) ? sanitized : null;
+      return isAllowedUploadUrl(sanitized) ? sanitized : null;
     }
     return sanitized;
   }

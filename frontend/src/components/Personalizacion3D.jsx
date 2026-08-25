@@ -284,7 +284,7 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
       interiorMaterialRef.current = interiorMaterial;
 
       const exteriorMaterial = new THREE.MeshStandardMaterial({
-        color: new THREE.Color(colorExterior || "#ffffff"),
+        color: new THREE.Color("#ffffff"),
         roughness: 0.3,
         metalness: 0.1,
         side: THREE.FrontSide,
@@ -442,7 +442,7 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
       asaMaterialRef.current.needsUpdate = true;
     }
     if (exteriorMaterialRef.current) {
-      exteriorMaterialRef.current.color = new THREE.Color(colorExterior || "#ffffff");
+      exteriorMaterialRef.current.color = new THREE.Color("#ffffff");
       exteriorMaterialRef.current.needsUpdate = true;
     }
   }, [colorInterior, colorBase, colorExterior, colorAsa]);
