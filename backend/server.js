@@ -95,6 +95,7 @@ app.use(cors({
     const allowedOrigins = [
       process.env.FRONTEND_URL || 'http://localhost:3000',
       'http://54.205.90.36',
+      'http://184.72.139.211',
       'http://localhost:8081',
       'http://127.0.0.1:8081',
       'http://localhost:19006',
@@ -124,7 +125,7 @@ app.use(cors({
     return callback(new Error('CORS policy: origin not allowed'));
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
