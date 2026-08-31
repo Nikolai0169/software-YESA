@@ -149,16 +149,6 @@ const LoginPage = () => {
                   Crear cuenta nueva
                 </Link>
               </div>
-
-              <div className="mt-4">
-                <Alert variant="info" className="mb-0">
-                  <strong>Cuentas de prueba YESA:</strong>
-                  <br />
-                  <small>Admin: admin@yesa.com / admin1234</small>
-                  <br />
-                  <small>Cliente: cliente1@yesa.com / cliente1</small>
-                </Alert>
-              </div>
             </Card.Body>
           </Card>
         </Col>

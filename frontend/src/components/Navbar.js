@@ -24,6 +24,7 @@ const NavigationBar = memo(({ onOpenFAQ, theme = 'light', toggleTheme }) => {
   const [cargandoSubcategorias, setCargandoSubcategorias] = useState(false);
   const [showFAQ, setShowFAQ] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [showMobileAdminMenu, setShowMobileAdminMenu] = useState(false);
 
   const isCatalogo = location.pathname === '/catalogo';
 
@@ -479,16 +480,29 @@ const NavigationBar = memo(({ onOpenFAQ, theme = 'light', toggleTheme }) => {
 
               {(isAdmin || isAuxiliar) && (
                 <div className="mobile-admin-section">
-                  <div className="mobile-section-label">Administración</div>
-                  <Nav.Link as={Link} to="/admin/dashboard" onClick={() => setShowMobileMenu(false)}>
-                    <i className="bi bi-speedometer2 me-2"></i>Dashboard
-                  </Nav.Link>
-                  <Nav.Link as={Link} to="/admin/categorias" onClick={() => setShowMobileMenu(false)}>Categorías</Nav.Link>
-                  <Nav.Link as={Link} to="/admin/subcategorias" onClick={() => setShowMobileMenu(false)}>Subcategorías</Nav.Link>
-                  <Nav.Link as={Link} to="/admin/productos" onClick={() => setShowMobileMenu(false)}>Productos</Nav.Link>
-                  {isAdmin && <Nav.Link as={Link} to="/admin/usuarios" onClick={() => setShowMobileMenu(false)}>Usuarios</Nav.Link>}
-                  <Nav.Link as={Link} to="/admin/pedidos" onClick={() => setShowMobileMenu(false)}>Pedidos</Nav.Link>
-                  {isAdmin && <Nav.Link as={Link} to="/admin/cotizaciones" onClick={() => setShowMobileMenu(false)}>Cotizaciones</Nav.Link>}
+                  <Button
+                    variant="link"
+                    className="mobile-admin-toggle"
+                    onClick={() => setShowMobileAdminMenu((isOpen) => !isOpen)}
+                    aria-expanded={showMobileAdminMenu}
+                    aria-controls="mobile-admin-options"
+                  >
+                    <span><i className="bi bi-shield-lock me-2"></i>Administración</span>
+                    <i className={`bi ${showMobileAdminMenu ? 'bi-chevron-up' : 'bi-chevron-down'}`}></i>
+                  </Button>
+                  {showMobileAdminMenu && (
+                    <div id="mobile-admin-options" className="mobile-admin-options">
+                      <Nav.Link as={Link} to="/admin/dashboard" onClick={() => setShowMobileMenu(false)}>
+                        <i className="bi bi-speedometer2 me-2"></i>Dashboard
+                      </Nav.Link>
+                      <Nav.Link as={Link} to="/admin/categorias" onClick={() => setShowMobileMenu(false)}>Categorías</Nav.Link>
+                      <Nav.Link as={Link} to="/admin/subcategorias" onClick={() => setShowMobileMenu(false)}>Subcategorías</Nav.Link>
+                      <Nav.Link as={Link} to="/admin/productos" onClick={() => setShowMobileMenu(false)}>Productos</Nav.Link>
+                      {isAdmin && <Nav.Link as={Link} to="/admin/usuarios" onClick={() => setShowMobileMenu(false)}>Usuarios</Nav.Link>}
+                      <Nav.Link as={Link} to="/admin/pedidos" onClick={() => setShowMobileMenu(false)}>Pedidos</Nav.Link>
+                      {isAdmin && <Nav.Link as={Link} to="/admin/cotizaciones" onClick={() => setShowMobileMenu(false)}>Cotizaciones</Nav.Link>}
+                    </div>
+                  )}
                 </div>
               )}
 

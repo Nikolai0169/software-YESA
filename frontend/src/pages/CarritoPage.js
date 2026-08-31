@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import carritoService from '../services/carritoService';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useAuth } from '../context/AuthContext';
+import { getImageUrl } from '../utils/helpers';
 
 const CarritoPage = () => {
   const [carrito, setCarrito] = useState(null);
@@ -175,12 +176,17 @@ const CarritoPage = () => {
                         <td>
                           <div className="d-flex align-items-center">
                             <img
-                              src={item.producto?.imagen || item.imagen || '/producto-default.jpg'}
+                              src={getImageUrl(
+                                item.producto?.imagen
+                                || item.imagen
+                                || item.producto?.imagenes?.[0]
+                              )}
                               alt={item.producto?.nombre || item.nombre}
                               style={{ width: '60px', height: '60px', objectFit: 'cover' }}
                               className="rounded me-3"
                               onError={(e) => {
-                                e.target.src = '/producto-default.jpg';
+                                e.currentTarget.onerror = null;
+                                e.currentTarget.src = '/placeholder.png';
                               }}
                             />
                             <div>
