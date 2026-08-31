@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">21.42% </span>
+                <span class="strong">21.21% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>6/28</span>
+                <span class='fraction'>7/33</span>
             </div>
         
             
@@ -39,14 +39,14 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/5</span>
+                <span class='fraction'>0/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">22.22% </span>
+                <span class="strong">22.58% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>6/27</span>
+                <span class='fraction'>7/31</span>
             </div>
         
             
@@ -119,7 +119,13 @@
 <a name='L54'></a><a href='#L54'>54</a>
 <a name='L55'></a><a href='#L55'>55</a>
 <a name='L56'></a><a href='#L56'>56</a>
-<a name='L57'></a><a href='#L57'>57</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">3x</span>
+<a name='L57'></a><a href='#L57'>57</a>
+<a name='L58'></a><a href='#L58'>58</a>
+<a name='L59'></a><a href='#L59'>59</a>
+<a name='L60'></a><a href='#L60'>60</a>
+<a name='L61'></a><a href='#L61'>61</a>
+<a name='L62'></a><a href='#L62'>62</a>
+<a name='L63'></a><a href='#L63'>63</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -131,6 +137,12 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -175,11 +187,17 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const fs = require('fs/promises');
-const path = require('path');
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const fs = require('node:fs/promises');
+const path = require('node:path');
 const { construirBaseUrl } = require('../utils/imagenUrl');
 &nbsp;
 const extensionesImagen = new Set(['.jpg', '.jpeg', '.png', '.gif', '.webp']);
+&nbsp;
+const quitarBarrasFinales = <span class="fstat-no" title="function not covered" >(u</span>rl) =&gt; {
+  let resultado = <span class="cstat-no" title="statement not covered" >url;</span>
+<span class="cstat-no" title="statement not covered" >  while (resultado.endsWith('/')) <span class="cstat-no" title="statement not covered" >resultado = resultado.slice(0, -1);</span></span>
+<span class="cstat-no" title="statement not covered" >  return resultado;</span>
+};
 &nbsp;
 exports.uploadTexture = <span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {
 <span class="cstat-no" title="statement not covered" >  try {</span>
@@ -188,7 +206,7 @@ exports.uploadTexture = <span class="fstat-no" title="function not covered" >as<
     }
 &nbsp;
     const backendOrigin = <span class="cstat-no" title="statement not covered" >construirBaseUrl(req);</span>
-    const fileUrl = <span class="cstat-no" title="statement not covered" >`${backendOrigin.replace(/\/+$/, '')}/uploads/${req.file.filename}`;</span>
+    const fileUrl = <span class="cstat-no" title="statement not covered" >`${quitarBarrasFinales(backendOrigin)}/uploads/${req.file.filename}`;</span>
 <span class="cstat-no" title="statement not covered" >    return res.json({ success: true, url: fileUrl });</span>
   } catch (error) {
 <span class="cstat-no" title="statement not covered" >    console.error('Error al subir textura:', error);</span>
@@ -211,7 +229,7 @@ exports.listarImagenesSubidas = <span class="fstat-no" title="function not cover
 &nbsp;
 <span class="cstat-no" title="statement not covered" >          return {</span>
             name: entrada.name,
-            url: `${backendOrigin.replace(/\/+$/, '')}/uploads/${encodeURIComponent(entrada.name)}`,
+            url: `${quitarBarrasFinales(backendOrigin)}/uploads/${encodeURIComponent(entrada.name)}`,
             size: estadisticas.size,
             modifiedAt: estadisticas.mtime.toISOString(),
           };
@@ -238,7 +256,7 @@ exports.listarImagenesSubidas = <span class="fstat-no" title="function not cover
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-08-19T17:49:27.084Z
+                at 2026-08-31T20:21:32.580Z
             </div>
         <script src="../prettify.js"></script>
         <script>

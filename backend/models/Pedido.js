@@ -5,7 +5,8 @@
  * Define la estructura de la tabla 'pedidos' en MySQL usando Sequelize ORM.
  * Cada fila representa un pedido/compra realizada por un usuario.
  * Un pedido tiene múltiples detalles (tabla detalle_pedidos) → cada detalle es un producto comprado.
- * Los pedidos pasan por estados: pendiente → pagado → enviado → entregado (o cancelado).
+ * Los pedidos pasan por estados: pendiente → pagado/en_proceso → enviado → entregado (o cancelado).
+ * Se soportan ambos nombres para compatibilidad con datos históricos y con la lógica del sistema.
  * Las fechas de pago, envío y entrega se registran automáticamente vía hooks.
  * REGLA DE NEGOCIO: Los pedidos NO se pueden eliminar, solo cancelar.
  */
@@ -88,7 +89,8 @@ const Pedido = sequelize.define('Pedido', {
   estado: {
     type: DataTypes.ENUM(              // ENUM en MySQL → solo permite estos valores exactos
       'pendiente',                     // Recién creado, esperando pago
-      'en_proceso',                        // Ya pagó, se está preparando
+      'pagado',                        // Estado histórico compatible con pagos confirmados
+      'en_proceso',                    // Se está preparando el pedido
       'enviado',                       // Ya se envió al cliente
       'entregado',                     // El cliente ya lo recibió
       'cancelado'                      // Fue cancelado (se devuelve el stock)
@@ -97,7 +99,7 @@ const Pedido = sequelize.define('Pedido', {
     defaultValue: 'pendiente',         // NOTE pedido nuevo empieza como 'pendiente'
     validate: {
       isIn: {                          // Doble validación: a nivel de Sequelize
-        args: [['pendiente', 'en_proceso', 'enviado', 'entregado', 'cancelado']],
+        args: [['pendiente', 'pagado', 'en_proceso', 'enviado', 'entregado', 'cancelado']],
         msg: 'Estado inválido'
       }
     }
@@ -191,8 +193,8 @@ const Pedido = sequelize.define('Pedido', {
      * (sin eso, save() volvería a ejecutar afterUpdate y así indefinidamente).
      */
     afterUpdate: async (pedido) => {
-      // Si el estado cambió a 'pagado' y aún no tiene fecha de pago
-      if (pedido.changed('estado') && pedido.estado === 'pagado' && !pedido.fechaPago) {
+      // Si el estado cambió a 'pagado' o 'en_proceso' y aún no tiene fecha de pago
+      if (pedido.changed('estado') && ['pagado', 'en_proceso'].includes(pedido.estado) && !pedido.fechaPago) {
         pedido.fechaPago = new Date();               // Asigna la fecha/hora actual
         await pedido.save({ hooks: false });         // Guarda SIN ejecutar hooks (evita ciclo)
       }
@@ -233,7 +235,7 @@ const Pedido = sequelize.define('Pedido', {
  */
 Pedido.prototype.cambiarEstado = async function(nuevoEstado) {
   // Lista de estados válidos permitidos
-  const estadosValidos = ['pendiente', 'pagado', 'enviado', 'entregado', 'cancelado'];
+  const estadosValidos = ['pendiente', 'pagado', 'en_proceso', 'enviado', 'entregado', 'cancelado'];
   
   // Valida que el nuevo estado esté en la lista
   if (!estadosValidos.includes(nuevoEstado)) {
@@ -252,7 +254,7 @@ Pedido.prototype.cambiarEstado = async function(nuevoEstado) {
  */
 Pedido.prototype.puedeSerCancelado = function() {
   // includes() verifica si this.estado está en el array
-  return ['pendiente', 'pagado'].includes(this.estado);
+  return ['pendiente', 'pagado', 'en_proceso'].includes(this.estado);
 };
 
 /**

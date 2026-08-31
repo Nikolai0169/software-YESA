@@ -98,6 +98,7 @@ function AdminPedidosPage() {
   const obtenerBadgeEstado = (estado) => {
     const badges = {
       pendiente: 'bg-warning',
+      pagado: 'bg-info',
       en_proceso: 'bg-info',
       enviado: 'bg-primary',
       entregado: 'bg-success',

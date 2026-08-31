@@ -102,13 +102,13 @@ const AdminDashboardPage = () => {
       const usuariosArray = Array.isArray(usuariosData) ? usuariosData : [];
 
       const pedidosPendientes = pedidosArray.filter(p => p.estado === 'pendiente').length;
-      const pedidosPagados = pedidosArray.filter(p => p.estado === 'pagado').length;
+      const pedidosPagados = pedidosArray.filter(p => ['pagado', 'en_proceso'].includes(p.estado)).length;
       const pedidosEnviados = pedidosArray.filter(p => p.estado === 'enviado').length;
       const pedidosEntregados = pedidosArray.filter(p => p.estado === 'entregado').length;
       const pedidosCancelados = pedidosArray.filter(p => p.estado === 'cancelado').length;
 
       const ventasTotales = pedidosArray
-        .filter(p => p.estado === 'entregado' || p.estado === 'pagado')
+        .filter(p => ['entregado', 'pagado', 'en_proceso'].includes(p.estado))
         .reduce((acc, p) => acc + parseNumber(p.total), 0);
 
       const ultimos = [...pedidosArray]

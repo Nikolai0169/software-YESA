@@ -202,6 +202,7 @@ const crearPedido = async (req, res) => {
   const { sequelize } = require('../config/database');
   const transaction = await sequelize.transaction();
   const { direccionEnvio, telefono, metodoPago = 'efectivo', notasAdicionales, notas, cotizacionId } = req.body;
+  const estadoInicial = req.body.estado || 'pendiente';
   const datosPedido = { direccionEnvio, telefono, metodoPago, notas: notasAdicionales ?? notas ?? null };
 
   try {
@@ -234,7 +235,7 @@ const crearPedido = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Error en validación del carrito', errores });
     }
 
-    const pedido = await Pedido.create({ usuarioId: req.usuario.id, total, estado: 'pendiente', ...datosPedido }, { transaction });
+    const pedido = await Pedido.create({ usuarioId: req.usuario.id, total, estado: estadoInicial, ...datosPedido }, { transaction });
     await guardarDetallesPedido({ pedido, itemsCarrito, transaction });
     await Carrito.destroy({ where: { usuarioId: req.usuario.id }, transaction });
     await transaction.commit();

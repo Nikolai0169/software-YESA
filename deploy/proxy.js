@@ -1,6 +1,6 @@
-const fs = require('fs');
-const http = require('http');
-const path = require('path');
+const fs = require('node:fs');
+const http = require('node:http');
+const path = require('node:path');
 
 const publicDir = path.resolve(__dirname, '..', 'frontend', 'build');
 const backendHost = process.env.BACKEND_HOST || '127.0.0.1';

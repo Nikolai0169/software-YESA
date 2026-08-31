@@ -69,6 +69,7 @@ const PedidoConfirmadoPage = () => {
     const badges = {
       'pendiente': 'warning',
       'confirmado': 'info',
+      'pagado': 'info',
       'en_proceso': 'primary',
       'enviado': 'secondary',
       'entregado': 'success',
@@ -81,6 +82,7 @@ const PedidoConfirmadoPage = () => {
     const textos = {
       'pendiente': 'Pendiente',
       'confirmado': 'Confirmado',
+      'pagado': 'Pagado',
       'en_proceso': 'En Proceso',
       'enviado': 'Enviado',
       'entregado': 'Entregado',

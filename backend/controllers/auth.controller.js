@@ -16,6 +16,28 @@ const Usuario = require('../models/Usuario');
 // Se usa para crear un token JWT después de un registro o login exitoso.
 const { generateToken } = require('../config/jwt');
 
+const isValidEmail = (value) => {
+  if (typeof value !== 'string') {
+    return false;
+  }
+
+  const trimmedValue = value.trim();
+  const atIndex = trimmedValue.indexOf('@');
+
+  if (atIndex <= 0 || atIndex !== trimmedValue.lastIndexOf('@')) {
+    return false;
+  }
+
+  const localPart = trimmedValue.slice(0, atIndex);
+  const domain = trimmedValue.slice(atIndex + 1);
+
+  if (!localPart || !domain || domain.startsWith('.') || domain.endsWith('.')) {
+    return false;
+  }
+
+  return domain.includes('.') && !domain.includes(' ') && !localPart.includes(' ');
+};
+
 /**
  * Registrar nuevo usuario
  * 
@@ -30,10 +52,11 @@ const register = async (req, res) => {
     // Desestructura los datos enviados en el body de la petición HTTP.
     // req.body contiene los datos que el cliente envía en formato JSON.
     const { nombre, apellido, email, password, telefono, direccion } = req.body;
+    const normalizedEmail = typeof email === 'string' ? email.trim() : '';
     
     // VALIDACIÓN 1: Verifica que los campos obligatorios existan.
     // El operador ! convierte a booleano: si es vacío, null o undefined, retorna true.
-    if (!nombre || !apellido || !email || !password) {
+    if (!nombre || !apellido || !normalizedEmail || !password) {
       // res.status(400) = Bad Request (datos inválidos del cliente)
       // .json() envía la respuesta en formato JSON
       // return detiene la ejecución para que no siga al siguiente código
@@ -45,10 +68,7 @@ const register = async (req, res) => {
     
     // VALIDACIÓN 2: Verifica que el email tenga un formato válido usando una expresión regular.
     // La regex valida: texto@texto.texto (estructura básica de un email)
-    const emailRegex = /^a+b/.test(input); // Compliant - anchor eliminates redundant backtracking positions
-
-    // .test() prueba si la cadena coincide con la regex, retorna true/false
-    if (!emailRegex.test(email)) {
+    if (!isValidEmail(normalizedEmail)) {
       return res.status(400).json({
         success: false,
         message: 'Formato de email inválido'
@@ -84,7 +104,7 @@ const register = async (req, res) => {
     const nuevoUsuario = await Usuario.create({
       nombre,                          // Nombre del usuario
       apellido,                        // Apellido del usuario
-      email,                           // Email (único)
+      email: normalizedEmail,          // Email (único)
       password,                        // Contraseña (será hasheada por el hook)
       telefono: telefono || null,      // Teléfono opcional: si no viene, guarda null
       direccion: direccion || null,    // Dirección opcional: si no viene, guarda null
@@ -285,6 +305,7 @@ const updateMe = async (req, res) => {
     // Extrae los campos que el usuario tiene PERMITIDO cambiar.
     // No extrae 'rol' ni 'activo' por seguridad.
     const { nombre, apellido, telefono, direccion, email } = req.body;
+    const emailNormalizado = typeof email === 'string' ? email.trim() : undefined;
     
     // Busca el usuario en la BD por su ID (viene del token via middleware)
     const usuario = await Usuario.findByPk(req.usuario.id);
@@ -299,18 +320,16 @@ const updateMe = async (req, res) => {
     // VALIDACIÓN Y ACTUALIZACIÓN: solo actualiza si el campo viene definido en el body.
     // Permitir cambiar email: validar formato y unicidad.
     if (email !== undefined) {
-      const emailRegex = /^a+b/.test(input); // Compliant - anchor eliminates redundant backtracking positions
-
-      if (!emailRegex.test(email)) {
+      if (!isValidEmail(emailNormalizado)) {
         return res.status(400).json({ success: false, message: 'Email inválido' });
       }
 
-      const usuarioConEmail = await Usuario.findOne({ where: { email } });
+      const usuarioConEmail = await Usuario.findOne({ where: { email: emailNormalizado } });
       if (usuarioConEmail && usuarioConEmail.id !== usuario.id) {
         return res.status(400).json({ success: false, message: 'El email ya está registrado' });
       }
 
-      usuario.email = email;
+      usuario.email = emailNormalizado;
     }
 
     // ACTUALIZAR OTROS CAMPOS: solo actualiza si el campo viene definido en el body.
