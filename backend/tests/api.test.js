@@ -23,6 +23,7 @@ describe('🧪 TESTS DE API YESA', () => {
 
   // Limpiar usuario de prueba antes de empezar
   beforeAll(async () => {
+    await app.serverReadyPromise;
     const { Usuario } = require('../models');
     await Usuario.destroy({ where: { email: 'test@test.com' } });
   });

@@ -66,6 +66,7 @@ const verificarAuth = async (req, res, next) => {
     let decoded;
     try {
       decoded = verifyToken(token);     // decoded = { id, rol, iat, exp }
+    // Intentionally ignored: optional authentication treats invalid tokens as anonymous.
     } catch (error) {
       return res.status(401).json({
         success: false,
@@ -131,58 +132,34 @@ const verificarAuth = async (req, res, next) => {
  * Uso en rutas:
  *   router.get('/catalogo', verificarAuthOpcional, controlador);
  */
-const verificarAuthOpcional = async (req, res, next) => {
-  try {
-    // Lee el header Authorization
-    const authHeader = req.headers.authorization;
-    
-    // Sin token → continúa sin usuario autenticado (NO rechaza la petición)
-    if (!authHeader) {
-      req.usuario = null;              // El controlador verá que no hay usuario logueado
-      return next();                   // Continúa al siguiente middleware/controlador
-    }
-    
-    // Extrae el token del header
-    const token = extractToken(authHeader);
-    
-    // Token mal formado → continúa sin usuario (NO rechaza)
-    if (!token) {
-      req.usuario = null;
-      return next();
-    }
-    
-    try {
-      // Intenta decodificar el token
-      const decoded = verifyToken(token);
-      
-      // Busca al usuario en la BD (sin password)
-      const usuario = await Usuario.findByPk(decoded.id, {
-        attributes: { exclude: ['password'] }
-      });
-      
-      // Solo adjunta el usuario si existe Y está activo
-      if (usuario && usuario.activo) {
-        req.usuario = usuario;         // Usuario autenticado disponible
-      } else {
-        req.usuario = null;            // Usuario no existe o está inactivo
-      }
-    } catch (error) {
-      // Token inválido o expirado → NO rechaza, simplemente continúa sin usuario
-      req.usuario = null;
-    }
-    
-    // Siempre continúa al siguiente middleware/controlador, haya o no usuario
-    next();
-    
-  } catch (error) {
-    // Incluso ante errores inesperados, este middleware NO bloquea la petición
-    console.error('Error en middleware de autenticación opcional:', error);
-    req.usuario = null;
-    next();                            // Continúa de todas formas
-  }
+const obtenerUsuarioAutenticado = async (token) => {
+  const decoded = verifyToken(token);
+  return Usuario.findByPk(decoded.id, {
+    attributes: { exclude: ['password'] }
+  });
 };
 
-// Exporta ambos middlewares para usarlos en las rutas (routes/*.routes.js)
+const verificarAuthOpcional = (req, res, next) => {
+  // Lee el header Authorization
+  const authHeader = req.headers?.authorization;
+
+  // Sin token o token mal formado: continúa sin usuario autenticado.
+  const token = authHeader?.startsWith('Bearer ') ? extractToken(authHeader) : null;
+  if (!token) {
+    req.usuario = null;
+    return next();
+  }
+
+  obtenerUsuarioAutenticado(token)
+    .then((usuario) => {
+      req.usuario = usuario?.activo ? usuario : null;
+      next();
+    })
+    .catch(() => {
+      req.usuario = null;
+      next();
+    });
+};
 // verificarAuth → para rutas que REQUIEREN estar logueado
 // verificarAuthOpcional → para rutas que FUNCIONAN con o sin login
 module.exports = {

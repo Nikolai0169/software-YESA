@@ -11,6 +11,23 @@
 // Importa el modelo Usuario desde models/Usuario.js → tabla 'Usuario'
 const Usuario = require('../models/Usuario');
 
+const validarEmailActualizacion = (email) => {
+  const atIndex = typeof email === 'string' ? email.indexOf('@') : -1;
+  const dotIndex = typeof email === 'string' ? email.indexOf('.', atIndex + 1) : -1;
+  return typeof email === 'string'
+    && atIndex > 0
+    && atIndex === email.lastIndexOf('@')
+    && dotIndex > atIndex + 1
+    && dotIndex < email.length - 1
+    && !/\s/.test(email);
+};
+
+const actualizarCamposUsuario = (usuario, campos) => {
+  Object.entries(campos).forEach(([campo, valor]) => {
+    if (valor !== undefined) usuario[campo] = valor;
+  });
+};
+
 /**
  * Obtener todos los usuarios (admin)
  * 
@@ -232,9 +249,7 @@ const actualizarUsuario = async (req, res) => {
 
     // VALIDACIÓN: Si se envía email, verificar formato simple y unicidad
     if (email) {
-      // Verificación básica de formato de email
-      const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
-      if (!emailRegex.test(email)) {
+      if (!validarEmailActualizacion(email)) {
         return res.status(400).json({ success: false, message: 'Email inválido' });
       }
 
@@ -245,12 +260,7 @@ const actualizarUsuario = async (req, res) => {
     }
     
     // Actualiza SOLO los campos que se enviaron
-    if (nombre !== undefined) usuario.nombre = nombre;
-    if (apellido !== undefined) usuario.apellido = apellido;
-    if (email !== undefined) usuario.email = email;
-    if (telefono !== undefined) usuario.telefono = telefono;
-    if (direccion !== undefined) usuario.direccion = direccion;
-    if (rol !== undefined) usuario.rol = rol;
+    actualizarCamposUsuario(usuario, { nombre, apellido, email, telefono, direccion, rol });
     
     // save() ejecuta UPDATE en la BD
     await usuario.save();

@@ -34,13 +34,14 @@ const sequelize = new Sequelize(
   {
     // host: dirección del servidor MySQL, leído de .env (variable DB_HOST)
     // Normalmente es 'localhost' en desarrollo con XAMPP
-    host: process.env.DB_HOST,
+    host: isTestEnv ? undefined : process.env.DB_HOST,
     // port: puerto de MySQL, leído de .env (variable DB_PORT)
     // El puerto estándar de MySQL es 3306
-    port: process.env.DB_PORT,
+    port: isTestEnv ? undefined : process.env.DB_PORT,
     // dialect: indica a Sequelize qué tipo de base de datos usamos
     // Opciones posibles: 'mysql', 'postgres', 'sqlite', 'mariadb', 'mssql'
-    dialect: 'mysql',
+    dialect: isTestEnv ? 'sqlite' : 'mysql',
+    storage: isTestEnv ? ':memory:' : undefined,
     
     // pool: configuración del pool (grupo) de conexiones.
     // El pool mantiene varias conexiones abiertas y las reutiliza,
@@ -65,7 +66,7 @@ const sequelize = new Sequelize(
     
     // timezone: zona horaria para las fechas almacenadas en la BD.
     // '-05:00' corresponde a la zona horaria de Colombia (UTC-5)
-    timezone: '-05:00',
+    ...(isTestEnv ? {} : { timezone: '-05:00' }),
     
     // define: opciones que se aplican a TODOS los modelos por defecto
     define: {

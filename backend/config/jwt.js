@@ -108,10 +108,10 @@ const verifyToken = (token) => {
 const extractToken = (authHeader) => {
   // Verifica que: 1) el header existe (no es undefined/null)
   // y 2) comienza con la palabra "Bearer " (estándar de autenticación)
-  if (authHeader && authHeader.startsWith('Bearer ')) {
+  if (authHeader?.startsWith('Bearer ')) {
     // substring(7) extrae NOTE después de "Bearer " (7 caracteres)
     // Ejemplo: "Bearer abc123" -> "abc123"
-    return authHeader.substring(7);
+    return authHeader?.substring(7);
   }
   
   // Si no hay header o no tiene el formato correcto, retorna null

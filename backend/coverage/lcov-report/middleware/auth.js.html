@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">65.9% </span>
+                <span class="strong">66.66% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>29/44</span>
+                <span class='fraction'>30/45</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">62.5% </span>
+                <span class="strong">57.14% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>10/16</span>
+                <span class='fraction'>8/14</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">75% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>2/2</span>
+                <span class='fraction'>3/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">65.9% </span>
+                <span class="strong">68.18% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>29/44</span>
+                <span class='fraction'>30/44</span>
             </div>
         
             
@@ -249,12 +249,7 @@
 <a name='L184'></a><a href='#L184'>184</a>
 <a name='L185'></a><a href='#L185'>185</a>
 <a name='L186'></a><a href='#L186'>186</a>
-<a name='L187'></a><a href='#L187'>187</a>
-<a name='L188'></a><a href='#L188'>188</a>
-<a name='L189'></a><a href='#L189'>189</a>
-<a name='L190'></a><a href='#L190'>190</a>
-<a name='L191'></a><a href='#L191'>191</a>
-<a name='L192'></a><a href='#L192'>192</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L187'></a><a href='#L187'>187</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -323,6 +318,7 @@
 <span class="cline-any cline-yes">44x</span>
 <span class="cline-any cline-yes">44x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -389,6 +385,13 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -407,14 +410,8 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
@@ -424,19 +421,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -513,6 +503,7 @@ const verificarAuth = async (req, res, next) =&gt; {
     let decoded;
     try {
       decoded = verifyToken(token);     // decoded = { id, rol, iat, exp }
+    // Intentionally ignored: optional authentication treats invalid tokens as anonymous.
     } catch (error) {
 <span class="cstat-no" title="statement not covered" >      return res.status(401).json({</span>
         success: false,
@@ -578,10 +569,17 @@ const verificarAuth = async (req, res, next) =&gt; {
  * Uso en rutas:
  *   router.get('/catalogo', verificarAuthOpcional, controlador);
  */
+const obtenerUsuarioAutenticado = async (token) =&gt; {
+  const decoded = verifyToken(token);
+  return Usuario.findByPk(decoded.id, {
+    attributes: { exclude: ['password'] }
+  });
+};
+&nbsp;
 const verificarAuthOpcional = async (req, res, next) =&gt; {
   try {
     // Lee el header Authorization
-    const authHeader = req.headers.authorization;
+    const authHeader = req.headers?.authorization;
     
     // Sin token → continúa sin usuario autenticado (NO rechaza la petición)
     <span class="missing-if-branch" title="if path not taken" >I</span>if (!authHeader) {
@@ -598,38 +596,25 @@ const verificarAuthOpcional = async (req, res, next) =&gt; {
 <span class="cstat-no" title="statement not covered" >      return next();</span>
     }
     
-    try {
-      // Intenta decodificar el token
-      const decoded = verifyToken(token);
-      
-      // Busca al usuario en la BD (sin password)
-      const usuario = await Usuario.findByPk(decoded.id, {
-        attributes: { exclude: ['password'] }
-      });
-      
-      // Solo adjunta el usuario si existe Y está activo
-      if (usuario &amp;&amp; usuario.activo) {
-        req.usuario = usuario;         // Usuario autenticado disponible
-      } else <span class="missing-if-branch" title="else path not taken" >E</span>{
-<span class="cstat-no" title="statement not covered" >        req.usuario = null; </span>           // Usuario no existe o está inactivo
-      }
-    } catch (error) {
-      // Token inválido o expirado → NO rechaza, simplemente continúa sin usuario
-<span class="cstat-no" title="statement not covered" >      req.usuario = null;</span>
+    // Los tokens inválidos son anónimos en este middleware opcional.
+    const usuario = await obtenerUsuarioAutenticado(token).catch(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >null)</span>;
+&nbsp;
+    // Solo adjunta el usuario si existe Y está activo
+    if (usuario?.activo) {
+      req.usuario = usuario;         // Usuario autenticado disponible
+    } else <span class="missing-if-branch" title="else path not taken" >E</span>{
+<span class="cstat-no" title="statement not covered" >      req.usuario = null; </span>           // Usuario no existe o está inactivo
     }
-    
+&nbsp;
     // Siempre continúa al siguiente middleware/controlador, haya o no usuario
     next();
-    
   } catch (error) {
     // Incluso ante errores inesperados, este middleware NO bloquea la petición
 <span class="cstat-no" title="statement not covered" >    console.error('Error en middleware de autenticación opcional:', error);</span>
 <span class="cstat-no" title="statement not covered" >    req.usuario = null;</span>
-<span class="cstat-no" title="statement not covered" >    next(); </span>                           // Continúa de todas formas
+<span class="cstat-no" title="statement not covered" >    next();</span>
   }
 };
-&nbsp;
-// Exporta ambos middlewares para usarlos en las rutas (routes/*.routes.js)
 // verificarAuth → para rutas que REQUIEREN estar logueado
 // verificarAuthOpcional → para rutas que FUNCIONAN con o sin login
 module.exports = {
@@ -643,7 +628,7 @@ module.exports = {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-08-31T20:21:32.580Z
+                at 2026-09-07T20:31:20.055Z
             </div>
         <script src="../prettify.js"></script>
         <script>

@@ -15,7 +15,7 @@ const construirURLProducto = (producto, req) => {
 
   const normalizar = (imagen) => normalizarRutaImagen(imagen, req);
 
-  if (producto.imagenes && typeof producto.imagenes === 'string') {
+  if (typeof producto.imagenes === 'string') {
     try {
       producto.imagenes = JSON.parse(producto.imagenes);
     } catch (e) {
@@ -23,7 +23,7 @@ const construirURLProducto = (producto, req) => {
     }
   }
 
-  if (producto.imagenes && Array.isArray(producto.imagenes)) {
+  if (Array.isArray(producto.imagenes)) {
     producto.imagenes = producto.imagenes.map((imagen) => {
       if (!imagen) return imagen;
       return normalizar(imagen);

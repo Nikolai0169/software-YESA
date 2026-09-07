@@ -8,6 +8,9 @@
 module.exports = {
   // Ambiente de testing
   testEnvironment: 'node',
+
+  // Asegura que todos los archivos de prueba usen la base SQLite en memoria
+  setupFiles: ['<rootDir>/tests/setup.js'],
   
   // Timeout para cada test (30 segundos)
   testTimeout: 30000,

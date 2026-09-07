@@ -93,15 +93,9 @@ app.use(cors({
       .map((value) => value.trim())
       .filter(Boolean);
     const allowedOrigins = [
-      process.env.FRONTEND_URL || 'http://localhost:3000',
-      'http://54.205.90.36',
-      'http://184.72.139.211',
-      'http://localhost:8081',
-      'http://127.0.0.1:8081',
-      'http://localhost:19006',
-      'http://127.0.0.1:19006',
+      process.env.FRONTEND_URL,
       ...configuredOrigins,
-    ];
+    ].filter(Boolean);
 
     // Permite peticiones sin origen (cURL, Postman, servidores)
     if (!origin) return callback(null, true);

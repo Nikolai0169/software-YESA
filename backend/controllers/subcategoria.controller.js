@@ -18,6 +18,35 @@ const Categoria = require('../models/Categoria');
 // Se usa para contar productos, calcular estadísticas y validar antes de eliminar.
 const Producto = require('../models/Producto');
 
+const validarCambioCategoria = async (categoriaId, categoriaActual) => {
+  if (!categoriaId || categoriaId === categoriaActual) return null;
+
+  const nuevaCategoria = await Categoria.findByPk(categoriaId);
+  if (!nuevaCategoria) {
+    return {
+      status: 404,
+      message: `No existe una categoría con ID ${categoriaId}`
+    };
+  }
+
+  if (!nuevaCategoria.activo) {
+    return {
+      status: 400,
+      message: `La categoría "${nuevaCategoria.nombre}" está inactiva`
+    };
+  }
+
+  return null;
+};
+
+const buscarSubcategoriaDuplicada = async (nombre, categoriaId) => {
+  if (!nombre) return null;
+
+  return Subcategoria.findOne({
+    where: { nombre, categoriaId }
+  });
+};
+
 /**
  * Obtener todas las subcategorías (admin)
  * 
@@ -254,36 +283,19 @@ const actualizarSubcategoria = async (req, res) => {
       });
     }
     
-    // VALIDACIÓN: Si se cambia la categoría padre, verifica que la nueva exista y esté activa
-    if (categoriaId && categoriaId !== subcategoria.categoriaId) {
-      const nuevaCategoria = await Categoria.findByPk(categoriaId);
-      
-      if (!nuevaCategoria) {
-        return res.status(404).json({
-          success: false,
-          message: `No existe una categoría con ID ${categoriaId}`
-        });
-      }
-      
-      if (!nuevaCategoria.activo) {
-        return res.status(400).json({
-          success: false,
-          message: `La categoría "${nuevaCategoria.nombre}" está inactiva`
-        });
-      }
+    const categoriaError = await validarCambioCategoria(categoriaId, subcategoria.categoriaId);
+    if (categoriaError) {
+      return res.status(categoriaError.status).json({
+        success: false,
+        message: categoriaError.message
+      });
     }
     
     // VALIDACIÓN: Si se cambia el nombre, verifica que no exista otra con ese nombre en la categoría.
     // Usa la nueva categoría si se envió, o la actual.
     if (nombre && nombre !== subcategoria.nombre) {
       const categoriaFinal = categoriaId || subcategoria.categoriaId;
-      
-      const subcategoriaConMismoNombre = await Subcategoria.findOne({
-        where: { 
-          nombre,
-          categoriaId: categoriaFinal
-        }
-      });
+      const subcategoriaConMismoNombre = await buscarSubcategoriaDuplicada(nombre, categoriaFinal);
       
       if (subcategoriaConMismoNombre) {
         return res.status(400).json({

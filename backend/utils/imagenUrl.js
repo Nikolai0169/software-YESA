@@ -1,20 +1,37 @@
+const quitarBarrasFinales = (value) => {
+  let end = value.length;
+  while (end > 0 && value[end - 1] === '/') end -= 1;
+  return value.slice(0, end);
+};
+
+const quitarBarrasIniciales = (value) => {
+  let start = 0;
+  while (start < value.length && value[start] === '/') start += 1;
+  return value.slice(start);
+};
+
 const esHostLocal = (value) => {
   if (!value) return true;
 
-  const host = String(value)
-    .replace(/^https?:\/\//, '')
-    .replace(/\/+$/, '')
+  const stringValue = String(value);
+  let host = stringValue;
+  if (stringValue.startsWith('https://')) {
+    host = stringValue.slice(8);
+  } else if (stringValue.startsWith('http://')) {
+    host = stringValue.slice(7);
+  }
+  const normalizedHost = quitarBarrasFinales(host)
     .split('/')[0]
     .split(':')[0];
 
-  return ['localhost', '127.0.0.1', '0.0.0.0', '::1'].includes(host);
+  return ['localhost', '127.0.0.1', '0.0.0.0', '::1'].includes(normalizedHost);
 };
 
 const construirBaseUrl = (req) => {
   if (!req) {
     const configuredBaseUrl = process.env.BACKEND_URL;
     if (configuredBaseUrl && !esHostLocal(configuredBaseUrl)) {
-      return configuredBaseUrl.replace(/\/+$/, '');
+      return quitarBarrasFinales(configuredBaseUrl);
     }
 
     return 'http://localhost:5000';
@@ -22,7 +39,7 @@ const construirBaseUrl = (req) => {
 
   const configuredBaseUrl = process.env.BACKEND_URL;
   if (configuredBaseUrl && !esHostLocal(configuredBaseUrl)) {
-    return configuredBaseUrl.replace(/\/+$/, '');
+    return quitarBarrasFinales(configuredBaseUrl);
   }
 
   const protocol = req.protocol || req.headers?.['x-forwarded-proto'] || 'http';
@@ -30,7 +47,7 @@ const construirBaseUrl = (req) => {
   const host = Array.isArray(forwardedHost) ? forwardedHost[0] : forwardedHost;
 
   if (host) {
-    return `${protocol}://${host}`.replace(/\/+$/, '');
+    return quitarBarrasFinales(`${protocol}://${host}`);
   }
 
   return 'http://localhost:5000';
@@ -49,7 +66,7 @@ const normalizarRutaImagen = (imagen, req) => {
     }
   }
 
-  const limpia = imagen.replace(/^\/+/, '');
+  const limpia = quitarBarrasIniciales(imagen);
   const baseUrl = construirBaseUrl(req);
 
   if (limpia.startsWith('uploads/')) return `${baseUrl}/${limpia}`;
