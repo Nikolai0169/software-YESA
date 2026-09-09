@@ -215,7 +215,7 @@ const AdminSubcategoriasPage = () => {
   }
 
   return (
-    <Container className="py-4">
+    <Container className="py-4 admin-management-page">
       <style>
         {`
           .tabla-subcategorias-scroll {

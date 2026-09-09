@@ -45,6 +45,27 @@ const getAllowedUploadPath = (value) => {
   }
 };
 
+const getSharedDesignFromUrl = (search) => {
+  try {
+    const encodedDesign = new URLSearchParams(search).get('diseno');
+    if (!encodedDesign) return null;
+
+    const parsedDesign = JSON.parse(encodedDesign);
+    if (!parsedDesign || typeof parsedDesign !== 'object') return null;
+
+    const texture = parsedDesign.textureUrl || parsedDesign.texture || null;
+    const normalizedTexture = texture ? getAllowedUploadPath(texture) : null;
+    return normalizePersonalizacionDesign({
+      ...parsedDesign,
+      textureUrl: normalizedTexture,
+      texture: normalizedTexture,
+    });
+  } catch (error) {
+    console.error('Error leyendo diseño compartido:', error);
+    return null;
+  }
+};
+
 const buildQuotePayload = (design) => {
   const payload = { ...design };
 
@@ -109,6 +130,7 @@ const PersonalizacionPage = () => {
   const fileInputRef = useRef(null);
   const canvasRef = useRef(null);
   const blobUrlRef = useRef(null);
+  const initialModelRenderRef = useRef(true);
   const CANVAS_SIZE = 2048;
 
   const handleFileSelect = () => {
@@ -241,8 +263,9 @@ const PersonalizacionPage = () => {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
+    const sharedDesign = getSharedDesignFromUrl(location.search);
     const pendingDesign = getPendingDesignToEdit();
-    const designToEdit = pendingDesign || getDesignToEdit();
+    const designToEdit = sharedDesign || pendingDesign || getDesignToEdit();
     if (designToEdit) {
       const normalizedDesign = normalizePersonalizacionDesign(designToEdit);
       setNombreCotizacion(designToEdit.nombre || '');
@@ -298,7 +321,9 @@ const PersonalizacionPage = () => {
       setTextEditorFontFamily(normalizedDesign.textEditorFontFamily || 'sans-serif');
       setTextEditorFontSize(normalizedDesign.textEditorFontSize || 24);
       setTextEditorColor(normalizedDesign.textEditorColor || '#000000');
-      if (pendingDesign) {
+      if (sharedDesign) {
+        window.history.replaceState({}, document.title, location.pathname);
+      } else if (pendingDesign) {
         clearPendingDesignToEdit();
       } else {
         clearDesignToEdit();
@@ -420,6 +445,11 @@ const PersonalizacionPage = () => {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
+    if (initialModelRenderRef.current) {
+      initialModelRenderRef.current = false;
+      return;
+    }
+
     setTextureOffset({ x: 0, y: 0 });
     setTextureScale(1);
     setTextOffset({ x: 0, y: 0 });
@@ -673,19 +703,43 @@ const PersonalizacionPage = () => {
     }
   };
 
-  const handleCompartir = () => {
-    const url = window.location.href;
+  const handleCompartir = async () => {
+    try {
+      const design = buildCurrentDesignState();
+      const texture = design.textureUrl || design.texture || null;
+
+      if (texture && ((typeof texture === 'string' && texture.startsWith('data:')) || texture instanceof File)) {
+        const formData = new FormData();
+        if (texture instanceof File) {
+          formData.append('texture', texture, texture.name || 'texture.png');
+        } else {
+          formData.append('texture', dataUrlToBlob(texture), 'texture.png');
+        }
+        const uploadResp = await uploadFile('/uploads/texture', formData);
+        const uploadedTexture = getAllowedUploadPath(uploadResp.data?.url);
+        if (!uploadedTexture) throw new Error('No se pudo obtener la URL de la imagen');
+        design.textureUrl = uploadedTexture;
+        design.texture = uploadedTexture;
+      }
+
+      const url = `${window.location.origin}${window.location.pathname}?diseno=${encodeURIComponent(JSON.stringify(design))}`;
     const textoCompartir = `Mira mi diseño personalizado: ${url}`;
 
-    if (navigator.share) {
-      navigator.share({
-        title: "Mi Diseño Personalizado",
-        text: textoCompartir,
-        url,
-      });
-    } else {
-      navigator.clipboard.writeText(textoCompartir);
-      alert("Link copiado al portapapeles");
+      if (navigator.share) {
+        await navigator.share({
+          title: "Mi Diseño Personalizado",
+          text: textoCompartir,
+          url,
+        });
+      } else {
+        await navigator.clipboard.writeText(textoCompartir);
+        alert("Link copiado al portapapeles");
+      }
+    } catch (error) {
+      if (error.name !== 'AbortError') {
+        console.error('Error compartiendo diseño:', error);
+        alert('No se pudo compartir el diseño');
+      }
     }
   };
 
@@ -779,8 +833,8 @@ const PersonalizacionPage = () => {
                             style={{ width: '100px' }}
                           >
                             <option value="" disabled>Seleccionar</option>
-                            <option value="imagen">imagen</option>
-                            <option value="texto">texto</option>
+                            <option value="imagen">Imagen</option>
+                            <option value="texto">Texto</option>
                           </select>
                         </div>
                         <div className="image-position-grid">

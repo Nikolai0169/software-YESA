@@ -83,25 +83,60 @@ body.theme-dark .stat-card,
 body.theme-dark .feature-card,
 body.theme-dark .alert,
 body.theme-dark .table,
+body.theme-dark .table thead,
+body.theme-dark .table tbody,
+body.theme-dark .table tr,
+body.theme-dark .table th,
+body.theme-dark .table td,
 body.theme-dark .form-control,
 body.theme-dark .form-select {
-  background: rgba(255, 255, 255, 0.08) !important;
+  background: #111827 !important;
   color: #f8fafc !important;
   border-color: rgba(255, 255, 255, 0.12) !important;
 }
 
-body.theme-dark .table thead {
-  background: rgba(255, 255, 255, 0.08) !important;
+body.theme-dark .table thead th {
+  background: #1f2937 !important;
+  color: #f8fafc !important;
+}
+
+body.theme-dark .table tbody tr:hover,
+body.theme-dark .table tbody tr:hover td {
+  background: #1f2937 !important;
+  color: #ffffff !important;
 }
 
 body.theme-dark .dropdown-menu {
   background: #111827 !important;
-  color: #e5e7eb !important;
+  color: #f8fafc !important;
   border-color: rgba(255,255,255,0.12) !important;
 }
 
-body.theme-dark .dropdown-item:hover {
+body.theme-dark .dropdown-item {
+  background: transparent !important;
+  color: #f8fafc !important;
+}
+
+body.theme-dark .dropdown-item:hover,
+body.theme-dark .dropdown-item:focus,
+body.theme-dark .dropdown-item.active,
+body.theme-dark .dropdown-item:active {
   background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+}
+
+body.theme-dark select,
+body.theme-dark .form-select {
+  background-color: #111827 !important;
+  color: #f8fafc !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color-scheme: dark;
+}
+
+body.theme-dark select option,
+body.theme-dark .form-select option {
+  background-color: #111827 !important;
+  color: #f8fafc !important;
 }
 
 body.theme-dark .card.btn-yesa-primary,
@@ -135,6 +170,61 @@ body.theme-dark .card.bg-danger {
   background-color: #111827 !important;
   color: #f8fafc !important;
   border-color: rgba(255,255,255,0.12) !important;
+}
+
+body.theme-dark .card.bg-primary {
+  background: #1d4ed8 !important;
+  color: #ffffff !important;
+}
+
+body.theme-dark .card.bg-success {
+  background: #047857 !important;
+  color: #ffffff !important;
+}
+
+body.theme-dark .card.bg-warning {
+  background: #d97706 !important;
+  color: #ffffff !important;
+}
+
+body.theme-dark .card.bg-info {
+  background: #0891b2 !important;
+  color: #ffffff !important;
+}
+
+body.theme-dark .card.bg-danger {
+  background: #b91c1c !important;
+  color: #ffffff !important;
+}
+
+body.theme-dark .card.bg-secondary {
+  background: #374151 !important;
+  color: #f8fafc !important;
+}
+
+body.theme-dark .order-status-counter.bg-primary {
+  background: #1d4ed8 !important;
+  color: #ffffff !important;
+}
+
+body.theme-dark .order-status-counter.bg-warning {
+  background: #d97706 !important;
+  color: #ffffff !important;
+}
+
+body.theme-dark .order-status-counter.bg-info {
+  background: #0891b2 !important;
+  color: #ffffff !important;
+}
+
+body.theme-dark .order-status-counter.bg-success {
+  background: #047857 !important;
+  color: #ffffff !important;
+}
+
+body.theme-dark .order-status-counter.bg-danger {
+  background: #b91c1c !important;
+  color: #ffffff !important;
 }
 
 body.theme-dark .dashboard-page {
@@ -177,6 +267,67 @@ body.theme-dark .checkout-page .list-group-item {
 body.theme-dark .checkout-page .list-group-item .text-muted,
 body.theme-dark .checkout-page .text-muted {
   color: #cbd5e1 !important;
+}
+
+body.theme-dark .order-summary-card,
+body.theme-dark .order-summary-card .card-header,
+body.theme-dark .order-summary-card .card-body,
+body.theme-dark .order-summary-card .list-group-item {
+  background: #111827 !important;
+  color: #f8fafc !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+body.theme-dark .order-summary-card hr {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  opacity: 1;
+}
+
+.admin-management-page {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.admin-management-page .table-responsive,
+.admin-management-page [class*="tabla-"] {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+@media (max-width: 767.98px) {
+  .admin-management-page {
+    width: 100%;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    overflow-x: hidden;
+  }
+
+  .admin-management-page > .d-flex {
+    align-items: flex-start !important;
+    flex-wrap: wrap !important;
+  }
+
+  .admin-management-page > .d-flex > div,
+  .admin-management-page > .d-flex > .btn-group {
+    max-width: 100%;
+  }
+
+  .admin-management-page > .d-flex > div:last-child,
+  .admin-management-page > .d-flex > .btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .admin-management-page .btn-group {
+    max-width: 100%;
+  }
+
+  .admin-management-page .btn,
+  .admin-management-page .form-control,
+  .admin-management-page .form-select {
+    max-width: 100%;
+  }
 }
 
 body.theme-dark .checkout-page hr {
@@ -237,6 +388,44 @@ body.theme-dark .accordion-item {
 
 body.theme-dark .accordion-button:not(.collapsed) {
   background: rgba(255,255,255,0.08) !important;
+}
+
+.faq-modal-body {
+  background: #ffffff;
+  color: #000000;
+}
+
+.faq-accordion-item {
+  background: #ffffff;
+  color: #000000;
+  border: 1px solid #e9ecef;
+  border-radius: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.faq-accordion-header .accordion-button,
+.faq-accordion-body {
+  background: #ffffff;
+  color: #000000;
+}
+
+body.theme-dark .faq-modal .modal-body,
+body.theme-dark .faq-modal-body,
+body.theme-dark .faq-accordion-item,
+body.theme-dark .faq-accordion-header .accordion-button,
+body.theme-dark .faq-accordion-body {
+  background: #0f172a !important;
+  color: #e2e8f0 !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+body.theme-dark .faq-accordion-header .accordion-button:not(.collapsed) {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+}
+
+body.theme-dark .faq-accordion-header .accordion-button::after {
+  filter: invert(1) grayscale(1) brightness(2);
 }
 
 body.theme-dark .modal-header {

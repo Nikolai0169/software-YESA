@@ -313,6 +313,7 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
       const cupGroup = new THREE.Group();
 
       const cupGeometry = new THREE.CylinderGeometry(1, 1, 2, 32, 1, true);
+      cupGeometry.rotateY(Math.PI / 2);
       const cupInterior = new THREE.Mesh(cupGeometry, interiorMaterial);
       cupInterior.position.y = 0;
       cupGroup.add(cupInterior);

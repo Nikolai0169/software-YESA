@@ -535,14 +535,14 @@ body {
 }
 
 .btn-yesa-secondary {
-  background: linear-gradient(135deg, var(--yesa-text) 0%, var(--yesa-gray) 120%);
+  background: linear-gradient(135deg, var(--yesa-purple) 0%, var(--yesa-magenta) 120%);
   color: white;
   border: 2px solid transparent;
 }
 
 .btn-yesa-secondary:hover,
 .btn-yesa-secondary:focus {
-  background: linear-gradient(135deg, var(--yesa-gray) 0%, var(--yesa-text) 30%);
+  background: linear-gradient(135deg, var(--yesa-magenta) 0%, var(--yesa-purple) 100%);
   transform: translateY(-2px);
 }
 
@@ -565,14 +565,14 @@ body {
 }
 
 .baner-yesa-secondary {
-  background: linear-gradient(135deg, var(--yesa-text) 0%, var(--yesa-gray) 120%);
+  background: linear-gradient(135deg, var(--yesa-purple) 0%, var(--yesa-magenta) 120%);
   color: white;
   border: 2px solid transparent;
 }
 
 .baner-yesa-secondary:hover,
 .baner-yesa-secondary:focus {
-  background: linear-gradient(135deg, var(--yesa-gray) 0%, var(--yesa-text) 30%);
+  background: linear-gradient(135deg, var(--yesa-magenta) 0%, var(--yesa-purple) 100%);
 }
 
 .btn-yesa-outline {
@@ -877,6 +877,7 @@ body.theme-dark .saved-design-preview-frame {
 }
 
 body.theme-dark .saved-designs-page {
+  background: #0b1120 !important;
   color: #f8fafc;
 }
 
@@ -899,6 +900,39 @@ body.theme-dark .saved-designs-page .form-select {
 body.theme-dark .saved-designs-page .saved-design-text-badge {
   background: #1f2937 !important;
   color: #f8fafc !important;
+}
+
+body.theme-dark .saved-designs-page .saved-designs-color-item {
+  background: #1f2937 !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+
+body.theme-dark .saved-designs-page .saved-designs-color-label {
+  color: #f8fafc !important;
+}
+
+body.theme-dark .pagination .page-link {
+  background: #1f2937 !important;
+  color: #f8fafc !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+
+body.theme-dark .pagination .page-link:hover,
+body.theme-dark .pagination .page-link:focus {
+  background: #374151 !important;
+  color: #ffffff !important;
+}
+
+body.theme-dark .pagination .page-item.active .page-link {
+  background: #b70078 !important;
+  color: #ffffff !important;
+  border-color: #b70078 !important;
+}
+
+body.theme-dark .pagination .page-item.disabled .page-link {
+  background: #111827 !important;
+  color: #64748b !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
 }
 
 body.theme-dark .saved-designs-page .saved-design-preview-frame {

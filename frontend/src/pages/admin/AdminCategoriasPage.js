@@ -203,7 +203,7 @@ const AdminCategoriasPage = () => {
   }
 
   return (
-    <Container className="py-4">
+    <Container className="py-4 admin-management-page">
       <style>
         {`
           .tabla-categorias-scroll {

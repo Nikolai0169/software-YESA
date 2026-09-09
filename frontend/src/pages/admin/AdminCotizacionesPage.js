@@ -93,7 +93,7 @@ const AdminCotizacionesPage = () => {
   };
 
   return (
-    <Container className="py-4">
+    <Container className="py-4 admin-management-page">
       <div className="d-flex justify-content-between align-items-center mb-5 flex-wrap gap-3">
         <div>
           <h1 className="display-5 fw-bold mb-2">

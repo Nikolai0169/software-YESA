@@ -333,7 +333,7 @@ const AdminProductosPage = () => {
   if (loading) return <LoadingSpinner message="Cargando productos..." />;
 
   return (
-    <Container className="py-4">
+    <Container className="py-4 admin-management-page">
       <style>{`
         .tabla-productos-scroll { overflow-y: auto; max-height: 550px; }
         .tabla-productos-scroll thead th { position: sticky; top: 0; background-color: #f8f9fa; z-index: 10; box-shadow: 0 2px 2px -1px rgba(0,0,0,0.1); }

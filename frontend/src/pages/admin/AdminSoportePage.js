@@ -168,7 +168,7 @@ const handleEnviarRespuesta = async () => {
   }
 
   return (
-    <Container className="py-4">
+    <Container className="py-4 admin-management-page">
       <style>
         {`
           .tabla-contactos-scroll {

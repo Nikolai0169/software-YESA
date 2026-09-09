@@ -184,14 +184,14 @@ const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localho
   return (
     <>
       {/* MODAL DE PREGUNTAS FRECUENTES */}
-      <Modal show={show && !showContactForm} onHide={onHide} size="lg" centered>
+      <Modal show={show && !showContactForm} onHide={onHide} size="lg" centered className="faq-modal">
         <Modal.Header closeButton style={{ background: 'linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%)', color: '#fff' }}>
           <Modal.Title>
             <span><i className="bi bi-question-circle-fill me-2"></i>Preguntas Frecuentes</span>
           </Modal.Title>
         </Modal.Header>
 
-        <Modal.Body style={{ maxHeight: '60vh', overflowY: 'auto', backgroundColor: '#ffffff', color: '#000000' }}>
+        <Modal.Body className="faq-modal-body" style={{ maxHeight: '60vh', overflowY: 'auto' }}>
           <p className="text-muted mb-4" style={{ color: '#333333' }}>
             Encuentra respuestas a las preguntas más comunes sobre nuestros productos y servicios.
           </p>
@@ -201,12 +201,12 @@ const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localho
               <Accordion.Item
                 key={faq.id}
                 eventKey={index.toString()}
-                style={{ backgroundColor: '#ffffff', color: '#000000', border: '1px solid #e9ecef', borderRadius: '0.75rem', marginBottom: '0.75rem' }}
+                className="faq-accordion-item"
               >
-                <Accordion.Header style={{ backgroundColor: '#ffffff', color: '#000000' }}>
+                <Accordion.Header className="faq-accordion-header">
                   <strong>{faq.pregunta}</strong>
                 </Accordion.Header>
-                <Accordion.Body style={{ backgroundColor: '#ffffff', color: '#000000' }}>
+                <Accordion.Body className="faq-accordion-body">
                   {faq.respuesta}
                 </Accordion.Body>
               </Accordion.Item>

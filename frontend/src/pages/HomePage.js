@@ -52,6 +52,10 @@ const HomePage = () => {
                   <i className="bi bi-grid me-2"></i>
                   Ver Catálogo
                 </Link>
+                <Link to="/personalizacion" className="btn btn-yesa-secondary btn-lg">
+                  <i className="bi bi-brush me-2"></i>
+                  Personalizar
+                </Link>
                 {!isAuthenticated && (
                   <Link to="/register" className="btn btn-yesa-secondary btn-lg">
                     <i className="bi bi-person-plus me-2"></i>

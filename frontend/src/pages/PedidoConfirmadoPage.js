@@ -254,7 +254,7 @@ const PedidoConfirmadoPage = () => {
 
         {/* Resumen del pedido */}
         <Col lg={4}>
-          <Card className="mb-4">
+          <Card className="mb-4 order-summary-card">
             <Card.Header className="bg-white">
               <h5 className="mb-0">Resumen del Pedido</h5>
             </Card.Header>

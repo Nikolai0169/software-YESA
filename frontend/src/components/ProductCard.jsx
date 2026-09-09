@@ -123,25 +123,6 @@ const ProductCard = memo(({ producto, onAddToCart, showActions = true, onFavorit
             </Badge>
           )}
 
-          <Button
-            variant="light"
-            size="sm"
-            className="position-absolute"
-            style={{
-              top: '10px',
-              left: '10px',
-              borderRadius: '50%',
-              width: '35px',
-              height: '35px',
-              padding: '0',
-              backgroundColor: 'rgba(255, 255, 255, 0.95)',
-              border: '1px solid rgba(0, 0, 0, 0.08)',
-            }}
-            onClick={toggleFavorite}
-            disabled={loadingFavorite}
-          >
-            <i className={`bi ${isFavorite ? 'bi-heart-fill text-danger' : 'bi-heart text-muted'}`} />
-          </Button>
         </Link>
 
         <Card.Body className="d-flex flex-column p-3">
@@ -189,13 +170,14 @@ const ProductCard = memo(({ producto, onAddToCart, showActions = true, onFavorit
                 <i className="bi bi-eye me-1" /> Ver
               </Button>
               <Button
-                as={Link}
-                to="/personalizacion"
-                variant="outline-secondary"
+                variant={isFavorite ? 'danger' : 'outline-danger'}
+                onClick={toggleFavorite}
+                disabled={loadingFavorite}
                 style={{ borderRadius: '0.75rem' }}
-                title="Personalizar 3D"
+                title={isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'}
+                aria-label={isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'}
               >
-                <i className="bi bi-brush" />
+                <i className={`bi ${isFavorite ? 'bi-heart-fill' : 'bi-heart'}`} />
               </Button>
               <Button
                 variant="primary"

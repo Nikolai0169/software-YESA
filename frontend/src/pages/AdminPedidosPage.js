@@ -166,7 +166,7 @@ function AdminPedidosPage() {
   }
 
   return (
-    <div className="container mt-4">
+    <div className="container mt-4 admin-management-page">
       {mensajeExito && (
         <SuccessBanner
           message={mensajeExito}
@@ -219,7 +219,7 @@ function AdminPedidosPage() {
       {/* Tarjetas de estadísticas */}
       <div className="row mb-4">
         <div className="col-md-2">
-          <div className="card text-white bg-primary shadow-sm">
+          <div className="card text-white bg-primary shadow-sm order-status-counter">
             <div className="card-body">
               <h6 className="card-title">Total Pedidos</h6>
               <p className="display-6">{totalPedidos}</p>
@@ -227,7 +227,7 @@ function AdminPedidosPage() {
           </div>
         </div>
         <div className="col-md-2">
-          <div className="card text-white bg-warning shadow-sm">
+          <div className="card text-white bg-warning shadow-sm order-status-counter">
             <div className="card-body">
               <h6 className="card-title">Pendientes</h6>
               <p className="display-6">{pedidosPendiente}</p>
@@ -235,7 +235,7 @@ function AdminPedidosPage() {
           </div>
         </div>
         <div className="col-md-2">
-          <div className="card text-white bg-info shadow-sm">
+          <div className="card text-white bg-info shadow-sm order-status-counter">
             <div className="card-body">
               <h6 className="card-title">En Proceso</h6>
               <p className="display-6">{pedidosEnProceso}</p>
@@ -243,7 +243,7 @@ function AdminPedidosPage() {
           </div>
         </div>
         <div className="col-md-2">
-          <div className="card text-white bg-primary shadow-sm">
+          <div className="card text-white bg-primary shadow-sm order-status-counter">
             <div className="card-body">
               <h6 className="card-title">Enviados</h6>
               <p className="display-6">{pedidosEnviado}</p>
@@ -251,7 +251,7 @@ function AdminPedidosPage() {
           </div>
         </div>
         <div className="col-md-2">
-          <div className="card text-white bg-success shadow-sm">
+          <div className="card text-white bg-success shadow-sm order-status-counter">
             <div className="card-body">
               <h6 className="card-title">Entregados</h6>
               <p className="display-6">{pedidosEntregado}</p>
@@ -259,7 +259,7 @@ function AdminPedidosPage() {
           </div>
         </div>
         <div className="col-md-2">
-          <div className="card text-white bg-danger shadow-sm">
+          <div className="card text-white bg-danger shadow-sm order-status-counter">
             <div className="card-body">
               <h6 className="card-title">Cancelados</h6>
               <p className="display-6">{pedidosCancelado}</p>

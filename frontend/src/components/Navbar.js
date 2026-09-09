@@ -458,6 +458,9 @@ const NavigationBar = memo(({ onOpenFAQ, theme = 'light', toggleTheme }) => {
 
               <div className="mobile-menu-divider"></div>
               <div className="mobile-section-label">Más opciones</div>
+              <Button variant="link" className="mobile-menu-action" onClick={() => { setShowMobileMenu(false); setShowFAQ(true); }}>
+                <i className="bi bi-question-circle-fill me-2"></i>FAQ
+              </Button>
               <Nav.Link as={Link} to="/personalizacion" onClick={() => setShowMobileMenu(false)}>
                 <i className="bi bi-pencil-square me-2"></i>Personalizar
               </Nav.Link>
@@ -510,9 +513,6 @@ const NavigationBar = memo(({ onOpenFAQ, theme = 'light', toggleTheme }) => {
               <Nav.Link as={Link} to="/carrito" onClick={() => setShowMobileMenu(false)}>
                 <i className="bi bi-cart3 me-2"></i>Carrito
               </Nav.Link>
-              <Button variant="link" className="mobile-menu-action" onClick={() => { setShowMobileMenu(false); setShowFAQ(true); }}>
-                <i className="bi bi-question-circle-fill me-2"></i>Preguntas frecuentes
-              </Button>
               {isAuthenticated ? (
                 <>
                   {(isCliente || isAdmin) && (

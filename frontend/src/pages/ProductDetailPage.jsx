@@ -177,7 +177,7 @@ const ProductDetailPage = () => {
               variant="top"
               src={getImageUrl(productImages[selectedImageIndex] || producto.imagen)}
               alt={producto.nombre}
-              style={{ height: '400px', objectFit: 'cover' }}
+              style={{ width: '100%', maxHeight: '400px', objectFit: 'contain', display: 'block' }}
             />
           </Card>
 
@@ -193,7 +193,7 @@ const ProductDetailPage = () => {
                   <Card.Img
                     src={getImageUrl(imagen)}
                     alt={`${producto.nombre} ${index + 1}`}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
                   />
                 </Card>
               ))}
@@ -329,15 +329,6 @@ const ProductDetailPage = () => {
                   >
                     <i className={`bi ${isFavorite ? 'bi-heart-fill' : 'bi-heart'} me-2`} />
                     {isFavorite ? 'Quitar de Favoritos' : 'Agregar a Favoritos'}
-                  </Button>
-                  <Button
-                    variant="outline-secondary"
-                    size="lg"
-                    onClick={() => navigate('/personalizacion')}
-                    style={{ borderRadius: '0.75rem', fontWeight: '600', padding: '0.75rem', width: '100%' }}
-                  >
-                    <i className="bi bi-brush me-2" />{' '}
-                    Personalizar 3D
                   </Button>
                 </div>
               </div>

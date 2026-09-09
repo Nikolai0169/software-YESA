@@ -225,7 +225,7 @@ const AdminDashboardPage = () => {
   // Estilos en línea con la paleta Yesa
   const styles = {
     pageBackground: {
-      background: `linear-gradient(135deg, ${YESA_COLORS.background} 0%, #ffffff 100%)`,
+      background: '#0b1120',
       minHeight: '100vh',
     },
     headerCard: {
@@ -274,7 +274,7 @@ const AdminDashboardPage = () => {
 
   return (
     <div style={styles.pageBackground}>
-      <Container className="py-4 dashboard-page">
+      <Container className="py-4 dashboard-page admin-management-page">
         {/* Estilos CSS personalizados */}
         <style>{`
           .kpi-card-yesa:hover {
