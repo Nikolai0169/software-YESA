@@ -491,15 +491,20 @@ const PersonalizacionPage = () => {
   };
 
   const getTextOffsetLimits = () => {
-    const text = overlayTextByModel[modelo3D] || '';
+    const modelTexts = textsByModel[modelo3D] || {};
+    const texts = [
+      overlayTextByModel[modelo3D] || '',
+      modelTexts.interior || '',
+      modelTexts.exterior || '',
+    ].filter(Boolean);
     const settings = overlayTextSettingsByModel[modelo3D] || {};
-    if (!text) return { x: 0, y: 0 };
+    if (texts.length === 0) return { x: 0, y: 0 };
 
     const measureCanvas = document.createElement('canvas');
     const context = measureCanvas.getContext('2d');
     const fontSize = (settings.fontSize || 24) * textScale;
     context.font = `bold ${fontSize}px ${settings.fontFamily || 'sans-serif'}`;
-    const lines = text.split('\n');
+    const lines = texts.flatMap((text) => text.split('\n'));
     const maxLineWidth = Math.max(...lines.map((line) => context.measureText(line).width));
     const lineHeight = fontSize + 10;
     const textHeight = fontSize + Math.max(0, lines.length - 1) * lineHeight;
@@ -533,6 +538,12 @@ const PersonalizacionPage = () => {
   const changeTextScale = (delta) => {
     setTextScale((current) => Math.max(Math.min(current + delta, 3), 0.1));
   };
+
+  const hasTextToAdjust = Boolean(
+    overlayTextByModel[modelo3D]
+    || textsByModel[modelo3D]?.interior
+    || textsByModel[modelo3D]?.exterior
+  );
 
   const handleZoomIn = () => setZoomLevel((current) => Math.min(current + 0.1, 2.0));
   const handleZoomOut = () => setZoomLevel((current) => Math.max(current - 0.1, 0.6));
@@ -869,7 +880,7 @@ const PersonalizacionPage = () => {
                             type="button"
                             className="btn btn-sm btn-yesa-secondary btn-icon"
                             onClick={() => adjustmentTarget === 'texto' ? moveText(0, -64) : moveTexture(0, -64)}
-                            disabled={adjustmentTarget === 'texto' ? !overlayTextByModel[modelo3D] : !texturesByModel[modelo3D]}
+                            disabled={adjustmentTarget === 'texto' ? !hasTextToAdjust : !texturesByModel[modelo3D]}
                             title="Mover arriba"
                           >
                             <i className="bi bi-arrow-up" />
@@ -879,7 +890,7 @@ const PersonalizacionPage = () => {
                               type="button"
                               className="btn btn-sm btn-yesa-secondary btn-icon"
                               onClick={() => adjustmentTarget === 'texto' ? moveText(-64, 0) : moveTexture(-64, 0)}
-                              disabled={adjustmentTarget === 'texto' ? !overlayTextByModel[modelo3D] : !texturesByModel[modelo3D]}
+                              disabled={adjustmentTarget === 'texto' ? !hasTextToAdjust : !texturesByModel[modelo3D]}
                               title="Mover izquierda"
                             >
                               <i className="bi bi-arrow-left" />
@@ -888,7 +899,7 @@ const PersonalizacionPage = () => {
                               type="button"
                               className="btn btn-sm btn-yesa-secondary btn-icon"
                               onClick={() => adjustmentTarget === 'texto' ? moveText(0, 64) : moveTexture(0, 64)}
-                              disabled={adjustmentTarget === 'texto' ? !overlayTextByModel[modelo3D] : !texturesByModel[modelo3D]}
+                              disabled={adjustmentTarget === 'texto' ? !hasTextToAdjust : !texturesByModel[modelo3D]}
                               title="Mover abajo"
                             >
                               <i className="bi bi-arrow-down" />
@@ -897,7 +908,7 @@ const PersonalizacionPage = () => {
                               type="button"
                               className="btn btn-sm btn-yesa-secondary btn-icon"
                               onClick={() => adjustmentTarget === 'texto' ? moveText(64, 0) : moveTexture(64, 0)}
-                              disabled={adjustmentTarget === 'texto' ? !overlayTextByModel[modelo3D] : !texturesByModel[modelo3D]}
+                              disabled={adjustmentTarget === 'texto' ? !hasTextToAdjust : !texturesByModel[modelo3D]}
                               title="Mover derecha"
                             >
                               <i className="bi bi-arrow-right" />
@@ -910,7 +921,7 @@ const PersonalizacionPage = () => {
                           type="button"
                           className="btn btn-sm btn-yesa-secondary btn-icon"
                           onClick={() => adjustmentTarget === 'texto' ? changeTextScale(0.1) : changeTextureScale(0.1)}
-                          disabled={adjustmentTarget === 'texto' ? !overlayTextByModel[modelo3D] : !texturesByModel[modelo3D]}
+                          disabled={adjustmentTarget === 'texto' ? !hasTextToAdjust : !texturesByModel[modelo3D]}
                           title="Aumentar tamaño"
                         >
                           <i className="bi bi-plus" />
@@ -919,7 +930,7 @@ const PersonalizacionPage = () => {
                           type="button"
                           className="btn btn-sm btn-yesa-secondary btn-icon"
                           onClick={() => adjustmentTarget === 'texto' ? changeTextScale(-0.1) : changeTextureScale(-0.1)}
-                          disabled={adjustmentTarget === 'texto' ? !overlayTextByModel[modelo3D] : !texturesByModel[modelo3D]}
+                          disabled={adjustmentTarget === 'texto' ? !hasTextToAdjust : !texturesByModel[modelo3D]}
                           title="Disminuir tamaño"
                         >
                           <i className="bi bi-dash" />
