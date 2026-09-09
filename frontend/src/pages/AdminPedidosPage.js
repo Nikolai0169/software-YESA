@@ -205,13 +205,13 @@ function AdminPedidosPage() {
           <h2 className="mb-0">Gestión de Pedidos</h2>
         </div>
         <div className="btn-group">
-          <button type="button" className="btn btn-success" onClick={() => exportarPedidosAPDF(pedidosFiltradosYOrdenados)}>
+          <button type="button" className="btn btn-success" data-testid="exportar-main-button" onClick={() => exportarPedidosAPDF(pedidosFiltradosYOrdenados)}>
             <i className="bi bi-file-earmark-pdf me-1"></i> Exportar
           </button>
-          <button type="button" className="btn btn-success dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"></button>
+          <button type="button" className="btn btn-success dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" data-testid="exportar-dropdown-toggle" aria-label="Seleccionar formato de exportación"></button>
           <ul className="dropdown-menu">
-            <li><button type="button" className="dropdown-item" onClick={() => exportarPedidosAPDF(pedidosFiltradosYOrdenados)}>PDF</button></li>
-            <li><button type="button" className="dropdown-item" onClick={() => exportarPedidosAExcel(pedidosFiltradosYOrdenados)}>Excel</button></li>
+            <li><button type="button" className="dropdown-item" data-testid="exportar-pdf-option" data-format="pdf" onClick={() => exportarPedidosAPDF(pedidosFiltradosYOrdenados)}>PDF</button></li>
+            <li><button type="button" className="dropdown-item" data-testid="exportar-excel-option" data-format="excel" onClick={() => exportarPedidosAExcel(pedidosFiltradosYOrdenados)}>Excel</button></li>
           </ul>
         </div>
       </div>

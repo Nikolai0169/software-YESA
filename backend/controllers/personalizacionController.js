@@ -18,6 +18,11 @@ const normalizeDesign = (design = {}) => {
     design.textureOffsetY ?? legacyOffset.y,
     0
   );
+  const legacyTextOffset = design.textOffset && typeof design.textOffset === 'object'
+    ? design.textOffset
+    : {};
+  const textOffsetX = toFiniteNumber(design.textOffsetX ?? legacyTextOffset.x, 0);
+  const textOffsetY = toFiniteNumber(design.textOffsetY ?? legacyTextOffset.y, 0);
 
   return {
     ...design,
@@ -25,6 +30,10 @@ const normalizeDesign = (design = {}) => {
     textureOffsetY,
     textureOffset: { x: textureOffsetX, y: textureOffsetY },
     textureScale: toFiniteNumber(design.textureScale, 1),
+    textOffsetX,
+    textOffsetY,
+    textOffset: { x: textOffsetX, y: textOffsetY },
+    textScale: toFiniteNumber(design.textScale, 1),
     zoom: toFiniteNumber(design.zoom, 1),
     overlayTextFontSize: toFiniteNumber(design.overlayTextFontSize, 24),
   };
@@ -51,6 +60,13 @@ const buildCotizacionItems = (designs) => designs.map((design, index) => ({
   textureOffsetX: design.textureOffsetX,
   textureOffsetY: design.textureOffsetY,
   textureScale: design.textureScale,
+  textOffset: design.textOffset || {
+    x: design.textOffsetX ?? 0,
+    y: design.textOffsetY ?? 0,
+  },
+  textOffsetX: design.textOffsetX,
+  textOffsetY: design.textOffsetY,
+  textScale: design.textScale,
   zoom: design.zoom,
   notas: design.notas || null,
 }));
@@ -78,6 +94,9 @@ const buildCotizacionValues = (design, isMultiple, itemCount, items) => {
   textureOffsetX: nullable(design.firstDesign.textureOffsetX),
   textureOffsetY: nullable(design.firstDesign.textureOffsetY),
   textureScale: nullable(design.firstDesign.textureScale),
+  textOffsetX: nullable(design.firstDesign.textOffsetX),
+  textOffsetY: nullable(design.firstDesign.textOffsetY),
+  textScale: nullable(design.firstDesign.textScale),
   zoom: nullable(design.firstDesign.zoom),
   items,
   precio: 0,
@@ -114,6 +133,9 @@ exports.guardarDiseno = async (req, res) => {
       textureOffsetX: normalizedDesign.textureOffsetX,
       textureOffsetY: normalizedDesign.textureOffsetY,
       textureScale: normalizedDesign.textureScale,
+      textOffsetX: normalizedDesign.textOffsetX,
+      textOffsetY: normalizedDesign.textOffsetY,
+      textScale: normalizedDesign.textScale,
       zoom: normalizedDesign.zoom,
       notas: normalizedDesign.notas || null,
     });

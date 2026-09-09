@@ -170,6 +170,11 @@ export const normalizePersonalizacionDesign = (design = {}) => {
     design.textureOffsetY ?? legacyOffset.y,
     0
   );
+  const legacyTextOffset = design.textOffset && typeof design.textOffset === 'object'
+    ? design.textOffset
+    : {};
+  const textOffsetX = toFiniteNumber(design.textOffsetX ?? legacyTextOffset.x, 0);
+  const textOffsetY = toFiniteNumber(design.textOffsetY ?? legacyTextOffset.y, 0);
 
   return {
     ...design,
@@ -177,6 +182,10 @@ export const normalizePersonalizacionDesign = (design = {}) => {
     textureOffsetY,
     textureOffset: { x: textureOffsetX, y: textureOffsetY },
     textureScale: toFiniteNumber(design.textureScale, 1),
+    textOffsetX,
+    textOffsetY,
+    textOffset: { x: textOffsetX, y: textOffsetY },
+    textScale: toFiniteNumber(design.textScale, 1),
     zoom: toFiniteNumber(design.zoom, 1),
     overlayTextFontSize: toFiniteNumber(design.overlayTextFontSize, 24),
   };

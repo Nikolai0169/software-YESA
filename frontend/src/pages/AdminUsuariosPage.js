@@ -228,13 +228,13 @@ function AdminUsuariosPage() {
         <h2>Gestión de Usuarios</h2>
         <div>
           <div className="btn-group me-2">
-            <button className="btn btn-success" onClick={() => exportarUsuariosAPDF(usuariosFiltradosYOrdenados)}>
+            <button type="button" className="btn btn-success" data-testid="exportar-main-button" onClick={() => exportarUsuariosAPDF(usuariosFiltradosYOrdenados)}>
               <i className="bi bi-file-earmark-pdf me-1"></i> Exportar
             </button>
-            <button className="btn btn-success dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"></button>
+            <button type="button" className="btn btn-success dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" data-testid="exportar-dropdown-toggle" aria-label="Seleccionar formato de exportación"></button>
             <ul className="dropdown-menu">
-              <li><button className="dropdown-item" onClick={() => exportarUsuariosAPDF(usuariosFiltradosYOrdenados)}>PDF</button></li>
-              <li><button className="dropdown-item" onClick={() => exportarUsuariosAExcel(usuariosFiltradosYOrdenados)}>Excel</button></li>
+              <li><button type="button" className="dropdown-item" data-testid="exportar-pdf-option" data-format="pdf" onClick={() => exportarUsuariosAPDF(usuariosFiltradosYOrdenados)}>PDF</button></li>
+              <li><button type="button" className="dropdown-item" data-testid="exportar-excel-option" data-format="excel" onClick={() => exportarUsuariosAExcel(usuariosFiltradosYOrdenados)}>Excel</button></li>
             </ul>
           </div>
           <button className="btn btn-primary" onClick={() => { limpiarFormulario(); setShowModal(true); }}>

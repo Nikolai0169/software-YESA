@@ -137,6 +137,8 @@ const AdminCotizacionDetallePage = () => {
                             autoRotate={false}
                             textureOffset={item.textureOffset || { x: item.textureOffsetX || 0, y: item.textureOffsetY || 0 }}
                             textureScale={item.textureScale || 1}
+                            textOffset={item.textOffset || { x: item.textOffsetX || 0, y: item.textOffsetY || 0 }}
+                            textScale={item.textScale || 1}
                           />
                         </div>
                       </div>

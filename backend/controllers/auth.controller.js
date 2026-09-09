@@ -68,7 +68,14 @@ const register = async (req, res) => {
     
     // VALIDACIÓN 2: Verifica que el email tenga un formato válido usando una expresión regular.
     // La regex valida: texto@texto.texto (estructura básica de un email)
+<<<<<<< Updated upstream
     if (!isValidEmail(normalizedEmail)) {
+=======
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    // .test() prueba si la cadena coincide con la regex, retorna true/false
+    if (!emailRegex.test(email)) {
+>>>>>>> Stashed changes
       return res.status(400).json({
         success: false,
         message: 'Formato de email inválido'
@@ -320,7 +327,13 @@ const updateMe = async (req, res) => {
     // VALIDACIÓN Y ACTUALIZACIÓN: solo actualiza si el campo viene definido en el body.
     // Permitir cambiar email: validar formato y unicidad.
     if (email !== undefined) {
+<<<<<<< Updated upstream
       if (!isValidEmail(emailNormalizado)) {
+=======
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      if (!emailRegex.test(email)) {
+>>>>>>> Stashed changes
         return res.status(400).json({ success: false, message: 'Email inválido' });
       }
 

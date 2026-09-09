@@ -27,7 +27,7 @@ const createTextSprite = (text, fontFamily = "sans-serif", fontSize = 24, color 
   return texture;
 };
 
-const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBase = "#ffffff", colorExterior = "#ffffff", colorAsa = "#ffffff", texture, overlayText = "", overlayTextFontFamily = "sans-serif", overlayTextFontSize = 24, overlayTextColor = "#ffffff", textInterior = "", textExterior = "", zoom = 1, autoRotate = true, textureOffset = { x: 0, y: 0 }, textureScale = 1 }) => {
+const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBase = "#ffffff", colorExterior = "#ffffff", colorAsa = "#ffffff", texture, overlayText = "", overlayTextFontFamily = "sans-serif", overlayTextFontSize = 24, overlayTextColor = "#ffffff", textInterior = "", textExterior = "", zoom = 1, autoRotate = true, textureOffset = { x: 0, y: 0 }, textureScale = 1, textOffset = { x: 0, y: 0 }, textScale = 1 }) => {
   const mountRef = useRef(null);
   const sceneRef = useRef(null);
   const cameraRef = useRef(null);
@@ -57,10 +57,10 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
     const textTexture = createTextSprite(text, fontFamily, fontSize, color);
     const spriteMaterial = new THREE.SpriteMaterial({ map: textTexture, transparent: true });
     const sprite = new THREE.Sprite(spriteMaterial);
-    const scaleFactor = Math.min(6, Math.max(3, fontSize * 0.15 + 1.6));
-    const heightFactor = Math.min(2.2, Math.max(1.0, fontSize * 0.06 + 0.6));
+    const scaleFactor = Math.min(18, Math.max(0.3, (fontSize * 0.15 + 1.6) * textScale));
+    const heightFactor = Math.min(6.6, Math.max(0.1, (fontSize * 0.06 + 0.6) * textScale));
     sprite.scale.set(scaleFactor, heightFactor, 1);
-    sprite.position.set(0, 0, zOffset);
+    sprite.position.set(textOffset.x / 1024, -textOffset.y / 1024, zOffset);
     modelGroupRef.current.add(sprite);
     ringSpritesRef.current.push(sprite);
   };
@@ -81,6 +81,8 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
     color,
     offset,
     scale,
+    textOffset,
+    textScale,
     callback,
     backgroundColor = null
   ) => {
@@ -112,7 +114,7 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
 
       if (overlayText) {
         ctx.fillStyle = color;
-        const scaledFontSize = Math.min(220, Math.max(40, Math.round(fontSize * 2.5)));
+        const scaledFontSize = Math.min(660, Math.max(40, Math.round(fontSize * 2.5 * textScale)));
         ctx.font = `bold ${scaledFontSize}px ${fontFamily}`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -121,8 +123,8 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
         lines.forEach((line, index) => {
           ctx.fillText(
             line,
-            size / 2,
-            size / 2 + (index - (lines.length - 1) / 2) * lineHeight
+            size / 2 + (textOffset?.x || 0),
+            size / 2 + (textOffset?.y || 0) + (index - (lines.length - 1) / 2) * lineHeight
           );
         });
       }
@@ -175,6 +177,8 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
       overlayTextColor,
       textureOffset,
       textureScale,
+      textOffset,
+      textScale,
       setMaterialMap,
       colorExterior || "#ffffff"
     );
@@ -454,7 +458,7 @@ const Personalizacion3D = ({ modelo = "taza", colorInterior = "#ffffff", colorBa
     } else {
       updateExteriorTexture();
     }
-  }, [texture, overlayText, overlayTextFontFamily, overlayTextFontSize, overlayTextColor, textInterior, textExterior, colorExterior, textureOffset, textureScale]);
+  }, [texture, overlayText, overlayTextFontFamily, overlayTextFontSize, overlayTextColor, textInterior, textExterior, colorExterior, textureOffset, textureScale, textOffset, textScale]);
 
   useEffect(() => {
     autoRotateRef.current = autoRotate;

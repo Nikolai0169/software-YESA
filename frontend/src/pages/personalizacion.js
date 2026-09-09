@@ -100,6 +100,9 @@ const PersonalizacionPage = () => {
   const [textEditorColor, setTextEditorColor] = useState("#000000");
   const [textureOffset, setTextureOffset] = useState({ x: 0, y: 0 });
   const [textureScale, setTextureScale] = useState(1);
+  const [textOffset, setTextOffset] = useState({ x: 0, y: 0 });
+  const [textScale, setTextScale] = useState(1);
+  const [adjustmentTarget, setAdjustmentTarget] = useState(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [previewKey, setPreviewKey] = useState(0);
   const previewRef = useRef(null);
@@ -127,6 +130,9 @@ const PersonalizacionPage = () => {
     setTextEditorFontFamily('sans-serif');
     setTextEditorFontSize(24);
     setTextEditorColor('#000000');
+    setTextOffset({ x: 0, y: 0 });
+    setTextScale(1);
+    setAdjustmentTarget(null);
   };
 
   const resetPersonalizacionState = () => {
@@ -143,6 +149,9 @@ const PersonalizacionPage = () => {
     setTextEditorColor('#000000');
     setTextureOffset({ x: 0, y: 0 });
     setTextureScale(1);
+    setTextOffset({ x: 0, y: 0 });
+    setTextScale(1);
+    setAdjustmentTarget(null);
     setZoomLevel(1);
     setCurrentDesignId(null);
     setCurrentDesignName('');
@@ -175,6 +184,7 @@ const PersonalizacionPage = () => {
     const reader = new FileReader();
     reader.onload = () => {
       setTexturesByModel((prev) => ({ ...prev, [modelo3D]: reader.result }));
+      setAdjustmentTarget((current) => current || 'imagen');
     };
     reader.readAsDataURL(file);
   };
@@ -211,6 +221,11 @@ const PersonalizacionPage = () => {
       textureOffsetX: textureOffset?.x,
       textureOffsetY: textureOffset?.y,
       textureScale,
+      textOffset: textOffset || { x: 0, y: 0 },
+      textOffsetX: textOffset?.x,
+      textOffsetY: textOffset?.y,
+      textScale,
+      adjustmentTarget,
       textEditorOpen,
       textEditorContent,
       textEditorFontFamily,
@@ -272,6 +287,12 @@ const PersonalizacionPage = () => {
       setZoomLevel(normalizedDesign.zoom);
       setTextureOffset(normalizedDesign.textureOffset);
       setTextureScale(normalizedDesign.textureScale);
+      setTextOffset(normalizedDesign.textOffset);
+      setTextScale(normalizedDesign.textScale);
+      setAdjustmentTarget(
+        normalizedDesign.adjustmentTarget
+        || (normalizedDesign.textureUrl ? 'imagen' : normalizedDesign.overlayText ? 'texto' : null)
+      );
       setTextEditorOpen(!!normalizedDesign.textEditorOpen);
       setTextEditorContent(normalizedDesign.textEditorContent || '');
       setTextEditorFontFamily(normalizedDesign.textEditorFontFamily || 'sans-serif');
@@ -346,16 +367,17 @@ const PersonalizacionPage = () => {
       // Dibujar texto overlay si existe
       if (currentOverlayText) {
         ctx.fillStyle = currentSettings.color;
-        ctx.font = `bold ${currentSettings.fontSize}px ${currentSettings.fontFamily}`;
+        const scaledFontSize = currentSettings.fontSize * textScale;
+        ctx.font = `bold ${scaledFontSize}px ${currentSettings.fontFamily}`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         const lines = currentOverlayText.split('\n');
-        const lineHeight = currentSettings.fontSize + 10;
+        const lineHeight = scaledFontSize + 10;
         lines.forEach((line, index) => {
           ctx.fillText(
             line,
-            size / 2,
-            size / 2 + (index - (lines.length - 1) / 2) * lineHeight
+            size / 2 + textOffset.x,
+            size / 2 + textOffset.y + (index - (lines.length - 1) / 2) * lineHeight
           );
         });
       }
@@ -391,12 +413,18 @@ const PersonalizacionPage = () => {
     textureOffset?.x,
     textureOffset?.y,
     textureScale,
+    textOffset?.x,
+    textOffset?.y,
+    textScale,
   ]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     setTextureOffset({ x: 0, y: 0 });
     setTextureScale(1);
+    setTextOffset({ x: 0, y: 0 });
+    setTextScale(1);
+    setAdjustmentTarget(null);
   }, [modelo3D]);
 
   useEffect(() => {
@@ -435,6 +463,18 @@ const PersonalizacionPage = () => {
 
   const changeTextureScale = (delta) => {
     setTextureScale((current) => Math.max(Math.min(current + delta, 3), 0.1));
+  };
+
+  const moveText = (dx, dy) => {
+    const maxOffset = CANVAS_SIZE * 0.6;
+    setTextOffset((prev) => ({
+      x: Math.max(Math.min(prev.x + dx, maxOffset), -maxOffset),
+      y: Math.max(Math.min(prev.y + dy, maxOffset), -maxOffset),
+    }));
+  };
+
+  const changeTextScale = (delta) => {
+    setTextScale((current) => Math.max(Math.min(current + delta, 3), 0.1));
   };
 
   const handleZoomIn = () => setZoomLevel((current) => Math.min(current + 0.1, 2.0));
@@ -551,6 +591,10 @@ const PersonalizacionPage = () => {
         textureOffsetX: textureOffset?.x,
         textureOffsetY: textureOffset?.y,
         textureScale,
+        textOffsetX: textOffset?.x,
+        textOffsetY: textOffset?.y,
+        textScale,
+        adjustmentTarget,
         zoom: zoomLevel,
         nombre: nombreFinal,
         notas: notasCotizacion.trim() || undefined,
@@ -681,6 +725,8 @@ const PersonalizacionPage = () => {
                     autoRotate={isRotating}
                     textureOffset={textureOffset}
                     textureScale={textureScale}
+                    textOffset={textOffset}
+                    textScale={textScale}
                   />
                   <div className="personalizacion-preview-overlay d-flex align-items-center gap-2">
                     <button
@@ -724,15 +770,25 @@ const PersonalizacionPage = () => {
                     <div className="d-flex align-items-center justify-content-between gap-3">
                       <div>
                         <div className="d-flex align-items-center gap-2 mb-2">
-                          <i className="bi bi-image fs-5" />
-                          <span className="small fw-semibold">Ajustar</span>
+                          <i className={`bi ${adjustmentTarget === 'texto' ? 'bi-type' : 'bi-image'} fs-5`} />
+                          <select
+                            aria-label="Elemento a ajustar"
+                            className="form-select form-select-sm"
+                            value={adjustmentTarget || ''}
+                            onChange={(event) => setAdjustmentTarget(event.target.value)}
+                            style={{ width: '100px' }}
+                          >
+                            <option value="" disabled>Seleccionar</option>
+                            <option value="imagen">imagen</option>
+                            <option value="texto">texto</option>
+                          </select>
                         </div>
                         <div className="image-position-grid">
                           <button
                             type="button"
                             className="btn btn-sm btn-yesa-secondary btn-icon"
-                            onClick={() => moveTexture(0, -64)}
-                            disabled={!texturesByModel[modelo3D]}
+                            onClick={() => adjustmentTarget === 'texto' ? moveText(0, -64) : moveTexture(0, -64)}
+                            disabled={adjustmentTarget === 'texto' ? !overlayTextByModel[modelo3D] : !texturesByModel[modelo3D]}
                             title="Mover arriba"
                           >
                             <i className="bi bi-arrow-up" />
@@ -741,8 +797,8 @@ const PersonalizacionPage = () => {
                             <button
                               type="button"
                               className="btn btn-sm btn-yesa-secondary btn-icon"
-                              onClick={() => moveTexture(-64, 0)}
-                              disabled={!texturesByModel[modelo3D]}
+                              onClick={() => adjustmentTarget === 'texto' ? moveText(-64, 0) : moveTexture(-64, 0)}
+                              disabled={adjustmentTarget === 'texto' ? !overlayTextByModel[modelo3D] : !texturesByModel[modelo3D]}
                               title="Mover izquierda"
                             >
                               <i className="bi bi-arrow-left" />
@@ -750,8 +806,8 @@ const PersonalizacionPage = () => {
                             <button
                               type="button"
                               className="btn btn-sm btn-yesa-secondary btn-icon"
-                              onClick={() => moveTexture(0, 64)}
-                              disabled={!texturesByModel[modelo3D]}
+                              onClick={() => adjustmentTarget === 'texto' ? moveText(0, 64) : moveTexture(0, 64)}
+                              disabled={adjustmentTarget === 'texto' ? !overlayTextByModel[modelo3D] : !texturesByModel[modelo3D]}
                               title="Mover abajo"
                             >
                               <i className="bi bi-arrow-down" />
@@ -759,8 +815,8 @@ const PersonalizacionPage = () => {
                             <button
                               type="button"
                               className="btn btn-sm btn-yesa-secondary btn-icon"
-                              onClick={() => moveTexture(64, 0)}
-                              disabled={!texturesByModel[modelo3D]}
+                              onClick={() => adjustmentTarget === 'texto' ? moveText(64, 0) : moveTexture(64, 0)}
+                              disabled={adjustmentTarget === 'texto' ? !overlayTextByModel[modelo3D] : !texturesByModel[modelo3D]}
                               title="Mover derecha"
                             >
                               <i className="bi bi-arrow-right" />
@@ -772,8 +828,8 @@ const PersonalizacionPage = () => {
                         <button
                           type="button"
                           className="btn btn-sm btn-yesa-secondary btn-icon"
-                          onClick={() => changeTextureScale(0.1)}
-                          disabled={!texturesByModel[modelo3D]}
+                          onClick={() => adjustmentTarget === 'texto' ? changeTextScale(0.1) : changeTextureScale(0.1)}
+                          disabled={adjustmentTarget === 'texto' ? !overlayTextByModel[modelo3D] : !texturesByModel[modelo3D]}
                           title="Aumentar tamaño"
                         >
                           <i className="bi bi-plus" />
@@ -781,8 +837,8 @@ const PersonalizacionPage = () => {
                         <button
                           type="button"
                           className="btn btn-sm btn-yesa-secondary btn-icon"
-                          onClick={() => changeTextureScale(-0.1)}
-                          disabled={!texturesByModel[modelo3D]}
+                          onClick={() => adjustmentTarget === 'texto' ? changeTextScale(-0.1) : changeTextureScale(-0.1)}
+                          disabled={adjustmentTarget === 'texto' ? !overlayTextByModel[modelo3D] : !texturesByModel[modelo3D]}
                           title="Disminuir tamaño"
                         >
                           <i className="bi bi-dash" />
@@ -1007,6 +1063,7 @@ const PersonalizacionPage = () => {
                                 color: textEditorColor,
                               },
                             }));
+                            setAdjustmentTarget((current) => current || 'texto');
                             setTextEditorOpen(false);
                           }}
                         >

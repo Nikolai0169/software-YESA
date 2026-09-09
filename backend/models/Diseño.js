@@ -106,6 +106,21 @@ const Diseño = sequelize.define('Diseño', {
     allowNull: true,
     defaultValue: 1,
   },
+  textOffsetX: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    defaultValue: 0,
+  },
+  textOffsetY: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    defaultValue: 0,
+  },
+  textScale: {
+    type: DataTypes.FLOAT,
+    allowNull: true,
+    defaultValue: 1,
+  },
   zoom: {
     type: DataTypes.FLOAT,
     allowNull: true,

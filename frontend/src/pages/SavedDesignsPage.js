@@ -287,6 +287,8 @@ const SavedDesignsPage = () => {
                                   }
                                 }
                                 textureScale={design.textureScale || 1}
+                                textOffset={design.textOffset || { x: design.textOffsetX || 0, y: design.textOffsetY || 0 }}
+                                textScale={design.textScale || 1}
                               />
                             </div>
                           </Card.Body>
@@ -398,6 +400,8 @@ const SavedDesignsPage = () => {
                                 }
                               }
                               textureScale={design.textureScale || 1}
+                              textOffset={design.textOffset || { x: design.textOffsetX || 0, y: design.textOffsetY || 0 }}
+                              textScale={design.textScale || 1}
                             />
                           </div>
                         </div>

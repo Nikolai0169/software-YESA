@@ -232,19 +232,41 @@ const AdminCategoriasPage = () => {
         </div>
         <div className="d-flex gap-2">
           <Dropdown as={ButtonGroup} className="me-2">
-            <Button variant="success" onClick={async () => {
-              if (tipoExportacion === 'pdf') exportarCategoriasAPDF(categoriasFiltradasYOrdenadas);
-              else await exportarCategoriasAExcel(categoriasFiltradasYOrdenadas);
-            }}>
+            <Button
+              type="button"
+              variant="success"
+              data-testid="exportar-main-button"
+              onClick={async () => {
+                if (tipoExportacion === 'pdf') exportarCategoriasAPDF(categoriasFiltradasYOrdenadas);
+                else await exportarCategoriasAExcel(categoriasFiltradasYOrdenadas);
+              }}
+            >
               <i className={`bi bi-file-earmark-${tipoExportacion === 'pdf' ? 'pdf' : 'excel'} me-1`}></i>
               Exportar a {tipoExportacion === 'pdf' ? 'PDF' : 'Excel'}
             </Button>
-            <Dropdown.Toggle split variant="success" />
+            <Dropdown.Toggle
+              split
+              variant="success"
+              data-testid="exportar-dropdown-toggle"
+              aria-label="Seleccionar formato de exportación"
+            />
             <Dropdown.Menu>
-              <Dropdown.Item onClick={() => { setTipoExportacion('pdf'); exportarCategoriasAPDF(categoriasFiltradasYOrdenadas); }}>
+              <Dropdown.Item
+                as="button"
+                type="button"
+                data-testid="exportar-pdf-option"
+                data-format="pdf"
+                onClick={() => { setTipoExportacion('pdf'); exportarCategoriasAPDF(categoriasFiltradasYOrdenadas); }}
+              >
                 <i className="bi bi-file-earmark-pdf me-2"></i> PDF
               </Dropdown.Item>
-              <Dropdown.Item onClick={async () => { setTipoExportacion('excel'); await exportarCategoriasAExcel(categoriasFiltradasYOrdenadas); }}>
+              <Dropdown.Item
+                as="button"
+                type="button"
+                data-testid="exportar-excel-option"
+                data-format="excel"
+                onClick={async () => { setTipoExportacion('excel'); await exportarCategoriasAExcel(categoriasFiltradasYOrdenadas); }}
+              >
                 <i className="bi bi-file-earmark-excel me-2"></i> Excel
               </Dropdown.Item>
             </Dropdown.Menu>
