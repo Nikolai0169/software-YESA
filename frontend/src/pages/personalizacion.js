@@ -483,11 +483,38 @@ const PersonalizacionPage = () => {
   const zoomIntervalRef = useRef(null);
   const zoomTimeoutRef = useRef(null);
 
+  const clamp = (value, min, max) => Math.max(min, Math.min(value, max));
+
+  const getTextureOffsetLimit = () => {
+    const scaledSize = CANVAS_SIZE * textureScale;
+    return Math.max(0, Math.abs(scaledSize - CANVAS_SIZE) / 2);
+  };
+
+  const getTextOffsetLimits = () => {
+    const text = overlayTextByModel[modelo3D] || '';
+    const settings = overlayTextSettingsByModel[modelo3D] || {};
+    if (!text) return { x: 0, y: 0 };
+
+    const measureCanvas = document.createElement('canvas');
+    const context = measureCanvas.getContext('2d');
+    const fontSize = (settings.fontSize || 24) * textScale;
+    context.font = `bold ${fontSize}px ${settings.fontFamily || 'sans-serif'}`;
+    const lines = text.split('\n');
+    const maxLineWidth = Math.max(...lines.map((line) => context.measureText(line).width));
+    const lineHeight = fontSize + 10;
+    const textHeight = fontSize + Math.max(0, lines.length - 1) * lineHeight;
+
+    return {
+      x: Math.max(0, (CANVAS_SIZE - maxLineWidth) / 2),
+      y: Math.max(0, (CANVAS_SIZE - textHeight) / 2),
+    };
+  };
+
   const moveTexture = (dx, dy) => {
-    const maxOffset = CANVAS_SIZE * 0.6;
+    const maxOffset = getTextureOffsetLimit();
     setTextureOffset((prev) => ({
-      x: Math.max(Math.min(prev.x + dx, maxOffset), -maxOffset),
-      y: Math.max(Math.min(prev.y + dy, maxOffset), -maxOffset),
+      x: clamp(prev.x + dx, -maxOffset, maxOffset),
+      y: clamp(prev.y + dy, -maxOffset, maxOffset),
     }));
   };
 
@@ -496,10 +523,10 @@ const PersonalizacionPage = () => {
   };
 
   const moveText = (dx, dy) => {
-    const maxOffset = CANVAS_SIZE * 0.6;
+    const maxOffset = getTextOffsetLimits();
     setTextOffset((prev) => ({
-      x: Math.max(Math.min(prev.x + dx, maxOffset), -maxOffset),
-      y: Math.max(Math.min(prev.y + dy, maxOffset), -maxOffset),
+      x: clamp(prev.x + dx, -maxOffset.x, maxOffset.x),
+      y: clamp(prev.y + dy, -maxOffset.y, maxOffset.y),
     }));
   };
 
