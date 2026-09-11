@@ -225,7 +225,7 @@ const AdminDashboardPage = () => {
   // Estilos en línea con la paleta Yesa
   const styles = {
     pageBackground: {
-      background: '#0b1120',
+      background: YESA_COLORS.background,
       minHeight: '100vh',
     },
     headerCard: {

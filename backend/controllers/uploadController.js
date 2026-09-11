@@ -1,6 +1,7 @@
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const { construirBaseUrl } = require('../utils/imagenUrl');
+const { productUploadPath } = require('../config/multer');
 
 const extensionesImagen = new Set(['.jpg', '.jpeg', '.png', '.gif', '.webp']);
 
@@ -17,7 +18,13 @@ exports.uploadTexture = async (req, res) => {
     }
 
     const backendOrigin = construirBaseUrl(req);
-    const fileUrl = `${quitarBarrasFinales(backendOrigin)}/uploads/${req.file.filename}`;
+    const uploadRoot = path.resolve(path.join(__dirname, '../uploads'));
+    const relativeDirectory = path.relative(uploadRoot, path.resolve(req.file.destination))
+      .split(path.sep)
+      .filter(Boolean)
+      .join('/');
+    const relativePath = [relativeDirectory, req.file.filename].filter(Boolean).join('/');
+    const fileUrl = `${quitarBarrasFinales(backendOrigin)}/uploads/${relativePath}`;
     return res.json({ success: true, url: fileUrl });
   } catch (error) {
     console.error('Error al subir textura:', error);
@@ -27,7 +34,7 @@ exports.uploadTexture = async (req, res) => {
 
 exports.listarImagenesSubidas = async (req, res) => {
   try {
-    const directorioUploads = path.join(__dirname, '../uploads');
+    const directorioUploads = productUploadPath;
     const archivos = await fs.readdir(directorioUploads, { withFileTypes: true });
 
     const imagenes = await Promise.all(
@@ -40,7 +47,7 @@ exports.listarImagenesSubidas = async (req, res) => {
 
           return {
             name: entrada.name,
-            url: `${quitarBarrasFinales(backendOrigin)}/uploads/${encodeURIComponent(entrada.name)}`,
+            url: `${quitarBarrasFinales(backendOrigin)}/uploads/productos/${encodeURIComponent(entrada.name)}`,
             size: estadisticas.size,
             modifiedAt: estadisticas.mtime.toISOString(),
           };
@@ -58,5 +65,43 @@ exports.listarImagenesSubidas = async (req, res) => {
   } catch (error) {
     console.error('Error al listar imágenes:', error);
     return res.status(500).json({ success: false, message: 'Error listando imágenes' });
+  }
+};
+
+exports.eliminarImagenSubida = async (req, res) => {
+  try {
+    const { nombre } = req.params;
+    if (!nombre || path.basename(nombre) !== nombre || !extensionesImagen.has(path.extname(nombre).toLowerCase())) {
+      return res.status(400).json({ success: false, message: 'Nombre de imagen no válido' });
+    }
+
+    const rutaImagen = path.join(productUploadPath, nombre);
+    await fs.unlink(rutaImagen);
+    return res.json({ success: true, message: 'Imagen eliminada de la galería' });
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      return res.status(404).json({ success: false, message: 'Imagen no encontrada' });
+    }
+    console.error('Error al eliminar imagen:', error);
+    return res.status(500).json({ success: false, message: 'Error eliminando imagen' });
+  }
+};
+
+exports.vaciarGaleria = async (req, res) => {
+  try {
+    const archivos = await fs.readdir(productUploadPath, { withFileTypes: true });
+    const imagenes = archivos.filter((entrada) => (
+      entrada.isFile() && extensionesImagen.has(path.extname(entrada.name).toLowerCase())
+    ));
+
+    await Promise.all(imagenes.map((imagen) => fs.unlink(path.join(productUploadPath, imagen.name))));
+    return res.json({
+      success: true,
+      message: 'Galería vaciada correctamente',
+      data: { eliminadas: imagenes.length },
+    });
+  } catch (error) {
+    console.error('Error al vaciar la galería:', error);
+    return res.status(500).json({ success: false, message: 'Error vaciando la galería' });
   }
 };

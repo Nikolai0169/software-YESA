@@ -25,6 +25,8 @@ require('dotenv').config();
 // Lee la ruta donde se guardarán los archivos subidos desde .env (variable UPLOAD_PATH).
 // Si no existe la variable, usa './uploads' como carpeta por defecto (relativa al proyecto).
 const uploadPath = process.env.UPLOAD_PATH || './uploads';
+const productUploadPath = path.join(uploadPath, 'productos');
+const personalizationUploadPath = path.join(uploadPath, 'personalizaciones');
 
 // Verifica si la carpeta de uploads ya existe en el sistema de archivos.
 // fs.existsSync() retorna true si la ruta existe, false si no.
@@ -36,12 +38,18 @@ if (!fs.existsSync(uploadPath)) {
   console.log(`📁 Carpeta ${uploadPath} creada`);
 }
 
+for (const directory of [productUploadPath, personalizationUploadPath]) {
+  if (!fs.existsSync(directory)) {
+    fs.mkdirSync(directory, { recursive: true });
+  }
+}
+
 /**
  * Configuración de almacenamiento de multer.
  * multer.diskStorage() define las reglas para guardar archivos en disco.
  * Controla: dónde se guarda (destination) y con qué nombre (filename).
  */
-const storage = multer.diskStorage({
+const createStorage = (destinationPath) => multer.diskStorage({
   /**
    * destination: función que define la carpeta destino donde se guardará el archivo subido.
    * 
@@ -53,7 +61,7 @@ const storage = multer.diskStorage({
     // Llama al callback con:
     // - null: sin error (primer parámetro)
     // - uploadPath: la carpeta donde se guardará el archivo (segundo parámetro)
-    cb(null, uploadPath);
+    cb(null, destinationPath);
   },
   
   /**
@@ -105,9 +113,8 @@ const fileFilter = (req, file, cb) => {
  * Crea la instancia final de multer combinando todas las configuraciones:
  * storage (dónde y cómo guardar), fileFilter (qué tipos permitir) y limits (tamaño máximo).
  */
-const upload = multer({
+const multerOptions = {
   // storage: usa la configuración de almacenamiento definida arriba
-  storage: storage,
   // fileFilter: usa el filtro de tipos de archivo definido arriba
   fileFilter: fileFilter,
   // limits: restricciones adicionales
@@ -117,6 +124,16 @@ const upload = multer({
     // Si no existe la variable, usa 2147483648 bytes = 2 GB (2 * 1024 * 1024 * 1024)
     fileSize: Number.parseInt(process.env.MAX_FILE_SIZE) || 2147483648
   }
+};
+
+const upload = multer({
+  ...multerOptions,
+  storage: createStorage(productUploadPath),
+});
+
+const uploadPersonalizacion = multer({
+  ...multerOptions,
+  storage: createStorage(personalizationUploadPath),
 });
 
 /**
@@ -158,5 +175,8 @@ const deleteFile = (filename) => {
 //          router.post('/productos', upload.single('imagen'), controller.crear);
 module.exports = {
   upload,        // Middleware de multer: se usa en las rutas para recibir archivos
+  uploadPersonalizacion,
+  uploadPath,
+  productUploadPath,
   deleteFile     // Función auxiliar: se usa en controllers para eliminar imágenes viejas
 };

@@ -15,6 +15,7 @@ const path = require('node:path');
 const fs = require('node:fs').promises;
 const { normalizarRutaImagen } = require('../utils/imagenUrl');
 const { resolverImagenProducto } = require('../utils/productoImagen');
+const { productUploadPath } = require('../config/multer');
 
 // ✅ FUNCIÓN AUXILIAR PARA CONSTRUIR URLs DE IMÁGENES
 const construirURLProducto = (producto, req) => {
@@ -218,7 +219,7 @@ const crearProducto = async (req, res) => {
       });
     }
     
-    const { imagen, imagenes } = await resolverImagenProducto(req.body, req.files);
+    const { imagen, imagenes } = await resolverImagenProducto(req.body, req.files, { uploadDir: productUploadPath });
 
     const nuevoProducto = await Producto.create({
       nombre,
