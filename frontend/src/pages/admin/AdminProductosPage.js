@@ -213,10 +213,11 @@ const AdminProductosPage = () => {
   const eliminarImagenServidor = async (imagen) => {
     if (!window.confirm(`¿Eliminar "${imagen.name}" de la galería?`)) return;
 
-    setEliminandoImagen(imagen.name);
+    const storageName = imagen.storageName || imagen.name;
+    setEliminandoImagen(storageName);
     try {
-      await api.delete(`uploads/imagenes/${encodeURIComponent(imagen.name)}`);
-      setImagenesServidor((imagenes) => imagenes.filter((item) => item.name !== imagen.name));
+      await api.delete(`uploads/imagenes/${encodeURIComponent(storageName)}`);
+      setImagenesServidor((imagenes) => imagenes.filter((item) => (item.storageName || item.name) !== storageName));
       setMensaje({ tipo: 'success', texto: 'Imagen eliminada de la galería' });
     } catch (error) {
       console.error('Error al eliminar imagen de la galería:', error);
@@ -526,10 +527,10 @@ const AdminProductosPage = () => {
                         size="sm"
                         className="w-100 mt-2"
                         onClick={() => eliminarImagenServidor(imagen)}
-                        disabled={eliminandoImagen === imagen.name}
+                        disabled={eliminandoImagen === (imagen.storageName || imagen.name)}
                       >
                         <i className="bi bi-trash me-1"></i>
-                        {eliminandoImagen === imagen.name ? 'Eliminando...' : 'Eliminar'}
+                        {eliminandoImagen === (imagen.storageName || imagen.name) ? 'Eliminando...' : 'Eliminar'}
                       </Button>
                     </Card.Body>
                   </Card>

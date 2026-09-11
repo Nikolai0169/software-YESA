@@ -45,6 +45,22 @@ describe('resolverImagenProducto', () => {
     }
   });
 
+  it('reutiliza una imagen local de la galería y elimina referencias repetidas', async () => {
+    const resultado = await resolverImagenProducto({
+      imagenUrl: 'http://localhost:5000/uploads/productos/Pocillo_Pikachu.jpeg',
+    }, {
+      imagenes: [
+        { filename: 'Pocillo_Pikachu.jpeg' },
+        { filename: 'Pocillo_Pikachu.jpeg' },
+      ],
+    });
+
+    expect(resultado).toEqual({
+      imagen: 'Pocillo_Pikachu.jpeg',
+      imagenes: ['Pocillo_Pikachu.jpeg'],
+    });
+  });
+
   it('sigue una redirección HTTP válida y genera nombres diferentes', async () => {
     const server = http.createServer((req, res) => {
       if (req.url === '/redirect') {

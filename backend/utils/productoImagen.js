@@ -14,6 +14,22 @@ const rutaArchivoSubido = (file) => {
   return rutaRelativaUpload(path.join(file.destination, file.filename));
 };
 
+const obtenerRutaLocalProducto = (imagenUrl) => {
+  try {
+    const pathname = imagenUrl.startsWith('http')
+      ? new URL(imagenUrl).pathname
+      : imagenUrl;
+    const ruta = pathname.replace(/^\/+/, '');
+    if (!ruta.startsWith('uploads/')) return null;
+
+    const rutaProducto = ruta.slice('uploads/'.length);
+    if (!rutaProducto || rutaProducto.includes('..')) return null;
+    return rutaProducto;
+  } catch {
+    return null;
+  }
+};
+
 const mapearExtensionPorTipo = (contentType) => {
   if (!contentType) return '.jpg';
   if (contentType.includes('png')) return '.png';
@@ -98,6 +114,10 @@ const resolverImagenProducto = async (body = {}, files = {}, options = {}) => {
     imagenes = [rutaArchivoSubido(imagenSubida[0])];
   }
 
+  if (imagenes) {
+    imagenes = [...new Set(imagenes.filter(Boolean))];
+  }
+
   const imagenUrl = typeof body?.imagenUrl === 'string' ? body.imagenUrl.trim() : '';
   const tieneArchivo = Boolean(imagenes?.length);
 
@@ -109,6 +129,14 @@ const resolverImagenProducto = async (body = {}, files = {}, options = {}) => {
   }
 
   if (imagenUrl) {
+    const rutaLocal = obtenerRutaLocalProducto(imagenUrl);
+    if (rutaLocal) {
+      return {
+        imagen: rutaLocal,
+        imagenes: [rutaLocal]
+      };
+    }
+
     const nombreArchivo = await descargarImagenRemota(imagenUrl, uploadDir);
     const rutaRelativa = rutaRelativaUpload(path.join(uploadDir, nombreArchivo));
     return {
