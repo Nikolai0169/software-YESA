@@ -631,7 +631,7 @@ const PersonalizacionPage = () => {
             const blob = dataUrlToBlob(textureUrlToSend);
             formData.append('texture', blob, 'texture.png');
           }
-          const uploadResp = await uploadFile('/uploads/texture', formData);
+          const uploadResp = await uploadFile('/uploads/texture-personalizacion', formData);
           textureUrlToSend = getAllowedUploadPath(uploadResp.data?.url);
         } catch (err) {
           console.error('Error subiendo textura antes de cotizar:', err);
@@ -703,7 +703,7 @@ const PersonalizacionPage = () => {
             const blob = dataUrlToBlob(tex);
             formData.append('texture', blob, 'texture.png');
           }
-          const uploadResp = await uploadFile('/uploads/texture', formData);
+          const uploadResp = await uploadFile('/uploads/texture-personalizacion', formData);
           const url = uploadResp.data?.url;
           const allowedUrl = getAllowedUploadPath(url);
           if (allowedUrl) {
@@ -753,7 +753,7 @@ const PersonalizacionPage = () => {
         } else {
           formData.append('texture', dataUrlToBlob(texture), 'texture.png');
         }
-        const uploadResp = await uploadFile('/uploads/texture', formData);
+        const uploadResp = await uploadFile('/uploads/texture-personalizacion', formData);
         const uploadedTexture = getAllowedUploadPath(uploadResp.data?.url);
         if (!uploadedTexture) throw new Error('No se pudo obtener la URL de la imagen');
         design.textureUrl = uploadedTexture;

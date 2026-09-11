@@ -44,6 +44,7 @@ const AdminProductosPage = () => {
   const [showGalleryModal, setShowGalleryModal] = useState(false);
   const [imagenesServidor, setImagenesServidor] = useState([]);
   const [loadingGaleria, setLoadingGaleria] = useState(false);
+  const [eliminandoImagen, setEliminandoImagen] = useState('');
   
   // Estados para filtros
   const [busqueda, setBusqueda] = useState('');
@@ -209,6 +210,39 @@ const AdminProductosPage = () => {
     setMensaje({ tipo: 'success', texto: 'Imagen importada desde la galería del servidor' });
   };
 
+  const eliminarImagenServidor = async (imagen) => {
+    if (!window.confirm(`¿Eliminar "${imagen.name}" de la galería?`)) return;
+
+    setEliminandoImagen(imagen.name);
+    try {
+      await api.delete(`uploads/imagenes/${encodeURIComponent(imagen.name)}`);
+      setImagenesServidor((imagenes) => imagenes.filter((item) => item.name !== imagen.name));
+      setMensaje({ tipo: 'success', texto: 'Imagen eliminada de la galería' });
+    } catch (error) {
+      console.error('Error al eliminar imagen de la galería:', error);
+      setMensaje({ tipo: 'danger', texto: error.response?.data?.message || 'No se pudo eliminar la imagen' });
+    } finally {
+      setEliminandoImagen('');
+    }
+  };
+
+  const vaciarGaleria = async () => {
+    if (imagenesServidor.length === 0) return;
+    if (!window.confirm(`¿Vaciar toda la galería? Se eliminarán ${imagenesServidor.length} imágenes.`)) return;
+
+    setLoadingGaleria(true);
+    try {
+      await api.delete('uploads/imagenes');
+      setImagenesServidor([]);
+      setMensaje({ tipo: 'success', texto: 'Galería vaciada correctamente' });
+    } catch (error) {
+      console.error('Error al vaciar la galería:', error);
+      setMensaje({ tipo: 'danger', texto: error.response?.data?.message || 'No se pudo vaciar la galería' });
+    } finally {
+      setLoadingGaleria(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -353,9 +387,6 @@ const AdminProductosPage = () => {
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div><h1><i className="bi bi-box-seam me-2"></i>Gestión de Productos</h1><p className="text-muted">Administra el inventario de productos</p></div>
         <div className="d-flex gap-2">
-          <Button variant="outline-primary" onClick={() => fileInputRef.current?.click()}>
-            <i className="bi bi-images me-1"></i> Importar imagen
-          </Button>
           <Dropdown as={ButtonGroup} className="me-2">
             <Button
               type="button"
@@ -376,6 +407,9 @@ const AdminProductosPage = () => {
               <Dropdown.Item as="button" type="button" data-testid="exportar-excel-option" data-format="excel" onClick={async () => { setTipoExportacion('excel'); await exportarProductosAExcel(productosFiltradosYOrdenados); }}>Excel</Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>
+          <Button variant="outline-primary" onClick={abrirGaleria}>
+            <i className="bi bi-images me-1"></i> Galería
+          </Button>
 
           {/* Acción masiva */}
           <Dropdown align="end">
@@ -457,6 +491,19 @@ const AdminProductosPage = () => {
       <Modal show={showGalleryModal} onHide={() => setShowGalleryModal(false)} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Galería del servidor</Modal.Title>
+          <div className="d-flex gap-2 ms-auto me-2">
+            <Button variant="primary" size="sm" onClick={() => fileInputRef.current?.click()}>
+              <i className="bi bi-upload me-1"></i> Importar imagen
+            </Button>
+            <Button
+              variant="outline-danger"
+              size="sm"
+              onClick={vaciarGaleria}
+              disabled={loadingGaleria || imagenesServidor.length === 0}
+            >
+              <i className="bi bi-trash3 me-1"></i> Vaciar galería
+            </Button>
+          </div>
         </Modal.Header>
         <Modal.Body>
           {loadingGaleria ? (
@@ -472,7 +519,17 @@ const AdminProductosPage = () => {
                     <Card.Body>
                       <Card.Title className="h6">{imagen.name}</Card.Title>
                       <Button variant="primary" size="sm" className="w-100" onClick={() => seleccionarImagenServidor(imagen.url)}>
-                        <i className="bi bi-plus-circle me-1"></i> Importar
+                        <i className="bi bi-check2-circle me-1"></i> Usar imagen
+                      </Button>
+                      <Button
+                        variant="outline-danger"
+                        size="sm"
+                        className="w-100 mt-2"
+                        onClick={() => eliminarImagenServidor(imagen)}
+                        disabled={eliminandoImagen === imagen.name}
+                      >
+                        <i className="bi bi-trash me-1"></i>
+                        {eliminandoImagen === imagen.name ? 'Eliminando...' : 'Eliminar'}
                       </Button>
                     </Card.Body>
                   </Card>

@@ -3,8 +3,16 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const http = require('node:http');
 const https = require('node:https');
+const { productUploadPath, uploadPath } = require('../config/multer');
 
 const MAX_REDIRECTS = 5;
+
+const rutaRelativaUpload = (ruta) => path.relative(path.resolve(uploadPath), path.resolve(ruta)).split(path.sep).join('/');
+
+const rutaArchivoSubido = (file) => {
+  if (!file?.destination) return file?.filename;
+  return rutaRelativaUpload(path.join(file.destination, file.filename));
+};
 
 const mapearExtensionPorTipo = (contentType) => {
   if (!contentType) return '.jpg';
@@ -79,15 +87,15 @@ const descargarImagenRemota = async (
 };
 
 const resolverImagenProducto = async (body = {}, files = {}, options = {}) => {
-  const uploadDir = options.uploadDir || path.join(__dirname, '../uploads');
+  const uploadDir = options.uploadDir || productUploadPath;
   const imagenesSubidas = files?.imagenes;
   const imagenSubida = files?.imagen;
   let imagenes = null;
 
   if (imagenesSubidas?.length) {
-    imagenes = imagenesSubidas.map((file) => file.filename);
+    imagenes = imagenesSubidas.map(rutaArchivoSubido);
   } else if (imagenSubida?.length) {
-    imagenes = [imagenSubida[0].filename];
+    imagenes = [rutaArchivoSubido(imagenSubida[0])];
   }
 
   const imagenUrl = typeof body?.imagenUrl === 'string' ? body.imagenUrl.trim() : '';
@@ -102,9 +110,10 @@ const resolverImagenProducto = async (body = {}, files = {}, options = {}) => {
 
   if (imagenUrl) {
     const nombreArchivo = await descargarImagenRemota(imagenUrl, uploadDir);
+    const rutaRelativa = rutaRelativaUpload(path.join(uploadDir, nombreArchivo));
     return {
-      imagen: nombreArchivo,
-      imagenes: [nombreArchivo]
+      imagen: rutaRelativa,
+      imagenes: [rutaRelativa]
     };
   }
 
