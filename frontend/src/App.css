@@ -662,7 +662,7 @@ body {
 .navbar .navbar-form {
   display: flex;
   align-items: center;
-  flex: 0 1 240px;
+  flex: 1 1 clamp(240px, 24vw, 320px);
   min-width: 0;
 }
 
@@ -672,11 +672,31 @@ body {
   max-width: 100%;
 }
 
+.navbar .search-form .form-control {
+  min-height: 42px;
+  font-size: 1rem;
+}
+
+.navbar .search-form .position-relative {
+  width: 100% !important;
+}
+
 @media (max-width: 992px) {
-  .navbar .me-auto { overflow: visible; }
+  .navbar .navbar-collapse {
+    flex-wrap: wrap;
+  }
+
+  .navbar .me-auto {
+    flex: 1 1 auto;
+    overflow: visible;
+  }
+
   .navbar .search-form,
   .navbar form.search,
-  .navbar .navbar-form { flex: 0 1 160px; }
+  .navbar .navbar-form {
+    flex: 1 1 280px;
+    min-width: min(100%, 240px);
+  }
 }
 
 /* Ensure dropdowns appear above other elements */
@@ -685,16 +705,19 @@ body {
   z-index: 2050;
 }
 
-/* Tighter default max for search input to avoid overlap */
 .navbar .search-form .position-relative,
 .navbar .search-form .position-relative > .form-control {
-  max-width: 160px;
+  max-width: 320px;
 }
 
 @media (max-width: 1200px) {
+  .navbar .navbar-collapse {
+    flex-wrap: wrap;
+  }
+
   .navbar .search-form .position-relative,
   .navbar .search-form .position-relative > .form-control {
-    max-width: 140px;
+    max-width: 100%;
   }
 }
 
