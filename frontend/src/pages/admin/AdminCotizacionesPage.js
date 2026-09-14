@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Container, Card, Button, Row, Col, Badge, Spinner, Alert, Form, InputGroup, Pagination } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { obtenerCotizaciones, actualizarCotizacion } from '../../services/api';
@@ -13,6 +13,7 @@ const AdminCotizacionesPage = () => {
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [filtros, setFiltros] = useState({ nombre: '', estado: 'todos', orden: 'fecha-desc' });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -67,9 +68,45 @@ const AdminCotizacionesPage = () => {
   };
 
   const ITEMS_PER_PAGE = 6;
-  const totalPages = Math.ceil(cotizaciones.length / ITEMS_PER_PAGE);
+  const estadisticas = useMemo(() => ({
+    total: cotizaciones.length,
+    pendiente: cotizaciones.filter((cotizacion) => cotizacion.estado === 'pendiente').length,
+    cotizado: cotizaciones.filter((cotizacion) => cotizacion.estado === 'cotizado').length,
+    convertido: cotizaciones.filter((cotizacion) => ['convertida', 'convertido'].includes(cotizacion.estado)).length,
+  }), [cotizaciones]);
+
+  const cotizacionesFiltradas = useMemo(() => {
+    const nombreBuscado = filtros.nombre.trim().toLowerCase();
+    const resultado = cotizaciones.filter((cotizacion) => {
+      const nombre = String(cotizacion.nombre || '').toLowerCase();
+      const coincideNombre = !nombreBuscado || nombre.includes(nombreBuscado);
+      const coincideEstado = filtros.estado === 'todos' || cotizacion.estado === filtros.estado;
+      return coincideNombre && coincideEstado;
+    });
+
+    return resultado.sort((a, b) => {
+      if (filtros.orden === 'nombre-asc' || filtros.orden === 'nombre-desc') {
+        const comparacion = String(a.nombre || 'Cotización pendiente').localeCompare(
+          String(b.nombre || 'Cotización pendiente'),
+          'es',
+          { sensitivity: 'base' }
+        );
+        return filtros.orden === 'nombre-asc' ? comparacion : -comparacion;
+      }
+
+      const fechaA = new Date(a.createdAt).getTime();
+      const fechaB = new Date(b.createdAt).getTime();
+      return filtros.orden === 'fecha-asc' ? fechaA - fechaB : fechaB - fechaA;
+    });
+  }, [cotizaciones, filtros]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filtros]);
+
+  const totalPages = Math.ceil(cotizacionesFiltradas.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const visibleCotizaciones = cotizaciones.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const visibleCotizaciones = cotizacionesFiltradas.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
@@ -83,6 +120,9 @@ const AdminCotizacionesPage = () => {
         return 'warning';
       case 'cotizado':
         return 'info';
+      case 'convertida':
+      case 'convertido':
+        return 'success';
       case 'aceptado':
         return 'success';
       case 'rechazado':
@@ -104,8 +144,13 @@ const AdminCotizacionesPage = () => {
             Gestión de presupuestos y revisión de cotizaciones generadas desde el módulo de personalización.
           </p>
         </div>
-        <Button variant="outline-secondary" onClick={() => navigate('/admin/dashboard')}>
-          <i className="bi bi-arrow-left me-2"></i>Volver al dashboard
+        <Button
+          variant="outline-primary"
+          onClick={() => navigate('/admin/dashboard')}
+          aria-label="Volver al dashboard"
+          title="Volver al dashboard"
+        >
+          <i className="bi bi-arrow-left" aria-hidden="true" />
         </Button>
       </div>
 
@@ -128,6 +173,90 @@ const AdminCotizacionesPage = () => {
             </Alert>
           ) : (
             <>
+              <Row className="mb-4 g-3">
+                <Col xs={6} lg={3}>
+                  <Card className="text-white bg-primary shadow-sm h-100">
+                    <Card.Body>
+                      <Card.Title>Total Cotizaciones</Card.Title>
+                      <p className="display-6">{estadisticas.total}</p>
+                    </Card.Body>
+                  </Card>
+                </Col>
+                <Col xs={6} lg={3}>
+                  <Card className="text-white bg-warning shadow-sm h-100">
+                    <Card.Body>
+                      <Card.Title>Pendientes</Card.Title>
+                      <p className="display-6">{estadisticas.pendiente}</p>
+                    </Card.Body>
+                  </Card>
+                </Col>
+                <Col xs={6} lg={3}>
+                  <Card className="text-white bg-info shadow-sm h-100">
+                    <Card.Body>
+                      <Card.Title>Cotizados</Card.Title>
+                      <p className="display-6">{estadisticas.cotizado}</p>
+                    </Card.Body>
+                  </Card>
+                </Col>
+                <Col xs={6} lg={3}>
+                  <Card className="text-white bg-success shadow-sm h-100">
+                    <Card.Body>
+                      <Card.Title>Convertidos</Card.Title>
+                      <p className="display-6">{estadisticas.convertido}</p>
+                    </Card.Body>
+                  </Card>
+                </Col>
+              </Row>
+
+              <div className="border rounded p-3 mt-4 bg-light">
+                <Row className="g-3 align-items-end">
+                  <Col xs={12} md={5}>
+                    <Form.Label htmlFor="filtro-nombre">Buscar por nombre</Form.Label>
+                    <Form.Control
+                      id="filtro-nombre"
+                      type="search"
+                      value={filtros.nombre}
+                      onChange={(event) => setFiltros((prev) => ({ ...prev, nombre: event.target.value }))}
+                      placeholder="Nombre de la cotización"
+                    />
+                  </Col>
+                  <Col xs={12} md={3}>
+                    <Form.Label htmlFor="filtro-estado">Estado</Form.Label>
+                    <Form.Select
+                      id="filtro-estado"
+                      value={filtros.estado}
+                      onChange={(event) => setFiltros((prev) => ({ ...prev, estado: event.target.value }))}
+                    >
+                      <option value="todos">Todos los estados</option>
+                      <option value="pendiente">Pendiente</option>
+                      <option value="cotizado">Cotizado</option>
+                      <option value="convertida">Convertido</option>
+                      <option value="aceptado">Aceptado</option>
+                      <option value="rechazado">Rechazado</option>
+                    </Form.Select>
+                  </Col>
+                  <Col xs={12} md={4}>
+                    <Form.Label htmlFor="orden-cotizaciones">Ordenar por</Form.Label>
+                    <Form.Select
+                      id="orden-cotizaciones"
+                      value={filtros.orden}
+                      onChange={(event) => setFiltros((prev) => ({ ...prev, orden: event.target.value }))}
+                    >
+                      <option value="fecha-desc">Más recientes</option>
+                      <option value="fecha-asc">Más antiguas</option>
+                      <option value="nombre-asc">Nombre A-Z</option>
+                      <option value="nombre-desc">Nombre Z-A</option>
+                    </Form.Select>
+                  </Col>
+                </Row>
+              </div>
+
+              {cotizacionesFiltradas.length === 0 && (
+                <Alert variant="secondary" className="mt-4">
+                  No hay cotizaciones que coincidan con los filtros seleccionados.
+                </Alert>
+              )}
+
               <Row className="g-4 mt-4">
                 {visibleCotizaciones.map((cotizacion) => (
                 <Col key={cotizacion.id} xs={12} md={6} lg={4}>

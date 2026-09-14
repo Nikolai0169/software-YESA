@@ -199,8 +199,14 @@ function AdminPedidosPage() {
       {/* Cabecera */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div className="d-flex align-items-center gap-2">
-          <button type="button" className="btn btn-outline-secondary" onClick={() => navigate('/admin/dashboard')}>
-            <i className="bi bi-arrow-left me-1"></i> Volver
+          <button
+            type="button"
+            className="btn btn-outline-primary"
+            onClick={() => navigate('/admin/dashboard')}
+            aria-label="Volver al dashboard"
+            title="Volver al dashboard"
+          >
+            <i className="bi bi-arrow-left" aria-hidden="true" />
           </button>
           <h2 className="mb-0">Gestión de Pedidos</h2>
         </div>
@@ -217,8 +223,8 @@ function AdminPedidosPage() {
       </div>
 
       {/* Tarjetas de estadísticas */}
-      <div className="row mb-4">
-        <div className="col-md-2">
+      <div className="row mb-4 g-3">
+        <div className="col-6 col-md-2">
           <div className="card text-white bg-primary shadow-sm order-status-counter">
             <div className="card-body">
               <h6 className="card-title">Total Pedidos</h6>
@@ -226,7 +232,7 @@ function AdminPedidosPage() {
             </div>
           </div>
         </div>
-        <div className="col-md-2">
+        <div className="col-6 col-md-2">
           <div className="card text-white bg-warning shadow-sm order-status-counter">
             <div className="card-body">
               <h6 className="card-title">Pendientes</h6>
@@ -234,7 +240,7 @@ function AdminPedidosPage() {
             </div>
           </div>
         </div>
-        <div className="col-md-2">
+        <div className="col-6 col-md-2">
           <div className="card text-white bg-info shadow-sm order-status-counter">
             <div className="card-body">
               <h6 className="card-title">En Proceso</h6>
@@ -242,7 +248,7 @@ function AdminPedidosPage() {
             </div>
           </div>
         </div>
-        <div className="col-md-2">
+        <div className="col-6 col-md-2">
           <div className="card text-white bg-primary shadow-sm order-status-counter">
             <div className="card-body">
               <h6 className="card-title">Enviados</h6>
@@ -250,7 +256,7 @@ function AdminPedidosPage() {
             </div>
           </div>
         </div>
-        <div className="col-md-2">
+        <div className="col-6 col-md-2">
           <div className="card text-white bg-success shadow-sm order-status-counter">
             <div className="card-body">
               <h6 className="card-title">Entregados</h6>
@@ -258,7 +264,7 @@ function AdminPedidosPage() {
             </div>
           </div>
         </div>
-        <div className="col-md-2">
+        <div className="col-6 col-md-2">
           <div className="card text-white bg-danger shadow-sm order-status-counter">
             <div className="card-body">
               <h6 className="card-title">Cancelados</h6>

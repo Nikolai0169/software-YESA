@@ -424,7 +424,14 @@ const AdminProductosPage = () => {
           </Dropdown>
 
           <Button variant="primary" onClick={() => handleShowModal()}><i className="bi bi-plus-circle me-1"></i> Nuevo Producto</Button>
-          <Button variant="outline-secondary" onClick={() => navigate('/admin/dashboard')}><i className="bi bi-arrow-left me-1"></i> Volver</Button>
+          <Button
+            variant="outline-primary"
+            onClick={() => navigate('/admin/dashboard')}
+            aria-label="Volver al dashboard"
+            title="Volver al dashboard"
+          >
+            <i className="bi bi-arrow-left" aria-hidden="true" />
+          </Button>
         </div>
       </div>
 
@@ -440,10 +447,10 @@ const AdminProductosPage = () => {
       )}
 
       {/* Tarjetas */}
-      <Row className="mb-4">
-        <Col md={4}><Card className="text-white bg-primary shadow-sm"><Card.Body><Card.Title>Total Productos</Card.Title><p className="display-6">{totalProductos}</p></Card.Body></Card></Col>
-        <Col md={4}><Card className="text-white bg-success shadow-sm"><Card.Body><Card.Title>Productos Activos</Card.Title><p className="display-6">{productosActivos}</p></Card.Body></Card></Col>
-        <Col md={4}><Card className="text-white bg-warning shadow-sm"><Card.Body><Card.Title>Stock Bajo (≤5)</Card.Title><p className="display-6">{stockBajo}</p></Card.Body></Card></Col>
+      <Row className="mb-4 g-3">
+        <Col xs={6} md={4}><Card className="text-white bg-primary shadow-sm h-100"><Card.Body><Card.Title>Total Productos</Card.Title><p className="display-6">{totalProductos}</p></Card.Body></Card></Col>
+        <Col xs={6} md={4}><Card className="text-white bg-success shadow-sm h-100"><Card.Body><Card.Title>Productos Activos</Card.Title><p className="display-6">{productosActivos}</p></Card.Body></Card></Col>
+        <Col xs={6} md={4}><Card className="text-white bg-warning shadow-sm h-100"><Card.Body><Card.Title>Stock Bajo (≤5)</Card.Title><p className="display-6">{stockBajo}</p></Card.Body></Card></Col>
       </Row>
 
       {/* Filtros */}

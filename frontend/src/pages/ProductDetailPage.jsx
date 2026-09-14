@@ -75,6 +75,10 @@ const ProductDetailPage = () => {
     loadProducto();
   }, [loadProducto]);
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, [id]);
+
   const handleAgregarAlCarrito = async () => {
     if (!isAuthenticated) {
       setMensaje({ tipo: 'warning', texto: 'Debes iniciar sesión para agregar al carrito' });
@@ -163,6 +167,16 @@ const ProductDetailPage = () => {
 
   return (
     <Container className="py-5">
+      <Button
+        variant="outline-primary"
+        className="mb-4"
+        onClick={() => navigate('/catalogo')}
+        aria-label="Volver al catálogo"
+        title="Volver al catálogo"
+      >
+        <i className="bi bi-arrow-left" aria-hidden="true" />
+      </Button>
+
       {mensaje.texto && (
         <Alert variant={mensaje.tipo} className="mb-4">
           {mensaje.texto}

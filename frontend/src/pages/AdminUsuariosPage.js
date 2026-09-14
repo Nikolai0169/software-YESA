@@ -3,9 +3,11 @@ import usuarioService from '../services/usuarioService';
 import { exportarUsuariosAPDF, exportarUsuariosAExcel } from '../utils/exportUtils';
 import { useAuth } from '../context/AuthContext'; // Ajusta la ruta según tu proyecto
 import SuccessBanner from '../components/SuccessBanner';
+import { useNavigate } from 'react-router-dom';
 
 function AdminUsuariosPage() {
   const { user: usuarioActualAutenticado } = useAuth(); // Obtén el usuario logueado
+  const navigate = useNavigate();
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -225,7 +227,18 @@ function AdminUsuariosPage() {
       )}
 
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2>Gestión de Usuarios</h2>
+        <div className="d-flex align-items-center gap-2">
+          <button
+            type="button"
+            className="btn btn-outline-primary"
+            onClick={() => navigate('/admin/dashboard')}
+            aria-label="Volver al dashboard"
+            title="Volver al dashboard"
+          >
+            <i className="bi bi-arrow-left" aria-hidden="true" />
+          </button>
+          <h2 className="mb-0">Gestión de Usuarios</h2>
+        </div>
         <div>
           <div className="btn-group me-2">
             <button type="button" className="btn btn-success" data-testid="exportar-main-button" onClick={() => exportarUsuariosAPDF(usuariosFiltradosYOrdenados)}>
@@ -244,8 +257,8 @@ function AdminUsuariosPage() {
       </div>
 
       {/* Tarjetas de estadísticas */}
-      <div className="row mb-4">
-        <div className="col-md-4">
+      <div className="row mb-4 g-3">
+        <div className="col-6 col-md-4">
           <div className="card text-white bg-primary shadow-sm">
             <div className="card-body">
               <h5 className="card-title">Total Usuarios</h5>
@@ -253,7 +266,7 @@ function AdminUsuariosPage() {
             </div>
           </div>
         </div>
-        <div className="col-md-4">
+        <div className="col-6 col-md-4">
           <div className="card text-white bg-success shadow-sm">
             <div className="card-body">
               <h5 className="card-title">Usuarios Activos</h5>
@@ -261,7 +274,7 @@ function AdminUsuariosPage() {
             </div>
           </div>
         </div>
-        <div className="col-md-4">
+        <div className="col-6 col-md-4">
           <div className="card text-white bg-info shadow-sm">
             <div className="card-body">
               <h5 className="card-title">Total Clientes</h5>
