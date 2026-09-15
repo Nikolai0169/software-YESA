@@ -302,8 +302,14 @@ const AdminSubcategoriasPage = () => {
           <Button variant="primary" onClick={() => handleShowModal()}>
             <i className="bi bi-plus-circle me-1"></i> Nueva Subcategoría
           </Button>
-          <Button variant="outline-secondary" onClick={() => navigate('/admin/dashboard')} className="me-2">
-            <i className="bi bi-arrow-left me-1"></i> Volver
+          <Button
+            variant="outline-primary"
+            onClick={() => navigate('/admin/dashboard')}
+            className="me-2"
+            aria-label="Volver al dashboard"
+            title="Volver al dashboard"
+          >
+            <i className="bi bi-arrow-left" aria-hidden="true" />
           </Button>
         </div>
       </div>
@@ -323,14 +329,14 @@ const AdminSubcategoriasPage = () => {
       )}
 
       {/* Tarjetas de estadísticas */}
-      <Row className="mb-4">
-        <Col md={4}>
+      <Row className="mb-4 g-3">
+        <Col xs={6} md={4}>
           <Card className="text-white bg-primary shadow-sm"><Card.Body><Card.Title>Total Subcategorías</Card.Title><p className="display-6">{totalSubcategorias}</p></Card.Body></Card>
         </Col>
-        <Col md={4}>
+        <Col xs={6} md={4}>
           <Card className="text-white bg-success shadow-sm"><Card.Body><Card.Title>Subcategorías Activas</Card.Title><p className="display-6">{subcategoriasActivas}</p></Card.Body></Card>
         </Col>
-        <Col md={4}>
+        <Col xs={6} md={4}>
           <Card className="text-white bg-secondary shadow-sm"><Card.Body><Card.Title>Subcategorías Inactivas</Card.Title><p className="display-6">{subcategoriasInactivas}</p></Card.Body></Card>
         </Col>
       </Row>

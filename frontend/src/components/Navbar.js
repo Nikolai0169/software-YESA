@@ -123,7 +123,7 @@ const NavigationBar = memo(({ onOpenFAQ, theme = 'light', toggleTheme }) => {
   return (
     <>
       <FAQModal show={showFAQ} onHide={() => setShowFAQ(false)} openSection={null} setShowFAQ={setShowFAQ} />
-      <Navbar bg="dark" variant="dark" expand="lg" sticky="top" className="navbar shadow-sm">
+      <Navbar bg="dark" variant="dark" expand="lg" sticky="top" className={`navbar shadow-sm${isCatalogo ? ' navbar-catalogo' : ''}`}>
       <Container fluid className="px-4">
         <Navbar.Brand as={Link} to="/" style={{ fontWeight: '700', fontSize: '1.4rem', letterSpacing: '1px' }}>
           <i className="bi bi-shop me-2" style={{
@@ -138,14 +138,30 @@ const NavigationBar = memo(({ onOpenFAQ, theme = 'light', toggleTheme }) => {
           }}>YESA</span>
         </Navbar.Brand>
 
-        <Nav className="mobile-quick-links d-lg-none" aria-label="Navegación principal">
-          <Nav.Link as={Link} to="/" className="mobile-quick-link">
-            <i className="bi bi-house me-1"></i>Inicio
-          </Nav.Link>
-          <Nav.Link as={Link} to="/catalogo" className="mobile-quick-link">
-            <i className="bi bi-grid me-1"></i>Catálogo
-          </Nav.Link>
-        </Nav>
+        <div className="mobile-navigation-center d-lg-none">
+          <Nav className="mobile-quick-links" aria-label="Navegación principal">
+            <Nav.Link as={Link} to="/" className="mobile-quick-link">
+              <i className="bi bi-house me-1"></i>Inicio
+            </Nav.Link>
+            <Nav.Link as={Link} to="/catalogo" className="mobile-quick-link">
+              <i className="bi bi-grid me-1"></i>Catálogo
+            </Nav.Link>
+          </Nav>
+
+          {isCatalogo && (
+            <Form className="mobile-inline-search" onSubmit={(e) => e.preventDefault()}>
+              <FormControl
+                type="search"
+                placeholder="Buscar..."
+                aria-label="Buscar productos"
+                value={buscarLocal}
+                onChange={handleBuscarChange}
+                autoComplete="off"
+              />
+              <i className="bi bi-search mobile-search-icon"></i>
+            </Form>
+          )}
+        </div>
 
         <Navbar.Toggle
           aria-controls="mobile-navigation"
@@ -386,25 +402,6 @@ const NavigationBar = memo(({ onOpenFAQ, theme = 'light', toggleTheme }) => {
               <Nav.Link as={Link} to="/catalogo" onClick={() => setShowMobileMenu(false)}>
                 <i className="bi bi-grid me-2"></i>Catálogo
               </Nav.Link>
-
-              {isCatalogo && (
-                <Form className="mobile-search-form mt-2 mb-2" onSubmit={(e) => e.preventDefault()}>
-                  <Form.Label htmlFor="mobile-product-search" className="small text-muted">
-                    Buscar productos
-                  </Form.Label>
-                  <div className="position-relative">
-                    <FormControl
-                      id="mobile-product-search"
-                      type="search"
-                      placeholder="Buscar productos..."
-                      value={buscarLocal}
-                      onChange={handleBuscarChange}
-                      autoComplete="off"
-                    />
-                    <i className="bi bi-search mobile-search-icon"></i>
-                  </div>
-                </Form>
-              )}
 
               {isCatalogo && categorias.length > 0 && (
                 <div className="mobile-filter-section">

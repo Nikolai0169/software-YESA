@@ -5,6 +5,8 @@ const { productUploadPath } = require('../config/multer');
 
 const extensionesImagen = new Set(['.jpg', '.jpeg', '.png', '.gif', '.webp']);
 
+const obtenerNombreVisible = (nombre) => nombre.replace(/^\d{10,}-/, '');
+
 const quitarBarrasFinales = (url) => {
   let resultado = url;
   while (resultado.endsWith('/')) resultado = resultado.slice(0, -1);
@@ -50,7 +52,8 @@ exports.listarImagenesSubidas = async (req, res) => {
           const backendOrigin = construirBaseUrl(req);
 
           return {
-            name: entrada.name,
+            name: obtenerNombreVisible(entrada.name),
+            storageName: entrada.name,
             url: `${quitarBarrasFinales(backendOrigin)}/uploads/productos/${encodeURIComponent(entrada.name)}`,
             size: estadisticas.size,
             modifiedAt: estadisticas.mtime.toISOString(),

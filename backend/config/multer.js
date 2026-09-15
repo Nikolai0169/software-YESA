@@ -74,12 +74,11 @@ const createStorage = (destinationPath) => multer.diskStorage({
    * @param {Function} cb - Callback que recibe: (error, nombreArchivo)
    */
   filename: function (req, file, cb) {
-    // Date.now() genera un timestamp en milisegundos (ej: 1709578800000)
-    // Se concatena con '-' y el nombre original del archivo
-    // Esto garantiza un nombre único (el timestamp cambia cada milisegundo)
-    const uniqueName = Date.now() + '-' + file.originalname;
-    // Llama al callback con null (sin error) y el nombre único generado
-    cb(null, uniqueName);
+    const originalName = path.basename(file.originalname || '')
+      .replace(/[<>:"/\\|?*\x00-\x1F]/g, '_')
+      .trim();
+    const safeName = originalName || `imagen.${file.mimetype.split('/')[1] || 'jpg'}`;
+    cb(null, safeName);
   }
 });
 

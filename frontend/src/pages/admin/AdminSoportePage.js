@@ -198,8 +198,14 @@ const handleEnviarRespuesta = async () => {
           <p className="text-muted mb-0">Mensajes de contacto desde el formulario FAQ</p>
         </div>
         <div>
-          <Button variant="outline-secondary" onClick={() => navigate('/admin/dashboard')} className="me-2">
-            <i className="bi bi-arrow-left me-1"></i> Volver
+          <Button
+            variant="outline-primary"
+            onClick={() => navigate('/admin/dashboard')}
+            className="me-2"
+            aria-label="Volver al dashboard"
+            title="Volver al dashboard"
+          >
+            <i className="bi bi-arrow-left" aria-hidden="true" />
           </Button>
         </div>
       </div>
@@ -219,8 +225,8 @@ const handleEnviarRespuesta = async () => {
       )}
 
       {/* Tarjetas de estadísticas */}
-      <Row className="mb-4">
-        <Col md={4}>
+      <Row className="mb-4 g-3">
+        <Col xs={6} md={4}>
           <Card className="text-white bg-primary shadow-sm">
             <Card.Body>
               <Card.Title>Total de Mensajes</Card.Title>
@@ -228,7 +234,7 @@ const handleEnviarRespuesta = async () => {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={4}>
+        <Col xs={6} md={4}>
           <Card className="text-white bg-warning shadow-sm">
             <Card.Body>
               <Card.Title>Pendientes</Card.Title>
@@ -236,7 +242,7 @@ const handleEnviarRespuesta = async () => {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={4}>
+        <Col xs={6} md={4}>
           <Card className="text-white bg-success shadow-sm">
             <Card.Body>
               <Card.Title>Respondidos</Card.Title>
@@ -244,7 +250,7 @@ const handleEnviarRespuesta = async () => {
             </Card.Body>
           </Card>
         </Col>
-                <Col md={4}>
+                <Col xs={6} md={4}>
                   <Card className="text-white bg-secondary shadow-sm">
                     <Card.Body>
                       <Card.Title>Cerrados</Card.Title>
