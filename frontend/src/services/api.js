@@ -9,7 +9,9 @@
 // Importar axios
 import axios from 'axios';
 import { API_URL } from './config';
-import { getStorageString } from '../utils/storage';
+import { getStorageString, setSanitizedStorageString } from '../utils/storage';
+
+let refreshPromise = null;
 
 /**
  * URL base del backend API
@@ -66,7 +68,7 @@ apiClient.interceptors.response.use(
     // Si la respuesta es exitosa (status 2xx), simplemente retornarla
     return response;
   },
-  (error) => {
+  async (error) => {
     // Manejar errores de respuesta (status 4xx, 5xx)
     
     if (error.response) {
@@ -74,14 +76,35 @@ apiClient.interceptors.response.use(
       const { status, data } = error.response;
       
       // Token expirado o inválido (401 Unauthorized)
-      if (status === 401) {
-        console.error('⚠️ Sesión expirada. Redirigiendo al login...');
-        
-        // Eliminar token del localStorage
+      if (status === 401 && error.config && !error.config._retry && !error.config.url?.endsWith('/auth/refresh')) {
+        const refreshToken = getStorageString('refreshToken');
+        if (refreshToken) {
+          error.config._retry = true;
+          refreshPromise ||= apiClient.post('/auth/refresh', { refreshToken })
+            .then((refreshResponse) => {
+              const tokens = refreshResponse.data?.data || refreshResponse.data;
+              setSanitizedStorageString('token', tokens.token);
+              if (tokens.refreshToken) {
+                setSanitizedStorageString('refreshToken', tokens.refreshToken);
+              }
+              return tokens.token;
+            })
+            .finally(() => {
+              refreshPromise = null;
+            });
+
+          try {
+            const token = await refreshPromise;
+            error.config.headers.Authorization = `Bearer ${token}`;
+            return apiClient.request(error.config);
+          } catch (refreshError) {
+            console.error('⚠️ No se pudo renovar la sesión:', refreshError.message);
+          }
+        }
+
         localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
-        
-        // Redirigir al login (se puede mejorar con React Router)
         window.location.href = '/login';
       }
       

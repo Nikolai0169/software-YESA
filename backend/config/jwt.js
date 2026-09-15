@@ -58,6 +58,14 @@ const generateToken = (payload) => {
   }
 };
 
+const generateAccessToken = (payload) => generateToken({ ...payload, tokenType: 'access' });
+
+const generateRefreshToken = (payload) => jwt.sign(
+  { ...payload, tokenType: 'refresh' },
+  process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET,
+  { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d' }
+);
+
 /**
  * Verifica si un token JWT es válido (no fue modificado y no ha expirado).
  * Se llama desde el middleware auth.js en cada petición a rutas protegidas.
@@ -77,6 +85,10 @@ const verifyToken = (token) => {
     // 2. secret: la MISMA clave secreta que se usó para firmarlo (del .env)
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
+    if (decoded.tokenType === 'refresh') {
+      throw new Error('Token inválido');
+    }
+
     // Si la verificación pasa, retorna el objeto con los datos del usuario
     // Ejemplo: { id: 1, email: 'user@mail.com', rol: 'cliente', iat: 1709578800, exp: 1709665200 }
     // iat = issued at (fecha de creación), exp = expiration (fecha de expiración)
@@ -118,10 +130,24 @@ const extractToken = (authHeader) => {
   return null;
 };
 
+const verifyRefreshToken = (token) => {
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET);
+    if (decoded.tokenType !== 'refresh') throw new Error('Refresh token inválido');
+    return decoded;
+  } catch (error) {
+    if (error.name === 'TokenExpiredError') throw new Error('Refresh token expirado');
+    throw new Error('Refresh token inválido');
+  }
+};
+
 // Exporta las 3 funciones para que otros archivos las puedan importar.
 // Ejemplo: const { generateToken, verifyToken } = require('../config/jwt');
 module.exports = {
   generateToken,    // Usada en auth.controller.js al hacer login/registro
+  generateAccessToken,
+  generateRefreshToken,
   verifyToken,      // Usada en middleware/auth.js para validar tokens
+  verifyRefreshToken,
   extractToken      // Usada en middleware/auth.js para extraer el token del header
 };

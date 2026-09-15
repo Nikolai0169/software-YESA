@@ -24,7 +24,11 @@ exports.uploadTexture = async (req, res) => {
       .filter(Boolean)
       .join('/');
     const relativePath = [relativeDirectory, req.file.filename].filter(Boolean).join('/');
-    const fileUrl = `${quitarBarrasFinales(backendOrigin)}/uploads/${relativePath}`;
+    const encodedRelativePath = relativePath
+      .split('/')
+      .map((segment) => encodeURIComponent(segment))
+      .join('/');
+    const fileUrl = `${quitarBarrasFinales(backendOrigin)}/uploads/${encodedRelativePath}`;
     return res.json({ success: true, url: fileUrl });
   } catch (error) {
     console.error('Error al subir textura:', error);

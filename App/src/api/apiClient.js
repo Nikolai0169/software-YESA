@@ -5,11 +5,15 @@
 
 import axios from 'axios';
 import {API_BASE_URL, API_BASE_URL_CANDIDATES, API_TIMEOUT_MS, STORAGE_KEYS} from '../utils/constants';
-import {storageGetItem} from '../utils/storage';
+import {storageGetItem, storageMultiRemove, storageSetItem} from '../utils/storage';
+
+let refreshPromise = null;
 
 const isRetryableNetworkError = (error) => {
     const message = String(error?.message || '').toLowerCase();
-    return message.includes('network error') || message.includes('failed to fetch') || message.includes('socket hang up');
+    return message.includes('network error') || message.includes('failed to fetch')
+        || message.includes('socket hang up') || message.includes('timeout')
+        || message.includes('econnrefused') || message.includes('etimedout');
 };
 
 //instancias de axios
@@ -60,10 +64,39 @@ apiClient.interceptors.response.use(
             return apiClient.request(config);
         }
 
+        if (error.response?.status === 401 && config && !config._authRetry && !config._skipRefresh) {
+            const refreshToken = await storageGetItem(STORAGE_KEYS.refreshToken);
+            if (refreshToken) {
+                config._authRetry = true;
+                refreshPromise ||= apiClient.post('/auth/refresh', { refreshToken }, { _skipRefresh: true })
+                    .then(async (response) => {
+                        const tokens = response.data?.data || response.data;
+                        await storageSetItem(STORAGE_KEYS.token, tokens.token);
+                        if (tokens.refreshToken) {
+                            await storageSetItem(STORAGE_KEYS.refreshToken, tokens.refreshToken);
+                        }
+                        return tokens.token;
+                    })
+                    .finally(() => {
+                        refreshPromise = null;
+                    });
+
+                try {
+                    const token = await refreshPromise;
+                    config.headers = config.headers || {};
+                    config.headers.Authorization = `Bearer ${token}`;
+                    return apiClient.request(config);
+                } catch {
+                    await storageMultiRemove([STORAGE_KEYS.token, STORAGE_KEYS.refreshToken, STORAGE_KEYS.user]);
+                }
+            }
+        }
+
         const backendData = error.response?.data;
         const backendMessage = backendData?.message; // mensaje del servidor
         const message = backendMessage || error.message || 'Error de conexion';
         const err = new Error(message);
+        err.status = error.response?.status;
         // Adjunta los datos crudos del backend para que los catch puedan analizarlos (errores por campo, array de errores, etc.)
         err.responseData = backendData;
         throw err;
