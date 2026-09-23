@@ -486,7 +486,7 @@ const AdminProductosPage = () => {
                       <td>{formatearPrecio(prod.precio)}</td>
                       <td><Badge bg={prod.stock > 10 ? 'success' : prod.stock > 0 ? 'warning' : 'danger'}>{prod.stock}</Badge></td>
                       <td><Badge bg={prod.activo ? 'success' : 'secondary'}>{prod.activo ? 'Activo' : 'Inactivo'}</Badge></td>
-                      <td><div className="d-flex gap-2"><Button variant="outline-primary" size="sm" onClick={() => handleShowModal(prod)}>Editar</Button><Button variant={prod.activo ? 'outline-warning' : 'outline-success'} size="sm" onClick={() => handleToggleActivo(prod)}>{prod.activo ? 'Desactivar' : 'Activar'}</Button><Button variant="outline-danger" size="sm" onClick={() => handleDelete(prod.id)}>Eliminar</Button></div></td>
+                      <td><div className="d-flex gap-2"><Button type="button" variant="outline-primary" size="sm" data-testid={`editar-producto-${prod.id}`} onClick={() => handleShowModal(prod)}>Editar</Button><Button type="button" variant={prod.activo ? 'outline-warning' : 'outline-success'} size="sm" onClick={() => handleToggleActivo(prod)}>{prod.activo ? 'Desactivar' : 'Activar'}</Button><Button type="button" variant="outline-danger" size="sm" onClick={() => handleDelete(prod.id)}>Eliminar</Button></div></td>
                     </tr>
                   ))}
               </tbody>
@@ -549,7 +549,7 @@ const AdminProductosPage = () => {
       </Modal>
 
       {/* Modal */}
-      <Modal show={showModal} onHide={handleCloseModal} size="lg">
+      <Modal show={showModal} onHide={handleCloseModal} size="lg" data-testid="modal-editar-producto">
         <Modal.Header closeButton><Modal.Title>{editando ? 'Editar Producto' : 'Nuevo Producto'}</Modal.Title></Modal.Header>
         <Form onSubmit={handleSubmit}>
           <Modal.Body>

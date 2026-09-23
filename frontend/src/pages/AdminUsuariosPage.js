@@ -371,8 +371,8 @@ function AdminUsuariosPage() {
                       </td>
                       <td>
                         <div className="btn-group btn-group-sm">
-                          <button className="btn btn-outline-primary" onClick={() => handleEditar(usuario)}>Editar</button>
-                          <button 
+                          <button type="button" className="btn btn-outline-primary" data-testid={`editar-usuario-${usuario.id}`} onClick={() => handleEditar(usuario)}>Editar</button>
+                          <button type="button" 
                             className={`btn ${usuario.activo ? 'btn-outline-warning' : 'btn-outline-success'}`} 
                             onClick={() => handleToggleActivo(usuario)}
                             disabled={usuarioActualAutenticado && usuario.id === usuarioActualAutenticado.id}
@@ -380,7 +380,7 @@ function AdminUsuariosPage() {
                           >
                             {usuario.activo ? 'Desactivar' : 'Activar'}
                           </button>
-                          <button className="btn btn-outline-danger" onClick={() => handleEliminar(usuario.id)}>Eliminar</button>
+                          <button type="button" className="btn btn-outline-danger" onClick={() => handleEliminar(usuario.id)}>Eliminar</button>
                         </div>
                       </td>
                     </tr>

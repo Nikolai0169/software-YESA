@@ -410,9 +410,9 @@ const AdminSubcategoriasPage = () => {
                         <td className="align-middle"><Badge bg={sub.activo ? 'success' : 'secondary'}>{sub.activo ? 'Activo' : 'Inactivo'}</Badge></td>
                         <td className="align-middle">
                           <div className="d-flex gap-2">
-                            <Button variant="outline-primary" size="sm" onClick={() => handleShowModal(sub)}>Editar</Button>
-                            <Button variant={sub.activo ? 'outline-warning' : 'outline-success'} size="sm" onClick={() => handleToggleActivo(sub)}>{sub.activo ? 'Desactivar' : 'Activar'}</Button>
-                            <Button variant="outline-danger" size="sm" onClick={() => handleDelete(sub.id)}>Eliminar</Button>
+                            <Button type="button" variant="outline-primary" size="sm" data-testid={`editar-subcategoria-${sub.id}`} onClick={() => handleShowModal(sub)}>Editar</Button>
+                            <Button type="button" variant={sub.activo ? 'outline-warning' : 'outline-success'} size="sm" onClick={() => handleToggleActivo(sub)}>{sub.activo ? 'Desactivar' : 'Activar'}</Button>
+                            <Button type="button" variant="outline-danger" size="sm" onClick={() => handleDelete(sub.id)}>Eliminar</Button>
                           </div>
                         </td>
                       </tr>
@@ -427,7 +427,7 @@ const AdminSubcategoriasPage = () => {
       </Card>
 
       {/* Modal */}
-      <Modal show={showModal} onHide={handleCloseModal}>
+      <Modal show={showModal} onHide={handleCloseModal} data-testid="modal-editar-subcategoria">
         <Modal.Header closeButton><Modal.Title>{editando ? 'Editar Subcategoría' : 'Nueva Subcategoría'}</Modal.Title></Modal.Header>
         <Form onSubmit={handleSubmit}>
           <Modal.Body>

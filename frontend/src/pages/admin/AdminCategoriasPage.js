@@ -388,9 +388,9 @@ const AdminCategoriasPage = () => {
                       <td className="align-middle"><Badge bg={cat.activo ? 'success' : 'secondary'}>{cat.activo ? 'Activo' : 'Inactivo'}</Badge></td>
                       <td className="align-middle">
                         <div className="d-flex gap-2">
-                          <Button variant="outline-primary" size="sm" onClick={() => handleShowModal(cat)}>Editar</Button>
-                          <Button variant={cat.activo ? 'outline-warning' : 'outline-success'} size="sm" onClick={() => handleToggleActivo(cat)}>{cat.activo ? 'Desactivar' : 'Activar'}</Button>
-                          <Button variant="outline-danger" size="sm" onClick={() => handleDelete(cat.id)}>Eliminar</Button>
+                          <Button type="button" variant="outline-primary" size="sm" data-testid={`editar-categoria-${cat.id}`} onClick={() => handleShowModal(cat)}>Editar</Button>
+                          <Button type="button" variant={cat.activo ? 'outline-warning' : 'outline-success'} size="sm" onClick={() => handleToggleActivo(cat)}>{cat.activo ? 'Desactivar' : 'Activar'}</Button>
+                          <Button type="button" variant="outline-danger" size="sm" onClick={() => handleDelete(cat.id)}>Eliminar</Button>
                         </div>
                       </td>
                     </tr>
@@ -404,7 +404,7 @@ const AdminCategoriasPage = () => {
       </Card>
 
       {/* Modal (sin cambios) */}
-      <Modal show={showModal} onHide={handleCloseModal}>
+      <Modal show={showModal} onHide={handleCloseModal} data-testid="modal-editar-categoria">
         <Modal.Header closeButton><Modal.Title>{editando ? 'Editar Categoría' : 'Nueva Categoría'}</Modal.Title></Modal.Header>
         <Form onSubmit={handleSubmit}>
           <Modal.Body>
