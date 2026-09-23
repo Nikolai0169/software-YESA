@@ -27,6 +27,9 @@ const authService = {
         if (authData.token) {
           setSanitizedStorageString('token', authData.token);
         }
+        if (authData.refreshToken) {
+          setSanitizedStorageString('refreshToken', authData.refreshToken);
+        }
         if (authData.usuario) {
           setSanitizedStorageItem('user', authData.usuario);
         }
@@ -51,6 +54,9 @@ const authService = {
         if (authData.token) {
           setSanitizedStorageString('token', authData.token);
         }
+        if (authData.refreshToken) {
+          setSanitizedStorageString('refreshToken', authData.refreshToken);
+        }
         if (authData.usuario) {
           setSanitizedStorageItem('user', authData.usuario);
         }
@@ -67,6 +73,7 @@ const authService = {
    */
   logout: () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
   },
 

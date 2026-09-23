@@ -38,6 +38,7 @@ const router = express.Router();
 const {
   register,          // Función que registra un nuevo usuario cliente
   login,             // Función que autentica al usuario y retorna un token JWT
+  refresh,           // Función que renueva la sesión con un refresh token
   getMe,             // Función que retorna los datos del usuario autenticado
   updateMe,          // Función que actualiza el perfil del usuario autenticado
   changePassword     // Función que permite cambiar la contraseña
@@ -90,6 +91,8 @@ router.post('/register', register);
 // Respuesta exitosa (200 OK):
 //   { success: true, data: { usuario: { id, nombre, email, rol, ... }, token: "eyJ..." } }
 router.post('/login', login);
+
+router.post('/refresh', refresh);
 
 // ==========================================
 // RUTAS PROTEGIDAS (Requieren autenticación)

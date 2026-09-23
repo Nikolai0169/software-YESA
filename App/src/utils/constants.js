@@ -141,6 +141,7 @@ export const API_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, '');
 
 export const STORAGE_KEYS = {
   token: 'token',
+  refreshToken: 'refreshToken',
   user: 'user',
   carritoLocal: 'carritoLocal',
 };

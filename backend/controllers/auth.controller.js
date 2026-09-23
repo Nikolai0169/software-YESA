@@ -12,9 +12,11 @@
 // Este modelo representa la tabla 'Usuario' en la BD y permite hacer operaciones CRUD.
 const Usuario = require('../models/Usuario');
 
-// Importa la función generateToken desde config/jwt.js.
-// Se usa para crear un token JWT después de un registro o login exitoso.
-const { generateToken } = require('../config/jwt');
+const {
+  generateAccessToken,
+  generateRefreshToken,
+  verifyRefreshToken,
+} = require('../config/jwt');
 
 const isValidEmail = (value) => {
   if (typeof value !== 'string') {
@@ -47,6 +49,14 @@ const isValidEmail = (value) => {
  * Ruta: POST /api/auth/register
  * Body esperado: { nombre, apellido, email, password, telefono, direccion }
  */
+const createAuthTokens = (usuario) => {
+  const payload = { id: usuario.id, email: usuario.email, rol: usuario.rol };
+  return {
+    token: generateAccessToken(payload),
+    refreshToken: generateRefreshToken(payload),
+  };
+};
+
 const register = async (req, res) => {
   try {
     // Desestructura los datos enviados en el body de la petición HTTP.
@@ -113,11 +123,7 @@ const register = async (req, res) => {
     
     // GENERAR TOKEN JWT con los datos básicos del usuario recién creado.
     // Este token se envía al cliente para que lo use en las siguientes peticiones.
-    const token = generateToken({
-      id: nuevoUsuario.id,          // ID del usuario en la BD
-      email: nuevoUsuario.email,    // Email del usuario
-      rol: nuevoUsuario.rol         // Rol del usuario ('cliente')
-    });
+    const { token, refreshToken } = createAuthTokens(nuevoUsuario);
     
     // PREPARAR RESPUESTA: convierte el objeto Sequelize a JSON plano
     // y elimina el campo password para no enviarlo al cliente por seguridad.
@@ -131,7 +137,8 @@ const register = async (req, res) => {
       message: 'Usuario registrado exitosamente',
       data: {
         usuario: usuarioRespuesta,  // Datos del usuario sin contraseña
-        token                        // Token JWT para autenticación
+        token,                       // Token JWT para autenticación
+        refreshToken                 // Token de renovación de sesión
       }
     });
     
@@ -213,11 +220,7 @@ const login = async (req, res) => {
     }
     
     // GENERAR TOKEN JWT con los datos básicos del usuario autenticado
-    const token = generateToken({
-      id: usuario.id,
-      email: usuario.email,
-      rol: usuario.rol
-    });
+    const { token, refreshToken } = createAuthTokens(usuario);
     
     // PREPARAR RESPUESTA: elimina el password del objeto antes de enviarlo
     const usuarioSinPassword = usuario.toJSON();
@@ -229,7 +232,8 @@ const login = async (req, res) => {
       message: 'Inicio de sesión exitoso',
       data: {
         usuario: usuarioSinPassword,  // Datos del usuario sin contraseña
-        token                          // Token JWT para usar en futuras peticiones
+        token,                         // Token JWT para usar en futuras peticiones
+        refreshToken                   // Token de renovación de sesión
       }
     });
     
@@ -239,6 +243,30 @@ const login = async (req, res) => {
       success: false,
       message: 'Error al iniciar sesión',
       error: error.message
+    });
+  }
+};
+
+const refresh = async (req, res) => {
+  try {
+    const { refreshToken } = req.body || {};
+    if (!refreshToken) {
+      return res.status(401).json({ success: false, message: 'Refresh token requerido' });
+    }
+
+    const decoded = verifyRefreshToken(refreshToken);
+    const usuario = await Usuario.findByPk(decoded.id, {
+      attributes: { exclude: ['password'] },
+    });
+    if (!usuario || !usuario.activo) {
+      return res.status(401).json({ success: false, message: 'Sesión no válida' });
+    }
+
+    return res.json({ success: true, data: createAuthTokens(usuario) });
+  } catch (error) {
+    return res.status(401).json({
+      success: false,
+      message: error.message || 'Refresh token inválido',
     });
   }
 };
@@ -446,6 +474,7 @@ const changePassword = async (req, res) => {
 module.exports = {
   register,         // POST /api/auth/register - Registro de nuevos usuarios
   login,            // POST /api/auth/login - Inicio de sesión
+  refresh,          // POST /api/auth/refresh - Renovar sesión
   getMe,            // GET /api/auth/me - Obtener perfil propio
   updateMe,         // PUT /api/auth/me - Actualizar perfil propio
   changePassword    // PUT /api/auth/change-password - Cambiar contraseña

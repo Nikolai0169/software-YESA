@@ -19,6 +19,9 @@ const authService = {
         if (payload?.token) {
             await storageSetItem(STORAGE_KEYS.token, payload.token);
         }
+        if (payload?.refreshToken) {
+            await storageSetItem(STORAGE_KEYS.refreshToken, payload.refreshToken);
+        }
 
         if (payload?.usuario) {
             await storageSetItem(STORAGE_KEYS.user, JSON.stringify(payload.usuario));
@@ -36,6 +39,9 @@ const authService = {
         if (payload?.token) {
             await storageSetItem(STORAGE_KEYS.token, payload.token);
         }
+        if (payload?.refreshToken) {
+            await storageSetItem(STORAGE_KEYS.refreshToken, payload.refreshToken);
+        }
 
         if (payload?.usuario) {
             await storageSetItem(STORAGE_KEYS.user, JSON.stringify(payload.usuario));
@@ -46,15 +52,16 @@ const authService = {
 
     //cierra la sesion eliminando del storage las claves persistidas
     logout: async () => {
-        await storageMultiRemove([STORAGE_KEYS.token, STORAGE_KEYS.user]);
+        await storageMultiRemove([STORAGE_KEYS.token, STORAGE_KEYS.refreshToken, STORAGE_KEYS.user]);
     },
 
     //lee el almacenamiento local la sesion guardada y la restaura en el contexto de autenticacion
     getSession: async () => {
         const token = await storageGetItem(STORAGE_KEYS.token);
+        const refreshToken = await storageGetItem(STORAGE_KEYS.refreshToken);
         const userRaw = await storageGetItem(STORAGE_KEYS.user);
         const user = userRaw ? JSON.parse(userRaw) : null;
-        return { token, user };
+        return { token, refreshToken, user };
     },
 
     updatePerfil: async(data) => {

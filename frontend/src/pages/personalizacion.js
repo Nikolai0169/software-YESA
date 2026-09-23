@@ -125,7 +125,7 @@ const PersonalizacionPage = () => {
   const [textScale, setTextScale] = useState(1);
   const [adjustmentTarget, setAdjustmentTarget] = useState(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [previewKey, setPreviewKey] = useState(0);
+  const [previewKey] = useState(0);
   const previewRef = useRef(null);
   const fileInputRef = useRef(null);
   const canvasRef = useRef(null);
@@ -155,31 +155,6 @@ const PersonalizacionPage = () => {
     setTextOffset({ x: 0, y: 0 });
     setTextScale(1);
     setAdjustmentTarget(null);
-  };
-
-  const resetPersonalizacionState = () => {
-    setModelo3D('taza');
-    setColorsByModel(defaultColors);
-    setTexturesByModel({ taza: null });
-    setTextsByModel(defaultTexts);
-    setOverlayTextByModel({ taza: '' });
-    setOverlayTextSettingsByModel({ taza: { fontFamily: 'sans-serif', fontSize: 24, color: '#000000' } });
-    setTextEditorOpen(false);
-    setTextEditorContent('');
-    setTextEditorFontFamily('sans-serif');
-    setTextEditorFontSize(24);
-    setTextEditorColor('#000000');
-    setTextureOffset({ x: 0, y: 0 });
-    setTextureScale(1);
-    setTextOffset({ x: 0, y: 0 });
-    setTextScale(1);
-    setAdjustmentTarget(null);
-    setZoomLevel(1);
-    setCurrentDesignId(null);
-    setCurrentDesignName('');
-    setNombreCotizacion('');
-    setNotasCotizacion('');
-    setPreviewKey((prev) => prev + 1);
   };
 
   const setModelColor = (field, value) => {
@@ -672,7 +647,6 @@ const PersonalizacionPage = () => {
         mensaje: result.mensaje || 'Cotización enviada y pendiente',
         precio: result?.cotizacion?.precio,
       });
-      resetPersonalizacionState();
     } catch (error) {
       console.error('Error al cotizar:', error);
       const message = error.response?.data?.message || error.message || 'Error al cotizar el producto';
@@ -729,11 +703,9 @@ const PersonalizacionPage = () => {
         const savedId = result?.id || result?._id;
         const idMessage = savedId ? ` con ID: ${savedId}` : '';
         setSaveSuccess(`Diseño guardado${saveMessage}${idMessage}`);
-        resetPersonalizacionState();
       } catch (error) {
         console.error("Error al guardar diseño en servidor:", error);
         setSaveSuccess('Diseño guardado localmente');
-        resetPersonalizacionState();
       }
     } catch (error) {
       console.error("Error al guardar diseño:", error);
